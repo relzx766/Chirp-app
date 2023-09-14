@@ -1,19 +1,37 @@
-# chirp-app
+# Chirp
 
-## Project setup
-```
-npm install
-```
+模仿Twitter的web应用，前端使用Vue2，后端使用Spring Cloud
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+### 注册
 
-### Compiles and minifies for production
-```
-npm run build
-```
+目前并没有实现oauth2
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+![](./docs/sign.png)
+
+### 编辑
+
+![](./docs/post.png)
+
+### 回复
+
+![](./docs/reply.png)
+
+### 详情
+
+![](./docs/detail.png)
+
+### 引用
+
+![](./docs/quote.png)
+
+### 个人资料
+
+![](./docs/profile.png)
+
+### 个人资料编辑
+
+.![](./docs/profile-edit.png)
+
+### 通知
+
+![](./docs/notice.png)
