@@ -1,23 +1,22 @@
 <template>
-<div>
-  <video-player v-if="category==='video'" :url="media[0].url"/>
+  <div>
+    <video-player v-if="category==='video'" :url="media[0].url"/>
 
 
- 
-  <waterfall v-else-if="category==='image'" :data="media" :isTransition="false" style="width: 100%;" :col="media.length>2?2:media.length">
-    <el-image v-for="(item,index) in media" :key="item.name"
-    style="border-radius: 14px;"
-    :style="{width:'99%',
+    <waterfall v-else-if="category==='image'" :col="media.length>2?2:media.length" :data="media" :isTransition="false"
+               style="width: 90%;">
+      <el-image v-for="(item,index) in media" :key="item.name"
+                :preview-src-list="getUrls"
+                :src="item.url"
+                :style="{width:'99%',
              marginTop:index>1?'4px':'0px',
              height:media.length>1?'200px':'auto' }"
-    :src="item.url"
-    fit="cover"
-    :preview-src-list="getUrls">
-    </el-image>
-  </waterfall>
-    
+                fit="cover"
+                style="border-radius: 14px;">
+      </el-image>
+    </waterfall>
 
- 
+
   </div>
 
 </template>
@@ -27,50 +26,58 @@ import VideoPlayer from "@/views/media/VideoPlayer.vue";
 
 export default {
   name: "MediaCard",
-  props:{
-    media:Array
+  props: {
+    media: Array
   },
 
-  components:{
+  components: {
     VideoPlayer
   },
-  data(){
-    return{
-      category:"",
-      dynamicHeight:""
+  data() {
+    return {
+      category: "",
+      dynamicHeight: ""
     }
   },
-  computed:{
-    getUrls(){
-      let urls=[];
+  computed: {
+    getUrls() {
+      let urls = [];
       for (let index = 0; index < this.media.length; index++) {
         const m = this.media[index];
         urls.push(m.url);
       }
       return urls;
     },
-    dynamicWidth(){
+    dynamicWidth() {
       let width;
       switch (this.media.length) {
-        case 1:width=100;break;
-        case 2:width=49;break;
-        case 3:width=33;break;
-        default:width=0;break;
+        case 1:
+          width = 100;
+          break;
+        case 2:
+          width = 49;
+          break;
+        case 3:
+          width = 33;
+          break;
+        default:
+          width = 0;
+          break;
       }
       return `${width}%`;
     }
   },
-  methods:{
-    init(){
-     this.category=this.media[0].category;
+  methods: {
+    init() {
+      this.category = this.media[0].category;
     },
-    getMargin(index){
+    getMargin(index) {
       index++;
-      if ((index%this.media.length)!==1){
-        let col=this.media.length>3?3:this.media.length;
-        col=Math.min(col,this.media.length);
+      if ((index % this.media.length) !== 1) {
+        let col = this.media.length > 3 ? 3 : this.media.length;
+        col = Math.min(col, this.media.length);
         col--;
-        return `${1/col}%`;
+        return `${1 / col}%`;
       }
       return '0%';
     }
@@ -82,7 +89,7 @@ export default {
 </script>
 
 <style scoped>
-li{
+li {
   list-style-type: none;
   float: left;
 }

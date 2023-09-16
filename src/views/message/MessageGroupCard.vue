@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-row v-for="item in messages">
-      <message-card style="cursor: pointer;margin-top: 4px" :message="item" :num="1"></message-card>
+      <message-card :message="item" :num="1" style="cursor: pointer;margin-top: 4px"></message-card>
     </el-row>
   </div>
 </template>

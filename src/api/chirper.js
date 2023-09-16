@@ -80,9 +80,9 @@ export const getReply = (id, page) => {
         params: {id, page}
     })
 }
-export const getByAuthor=(id,page)=>{
+export const getByAuthor = (id, page) => {
     return Get({
-        url:sever+"/chirper/author",
-        params:{id,page}
+        url: sever + "/chirper/author",
+        params: {id, page}
     })
 }

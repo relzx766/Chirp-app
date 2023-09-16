@@ -94,8 +94,8 @@ export default {
       signIn(this.user.account, this.user.password).then((res) => {
         if (res.code === 200) {
           localStorage.setItem("token", res.data.record.token);
-          localStorage.setItem("id",res.data.record.user.id);
-         this.$router.go(0);
+          localStorage.setItem("id", res.data.record.user.id);
+          this.$router.go(0);
         } else {
           this.$message.error(res.data.message);
         }

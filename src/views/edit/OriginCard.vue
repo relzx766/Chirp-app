@@ -15,9 +15,9 @@
           </el-input>
         </div>
         <el-row style="margin-top: 20px;">
-          <edit-bar :post-btn-disabled="postBtnDisabled" @post="doPost"
-          @removeMedia="removeMedia"
-          @addMedia="addMedia"/>
+          <edit-bar :post-btn-disabled="postBtnDisabled" @addMedia="addMedia"
+                    @post="doPost"
+                    @removeMedia="removeMedia"/>
         </el-row>
       </el-col>
     </el-row>
@@ -57,13 +57,13 @@ export default {
         }
       })
     },
-    addMedia({id}){
+    addMedia({id}) {
       this.media.push(id);
-      this.postBtnDisabled=false;
+      this.postBtnDisabled = false;
     },
-    removeMedia(index){
-      this.media.splice(index,1);
-      this.postBtnDisabled=this.media.length<=0&&this.text.trim().length<=0;
+    removeMedia(index) {
+      this.media.splice(index, 1);
+      this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     }
 
   }

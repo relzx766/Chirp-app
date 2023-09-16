@@ -2,14 +2,15 @@
   <el-row>
     <el-row>
       <el-row v-if="isDiaLog" :style="{marginBottom:isDiaLog?'30px':'0px'}">
-        <chirper-card :chirper="chirper" :media="false" style="border: none;" type="short"
+        <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false"
+                      :mediaVisible="chirper.text&&chirper.text.trim.length>0?false:true" style="border: none;"
         />
         <el-row>
           <el-col :span="2">
             &nbsp;
           </el-col>
           <el-col :span="20" style="text-align: left;font-size: 14px">
-            <span style="color:#409EFF;">回复@{{ chirper.username }}</span>
+            <span style="color:#409EFF;margin-left: 10px;">回复@{{ chirper.username }}</span>
           </el-col>
         </el-row>
       </el-row>
@@ -30,9 +31,9 @@
           </el-input>
         </div>
         <el-row style="margin-top: 20px;">
-          <edit-bar :post-btn-disabled="postBtnDisabled" @post="doPost"
-                    @removeMedia="removeMedia"
-                    @addMedia="addMedia"/>
+          <edit-bar :post-btn-disabled="postBtnDisabled" @addMedia="addMedia"
+                    @post="doPost"
+                    @removeMedia="removeMedia"/>
         </el-row>
       </el-col>
     </el-row>
@@ -78,13 +79,13 @@ export default {
         }
       })
     },
-    addMedia({id}){
+    addMedia({id}) {
       this.media.push(id);
-      this.postBtnDisabled=false;
+      this.postBtnDisabled = false;
     },
-    removeMedia(index){
-      this.media.splice(index,1);
-      this.postBtnDisabled=this.media.length<=0&&this.text.trim().length<=0;
+    removeMedia(index) {
+      this.media.splice(index, 1);
+      this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     }
   },
   created() {

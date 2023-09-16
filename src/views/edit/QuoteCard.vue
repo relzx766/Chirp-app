@@ -13,15 +13,15 @@
             type="textarea" @input="inputLimit()">
         </el-input>
       </div>
-       <el-row style="margin-top: 20px;">
-        <edit-bar :post-btn-disabled="postBtnDisabled" @post="doPost()"
-                  @removeMedia="removeMedia"
-                  @addMedia="addMedia"/>
+      <el-row style="margin-top: 20px;">
+        <edit-bar :post-btn-disabled="postBtnDisabled" @addMedia="addMedia"
+                  @post="doPost()"
+                  @removeMedia="removeMedia"/>
       </el-row>
-      <el-row style="margin-top: 20px;border-top: 1px solid #EBEEF5;">
-        <chirper-card :chirper="chirper" shadow="hover" type="short"></chirper-card>
+      <el-row style="margin-top: 20px;border: 1px solid #EBEEF5;border-radius: 12px;padding: 8px;zoom: 0.92;">
+        <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false" shadow="hover"></chirper-card>
       </el-row>
-     
+
     </el-col>
   </el-row>
 </template>
@@ -63,13 +63,13 @@ export default {
         }
       })
     },
-    addMedia({id}){
+    addMedia({id}) {
       this.media.push(id);
-      this.postBtnDisabled=false;
+      this.postBtnDisabled = false;
     },
-    removeMedia(index){
-      this.media.splice(index,1);
-      this.postBtnDisabled=this.media.length<=0&&this.text.trim().length<=0;
+    removeMedia(index) {
+      this.media.splice(index, 1);
+      this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     }
   },
 }

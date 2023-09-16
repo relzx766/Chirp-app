@@ -1,9 +1,9 @@
 <template>
-<div>
-  <div id="player">
+  <div>
+    <div id="player">
 
+    </div>
   </div>
-</div>
 </template>
 
 <script>
@@ -11,21 +11,21 @@ import DPlayer from 'dplayer'
 
 export default {
   name: "VideoPlayer",
-  props:{
-    url:""
+  props: {
+    url: ""
   },
-  data(){
-    return{
-  player:null
+  data() {
+    return {
+      player: null
     }
   },
-  methods:{
-    init(){
-      this.player=new DPlayer({
-        container:document.getElementById("player"),
-        hotkey:true,
-        video:{
-          url:this.url
+  methods: {
+    init() {
+      this.player = new DPlayer({
+        container: document.getElementById("player"),
+        hotkey: true,
+        video: {
+          url: this.url
         }
       })
     }

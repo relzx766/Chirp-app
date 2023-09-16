@@ -3,19 +3,23 @@
     <el-main>
       <ul>
         <li
-                style="width: calc(60% - 4px);border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;min-height: 100vh">
+            style="width: calc(60% - 4px);border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;min-height: 100vh">
           <el-row class="back-bar">
             <el-button circle icon="el-icon-back" style="border: none;font-size: 24px;font-weight: bold"
                        @click="$router.back()"></el-button>
             <span>帖子</span>
           </el-row>
-        <el-row style="padding: 10px">
-          <chirper-card style="margin-top: 40px" :chirper="currentChirper" shadow="never" type="detail"/>
-          <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
-                     @sent="doPost"/>
-        </el-row>
-          <el-row v-for="item in reply" >
-            <chirper-card :chirper="item" shadow="hover" style="padding: 10px;border-bottom: 1px solid #E4E7ED;z-index: 1" type="list"
+          <el-row style="padding: 10px">
+            <chirper-card v-if="currentChirper.type!=='QUOTE'" :chirper="currentChirper" :clickEvent="false"
+                          :mediaVisible="true"
+                          :straight="false" shadow="never" style="margin-top: 40px"/>
+            <refer-card v-if="currentChirper.type==='QUOTE'" :value="currentChirper" style="margin-top: 40px"/>
+            <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
+                       @sent="doPost"/>
+          </el-row>
+          <el-row v-for="item in reply">
+            <chirper-card :chirper="item" shadow="hover"
+                          style="padding: 10px;border-bottom: 1px solid #E4E7ED;z-index: 1"
             />
           </el-row>
         </li>
@@ -51,6 +55,8 @@ import {getToken} from "@/util/tools";
 import {getDetail, getReply} from "@/api/chirper";
 import {getShortProfile} from "@/api/user";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
+import ChirperClickBar from "./ChirperClickBar.vue";
+import ReferCard from "./ReferCard.vue";
 
 export default {
   name: "Chirper",
@@ -59,17 +65,19 @@ export default {
     'trend-card': TrendListCard,
     'login-card': LoginCard,
     'input-card': InputCard,
-    'edit-card': ReplyCard
+    'edit-card': ReplyCard,
+    'refer-card': ReferCard
   },
   data() {
     return {
       currentChirper: {},
       reply: [],
       page: 1,
-      isLoading:false,
-      isBottom:false
+      isLoading: false,
+      isBottom: false
     }
   },
+
   methods: {
     getToken,
     getReply() {
@@ -79,22 +87,22 @@ export default {
         }));
       })
     },
-    loadMoreReply(){
+    loadMoreReply() {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const clientHeight = document.documentElement.clientHeight
       const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight +10>= scrollHeight &&!this.isBottom &&!this.isLoading) {
+      if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
         this.page++;
-        this.isLoading=true;
-        getReply(this.currentChirper.id,this.page).then((res)=>{
-          if (res.data.record.length>0){
-            this.combineWithUser(res.data.record).then((data)=>{
+        this.isLoading = true;
+        getReply(this.currentChirper.id, this.page).then((res) => {
+          if (res.data.record.length > 0) {
+            this.combineWithUser(res.data.record).then((data) => {
               this.reply.push(...data)
             })
-          }else {
-            this.isBottom=true;
+          } else {
+            this.isBottom = true;
           }
-          this.isLoading=false;
+          this.isLoading = false;
         })
       }
     },
@@ -120,17 +128,18 @@ export default {
         authorIds.push(chirpers[i].authorId);
       }
       return getShortProfile(authorIds).then((res) => {
-        if(res.code===200){
-           let users = res.data.record;
-        return chirpers.map(chirper => {
-          let user = users.find(u => u.id === chirper.authorId);
-          chirper.mediaKeys=JSON.parse(chirper.mediaKeys);
-          chirper.username = user.username;
-          chirper.nickname = user.nickname;
-          chirper.avatar = user.smallAvatarUrl;
-          return chirper;
-        });
-        };
+        if (res.code === 200) {
+          let users = res.data.record;
+          return chirpers.map(chirper => {
+            let user = users.find(u => u.id === chirper.authorId);
+            chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
+            chirper.username = user.username;
+            chirper.nickname = user.nickname;
+            chirper.avatar = user.smallAvatarUrl;
+            return chirper;
+          });
+        }
+        ;
         return {};
       })
     },
@@ -151,22 +160,29 @@ export default {
   },
   created() {
     this.init();
-    window.addEventListener("scroll",this.loadMoreReply,true);
+    window.addEventListener("scroll", this.loadMoreReply, true);
   },
   destroyed() {
-    window.removeEventListener("scroll",this.loadMoreReply);
+    window.removeEventListener("scroll", this.loadMoreReply);
   }
 }
 </script>
 
 <style scoped>
-li{
+li {
   list-style-type: none;
   float: left;
 }
-.back-bar{
-  text-align: left;font-size: 24px;font-weight: bold;position: fixed;z-index: 99;background-color: #FFFFFF;
-  height: 60px;width: calc(43% - 5px);
+
+.back-bar {
+  text-align: left;
+  font-size: 24px;
+  font-weight: bold;
+  position: fixed;
+  z-index: 99;
+  background-color: #FFFFFF;
+  height: 60px;
+  width: calc(43% - 5px);
   top: 0;
 }
 </style>

@@ -1,5 +1,5 @@
 export const noticeEnum = () => {
-  return [
+    return [
         'LIKE',
         'FORWARD',
         'QUOTE',
@@ -7,5 +7,5 @@ export const noticeEnum = () => {
         'FOLLOW',
         'ANNOUNCEMENT',
         'NOTICE'
-  ];
+    ];
 }

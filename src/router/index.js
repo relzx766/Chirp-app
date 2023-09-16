@@ -40,7 +40,7 @@ const routes = [
                 component: Message
             },
             {
-                path:'/notice',
+                path: '/notice',
                 component: Notice
             }
         ]

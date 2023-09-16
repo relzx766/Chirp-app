@@ -18,28 +18,28 @@
             <span slot="title">探索</span>
           </el-menu-item>
           <el-menu-item
-          :disabled="getToken()===null"
-          class="nav-item" index="notifications"
-          @click="()=>{$router.push('/notice')}">
+              :disabled="getToken()===null"
+              class="nav-item" index="notifications"
+              @click="()=>{$router.push('/notice')}">
             <img class="nav-icon" src="../assets/notice.svg"/>
             <span slot="title">通知</span>
           </el-menu-item>
           <el-menu-item
-          :disabled="getToken()===null"
-          class="nav-item" index="messages"
-          @click="()=>{$router.push('/message')}">
+              :disabled="getToken()===null"
+              class="nav-item" index="messages"
+              @click="()=>{$router.push('/message')}">
             <img class="nav-icon" src="../assets/mail.svg"/>
             <span slot="title">私信</span>
           </el-menu-item>
           <el-menu-item
-          :disabled="getToken()===null"
-          class="nav-item" index="community">
+              :disabled="getToken()===null"
+              class="nav-item" index="community">
             <img class="nav-icon" src="../assets/user-group.svg"/>
             <span slot="title">社区</span>
           </el-menu-item>
-          <el-menu-item class="nav-item" index="profile"
-                        :disabled="getToken()===null"
-          @click="$router.push('/profile?id='+$store.getters.getUser.id)">
+          <el-menu-item :disabled="getToken()===null" class="nav-item"
+                        index="profile"
+                        @click="$router.push('/profile?id='+$store.getters.getUser.id)">
             <img class="nav-icon" src="../assets/profile.svg"/>
             <span slot="title">个人资料</span>
           </el-menu-item>
@@ -85,11 +85,11 @@ export default {
   name: "Index",
   data() {
     return {
-      socket:null,
-      url:'ws://localhost:8080/advice-service/interaction/',
-      reconnect:{
-        count:0,
-        lock:false
+      socket: null,
+      url: 'ws://localhost:8080/advice-service/interaction/',
+      reconnect: {
+        count: 0,
+        lock: false
       }
     }
   },
@@ -100,19 +100,19 @@ export default {
     },
     signOut() {
       localStorage.clear();
-      this.$store.commit("setUser",{});
-      window.location.href="/home";
+      this.$store.commit("setUser", {});
+      window.location.href = "/home";
     },
-    loadUser(){
-      getDetailProfile(localStorage.getItem("id")).then(r=>{
-        this.$store.commit("setUser",r.data.record);
+    loadUser() {
+      getDetailProfile(localStorage.getItem("id")).then(r => {
+        this.$store.commit("setUser", r.data.record);
       })
     },
-    classifyMessage(messages){
-   return  messages.reduce((arr, item) => {
-     Object.keys(item).forEach(k=>{
-       item[k]=item[k].toString();
-     })
+    classifyMessage(messages) {
+      return messages.reduce((arr, item) => {
+        Object.keys(item).forEach(k => {
+          item[k] = item[k].toString();
+        })
         if (arr[item.type]) {
           arr[item.type].push(item);
         } else {
@@ -122,47 +122,47 @@ export default {
       }, {});
     },
     socketConnect() {
-      let url = this.url+getToken();
+      let url = this.url + getToken();
       let socket = new WebSocket(url);
-      socket.onopen=(()=>{
+      socket.onopen = (() => {
         this.$store.commit("clearMessage")
-        this.reconnect.count=0;
+        this.reconnect.count = 0;
         console.log("建立websocket连接");
       });
-      socket.onmessage=((e)=>{
-        let messages =this.classifyMessage(JSON.parse(e.data));
-        Object.keys(messages).forEach(type=>{
-        this.$store.commit("pushNotice", {notice:messages[type], type:type});
+      socket.onmessage = ((e) => {
+        let messages = this.classifyMessage(JSON.parse(e.data));
+        Object.keys(messages).forEach(type => {
+          this.$store.commit("pushNotice", {notice: messages[type], type: type});
         })
       });
-      this.socket=socket;
+      this.socket = socket;
     },
-    doReconnect(){
-      if (!this.reconnect.lock&&!this.reconnect.count>20){
-        this.reconnect.lock=true;
-        setTimeout(()=>{
+    doReconnect() {
+      if (!this.reconnect.lock && !this.reconnect.count > 20) {
+        this.reconnect.lock = true;
+        setTimeout(() => {
           this.socketConnect();
-          this.reconnect.lock=false;
+          this.reconnect.lock = false;
           this.reconnect.count++;
-        },5000)
+        }, 5000)
       }
     }
   },
 
   created() {
     console.log(getToken())
-    if (getToken()!=null&&getToken().length>0){
+    if (getToken() != null && getToken().length > 0) {
       this.loadUser();
     }
-    },
+  },
   mounted() {
-    if (getToken()!=null&&getToken().length>0){
+    if (getToken() != null && getToken().length > 0) {
       this.socketConnect();
     }
   },
   destroyed() {
     console.log("asdasdasdasdsd")
-    this.reconnect.lock=true;
+    this.reconnect.lock = true;
     if (this.socket) {
       this.socket.close();
     }
@@ -171,10 +171,11 @@ export default {
 </script>
 
 <style scoped>
-li{
+li {
   list-style-type: none;
   float: left;
 }
+
 .nav-menu {
   border-right: none;
 }

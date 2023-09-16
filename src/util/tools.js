@@ -22,21 +22,21 @@ export const getDate = (date) => {
     }
     return result;
 }
-export const getMessageDate=(date)=>{
-    date=new Date(date);
-    let now=new Date();
-    let formatDate=moment(date);
+export const getMessageDate = (date) => {
+    date = new Date(date);
+    let now = new Date();
+    let formatDate = moment(date);
     //不在今年
-    if (now.getFullYear()-date.getFullYear()>0){
+    if (now.getFullYear() - date.getFullYear() > 0) {
         return formatDate.format("YYYY年MM月DD日");
-    }else {
+    } else {
         //在今天
-        if (date.getDay()===now.getDay()){
+        if (date.getDay() === now.getDay()) {
             return formatDate.format("HH:mm");
             //在昨天
-        }else if (now.getDay()-date.getDay()===1){
+        } else if (now.getDay() - date.getDay() === 1) {
             return "昨天";
-        }else {
+        } else {
             return formatDate.format("MM月DD日")
         }
     }
@@ -60,9 +60,9 @@ export const ascArray = (arr) => {
     })
 }
 export const descDate = (dates) => {
-  return dates.sort((a,b)=>{
-      return new Date(b).getTime()-new Date(a).getTime();
-  })
+    return dates.sort((a, b) => {
+        return new Date(b).getTime() - new Date(a).getTime();
+    })
 }
 export const getDaysBetween = (dateString1, dateString2) => {
     let startDate = Date.parse(dateString1);
@@ -85,6 +85,6 @@ export const getFromStorage = (key) => {
     return localStorage.getItem(key);
 }
 export const getNewMsgCount = (num) => {
-  return num>99?99:num;
+    return num > 99 ? 99 : num;
 }
 

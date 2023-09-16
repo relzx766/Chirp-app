@@ -3,7 +3,7 @@
     <ul>
       <li style="margin-left: -10%;">
         <el-button circle class="btn-interact" icon="el-icon-chat-square" size="medium"
-                   @click.stop="type==='list'?replyDialog=true:replyDialog=false"></el-button>
+                   @click.stop="replyDialog=true"></el-button>
         <el-dialog
             :modal="false"
             :show-close="false"
@@ -24,12 +24,14 @@
         >
           <el-row>
             <el-row>
-              <el-button :style="{ color: chirper.isForward ? '#67C23A' : '#606266' }" class="btn-interact" icon="el-icon-connection"
+              <el-button :style="{ color: chirper.isForward ? '#67C23A' : '#606266' }" class="btn-interact"
+                         icon="el-icon-connection"
                          size="medium"><span
                   style="font-size: 16px" @click="doForward()">转发</span></el-button>
             </el-row>
             <el-row>
-              <el-button :style="{ color: chirper.isQuote ? '#409EFF' : '#606266' }" class="btn-interact" icon="el-icon-edit"
+              <el-button :style="{ color: chirper.isQuote ? '#409EFF' : '#606266' }" class="btn-interact"
+                         icon="el-icon-edit"
                          size="medium"
                          style="font-size: 16px"
                          @click="quoteDialog=true"><span
@@ -46,14 +48,16 @@
               </el-row>
             </el-dialog>
           </el-row>
-          <el-button slot="reference" :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }" circle class="btn-interact" icon="el-icon-connection"
+          <el-button slot="reference" :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }"
+                     circle class="btn-interact" icon="el-icon-connection"
                      size="medium"></el-button>
         </el-popover>
         <span class="num">{{ getCount(chirper.forwardCount + chirper.quoteCount) }}</span>
 
       </li>
       <li :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }">
-        <el-button :icon="chirper.isLike?'el-icon-star-on':'el-icon-star-off'" :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }"
+        <el-button :icon="chirper.isLike?'el-icon-star-on':'el-icon-star-off'"
+                   :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }"
                    circle class="btn-interact" size="medium"
                    @click.stop="doLike()"></el-button>
         <span class="num"> {{ getCount(chirper.likeCount) }} </span></li>
@@ -82,9 +86,7 @@ export default {
   },
   props: {
 
-    value: {},
-    //detail or list
-    type: ''
+    value: {}
   },
   data() {
     return {
@@ -97,9 +99,7 @@ export default {
         viewCount: '',
         isLike: Boolean,
         isForward: Boolean,
-        isQuote: Boolean,
-        //detail or list
-        type: ''
+        isQuote: Boolean
       },
       quoteDialog: false,
       replyDialog: false

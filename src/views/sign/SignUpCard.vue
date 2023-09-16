@@ -7,7 +7,7 @@
                      @click="active>0?active--:active">back
           </el-button>
           <img src="../../assets/logo.svg" width="40px">
-          <el-button v-if="active<1" round size="small" style="float: right"  type="primary" @click="doNext()">next
+          <el-button v-if="active<1" round size="small" style="float: right" type="primary" @click="doNext()">next
           </el-button>
         </el-row>
       </el-header>
@@ -23,19 +23,18 @@
             <el-input v-model="email" class="sign-form-input" placeholder="邮箱" size="medium"/>
           </el-row>
           <el-row style="margin-top: 40px;margin-bottom: 14px;font-weight: bold;text-align: left">
-           <span>你的生日</span>
+            <span>你的生日</span>
           </el-row>
           <el-row>
             <el-date-picker
                 v-model="birthday"
                 :picker-options="pickerOptions"
-                type="date"
-                placeholder="生日"
                 format="yyyy 年 MM 月 dd 日"
-                style="width: 100%;float: right">
+                placeholder="生日"
+                style="width: 100%;float: right"
+                type="date">
             </el-date-picker>
           </el-row>
-
 
 
         </el-row>
@@ -70,7 +69,7 @@ export default {
         disabledDate: time => {
           return time.getTime() > Date.now()
         },
-        selectableRange:'00:00:00 - ' + new Date().getHours() + ':'+(new Date().getMinutes()+1)+':00'
+        selectableRange: '00:00:00 - ' + new Date().getHours() + ':' + (new Date().getMinutes() + 1) + ':00'
       },
       active: 0,
       nextDisabled: true
@@ -80,13 +79,13 @@ export default {
     doNext() {
       if (this.active === 0) {
         let birthday = moment(this.birthday).format("YYYY-MM-DD");
-        signUp(this.username, this.password, this.email,birthday).then((res) => {
+        signUp(this.username, this.password, this.email, birthday).then((res) => {
           if (res.code === 200) {
             this.active++;
-          }else {
+          } else {
             this.$message({
-              message:res.message,
-              type:'error'
+              message: res.message,
+              type: 'error'
             })
           }
         })

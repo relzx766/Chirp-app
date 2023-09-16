@@ -25,10 +25,11 @@
             <div class="loading"/>
           </div>
         </el-row>
-        <el-row v-for="item in chirper">
+        <el-row v-for="item in chirper" :key="chirper.id" style="border-bottom: 1px solid #E4E7ED;">
+          <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :value="item" style="margin-top: 8px;"/>
           <chirper-card
-              :chirper="item" style="border-bottom: 1px solid #E4E7ED;z-index: 1"
-              type="list"/>
+              v-else :chirper="item"
+              style="margin-top: 8px;"/>
         </el-row>
         <el-row>
           <span v-if="isBottom" style="color:#909399;">到底了</span>
@@ -44,6 +45,7 @@ import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import {getChirperPage} from "@/api/chirper";
 import {getShortProfile} from '@/api/user';
 import OriginCard from "@/views/edit/OriginCard.vue";
+import ReferCard from "../chirper/ReferCard.vue";
 
 export default {
   name: "ChirperListCard",
@@ -60,8 +62,8 @@ export default {
   },
   methods: {
     refreshPage() {
-      this.page=1;
-      this.isBottom=false;
+      this.page = 1;
+      this.isBottom = false;
       this.isLoading = true;
       let startTime = Date.now();
       this.getChirper(1).then((record) => {
@@ -81,19 +83,19 @@ export default {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const clientHeight = document.documentElement.clientHeight
       const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight +10>= scrollHeight &&!this.isBottom &&!this.isLoading) {
+      if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
         this.page++;
-        this.isLoading=true;
-        this.getChirper(this.page).then((data)=>{
-          this.isBottom=data.length<=0;
+        this.isLoading = true;
+        this.getChirper(this.page).then((data) => {
+          this.isBottom = data.length <= 0;
           this.chirper.push(...data);
-          this.isLoading=false;
+          this.isLoading = false;
         })
       }
     },
     async getChirper(page) {
       let chirpers = (await getChirperPage(page)).data.record;
-      if (chirpers.length>0){
+      if (chirpers.length > 0) {
         let authorIds = [];
         for (let i = 0; i < chirpers.length; i++) {
           authorIds.push(chirpers[i].authorId);
@@ -101,7 +103,7 @@ export default {
         let users = (await getShortProfile(authorIds)).data.record;
         return chirpers.map(chirper => {
           let user = users.find(u => u.id === chirper.authorId);
-          chirper.mediaKeys=JSON.parse(chirper.mediaKeys);
+          chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
           chirper.username = user.username;
           chirper.nickname = user.nickname;
           chirper.avatar = user.smallAvatarUrl;
@@ -115,13 +117,14 @@ export default {
   components: {
     'edit-card': OriginCard,
     'chirper-card': ChirperCard,
+    'refer-card': ReferCard
   },
   created() {
     this.refreshPage();
-    window.addEventListener("scroll",this.loadPage,true);
+    window.addEventListener("scroll", this.loadPage, true);
   },
   destroyed() {
-    window.removeEventListener("scroll",this.loadPage);
+    window.removeEventListener("scroll", this.loadPage);
   }
 }
 </script>

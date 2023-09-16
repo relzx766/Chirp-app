@@ -3,7 +3,7 @@
     <el-main>
       <ul>
         <li
-                style="width: calc(60% - 4px);border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
+            style="width: calc(60% - 4px);border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
           <chirper-card :is-login="getToken()!=null&&getToken().length>0"/>
         </li>
         <li style="width: 40%;">
@@ -59,7 +59,7 @@ export default {
 </script>
 
 <style scoped>
-li{
+li {
   list-style-type: none;
   float: left;
 }
