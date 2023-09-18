@@ -3,7 +3,7 @@
     <el-row v-if="value.type==='FORWARD'"
             style="text-align: left;font-size: 14px;font-weight: bold;color: #909399;margin-bottom: 8px;">
       <el-col :offset=2 :span="21">
-        <i class="el-icon-connection"/><span>{{value.nickname}}已转发</span>
+        <i class="el-icon-connection"/><span>{{ value.nickname }}已转发</span>
       </el-col>
     </el-row>
     <chirper-card v-if="value.type==='FORWARD'" :chirper="getReference"/>
@@ -48,9 +48,6 @@ export default {
       chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
       return chirper;
     }
-  },
-  created() {
-    console.log(this.value);
   }
 }
 </script>

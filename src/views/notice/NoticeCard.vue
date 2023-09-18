@@ -1,93 +1,85 @@
 <template>
   <div>
-    <div style="text-align: left;padding: 6px">
-      <el-row v-for="item in Object.keys(msg)">
-        <el-col :span="2">
-          <i v-if="type==='LIKE'" class="el-icon-star-on" style="color:#F56C6C;font-size: 30px"/>
-          <i v-if="type==='FORWARD'" class="el-icon-connection" style="color:#67C23A;font-size: 30px"/>
-          <i v-if="type==='REPLY'" class="el-icon-chat-dot-square" style="color: #909399;font-size: 30px;"/>
-          <i v-if="type==='QUOTE'" class="el-icon-edit" style="color: #fdd835;font-size: 30px;"/>
-        </el-col>
-        <el-col :span="22">
-          <el-row>
-            <el-avatar v-for="i in msg[item]" :src="i.senderAvatar"/>
-          </el-row>
-          <el-row>
-            {{getText(msg[item])}}
-          </el-row>
-          <el-row style="color: #909399;font-size: 12px">
-            {{msg[item][0].text}}
-          </el-row>
-        </el-col>
-      </el-row>
-
-    </div>
+    <el-row v-for="item in notifications" style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
+      <notice-detail :chirper="item[0].entity"
+                     :date="item[0].createTime"
+                     :name="item[0].senderName"
+                     :type="item[0].event"
+                     :urls="[item.map((i) => i.senderAvatar)][0]"/>
+    </el-row>
+    <el-row v-if="notifications.length<=0" style="margin-left: 16%;">
+      <el-row style="font-size: 28px;font-weight: bold;text-align: left;color: black;">这里暂时没有内容</el-row>
+      <el-row style="text-align: left;color: #909399;">从点赞到转贴等等，所有的互动都在这里进行</el-row>
+    </el-row>
   </div>
 </template>
 
 <script>
-import {getMessageDate, getNewMsgCount} from "../../util/tools";
-
+import {bigNumberToString, getMessageDate, getNewMsgCount} from "../../util/tools";
+import ChirperCard from "../chirper/ChirperCard.vue";
+import NoticeDetail from "./NoticeDetail.vue";
 
 export default {
   name: "NoticeCard",
-  props: {
-    notice: {
-      type: Array,
-      default() {
-        return []
-      }
-    },
-    type: ''
+  components: {
+    'chirper-card': ChirperCard,
+    'notice-detail': NoticeDetail
   },
   data() {
     return {
-      msg: {}
+      notifications: []
     }
   },
   methods: {
-    getNewMsgCount, getMessageDate,
-    getText(msg) {
-      console.log(msg)
-      let length = msg.length;
-      let name = msg[length - 1].senderName;
-      let action;
-      switch (this.type) {
-        case 'LIKE':
-          action = "点赞了";
-          break;
-        case 'FORWARD':
-          action = "转发了";
-          break;
-        case 'QUOTE':
-          action = "引用了";
-          break;
-        case 'REPLY':
-          action = "回复了";
-          break;
-      }
-      return length > 1 ? `${name} 等${length}人 ${action}你的推文` : `${name} ${action}你的推文`;
-    },
-    classify(messages) {
-      return messages.reduce((arr, item) => {
-        if (arr[item.targetId]) {
-          arr[item.targetId].push(item);
-        } else {
-          arr[item.targetId] = [item];
-        }
-        return arr;
-      }, {});
-    }
+    getNewMsgCount, getMessageDate
   },
   watch: {
-    'notice': {
-      handler(n, o) {
-        console.log(n)
-        this.msg = this.classify(n);
+    '$store.state.msgCount': {
+      handler() {
+        let messages = this.$store.getters.getMessage;
+        if (messages && messages.length > 0) {
+
+
+          //根据推文或接收者id分类
+          let classifyById = messages.reduce((arr, item) => {
+            let id;
+            id = item.entityType === 'CHIRPER' ? id = item.entity.id : id = item.receiverId;
+            id = bigNumberToString(id);
+            if (arr[id]) {
+              arr[id].push(item);
+            } else {
+              arr[id] = [item];
+            }
+            return arr;
+          }, {});
+          let classifyByEvent = {};
+          Object.keys(classifyById).forEach(key => {
+            let eventMap = classifyById[key].reduce((arr, item) => {
+              let event = item.event;
+              if (arr[event]) {
+                arr[event].push(item);
+              } else {
+                arr[event] = [item];
+              }
+              return arr;
+            }, []);
+            classifyByEvent[key] = eventMap;
+          });
+          Object.values(classifyByEvent).forEach(classify => {
+            Object.values(classify).forEach(messageArr => {
+              this.notifications.push(messageArr);
+            })
+          });
+          this.notifications.sort((last, next) => {
+            let message1 = last[last.length - 1];
+            let message2 = next[next.length - 1];
+            return Date.parse(message2.createTime) - Date.parse(message1.createTime);
+          })
+        }
       },
       immediate: true
     }
-  }
+  },
 }
 </script>
 

@@ -7,12 +7,12 @@
         </el-col>
         <el-col :span="20">
           <el-row>
-            <span style="font-size: 14px">{{message.senderName}}</span>
-            <span style="font-size: 10px;float: right">{{getMessageDate(message.createTime)}}</span>
+            <span style="font-size: 14px">{{ message.senderName }}</span>
+            <span style="font-size: 10px;float: right">{{ getMessageDate(message.createTime) }}</span>
           </el-row>
           <el-row>
-            <span style="font-size: 14px">{{message.text}}</span>
-            <span v-if="num>0" class="red-point">{{getNewMsgCount(num)}}</span>
+            <span style="font-size: 14px">{{ message.text }}</span>
+            <span v-if="num>0" class="red-point">{{ getNewMsgCount(num) }}</span>
           </el-row>
         </el-col>
       </el-row>

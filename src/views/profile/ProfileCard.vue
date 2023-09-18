@@ -36,7 +36,7 @@
           <el-row v-if="!isSelf">
             <el-button circle icon="el-icon-more"></el-button>
             <el-button circle icon="el-icon-message"></el-button>
-            <el-button :class="followBtnClass" round @click="doFollow">{{followBtnText}}</el-button>
+            <el-button :class="followBtnClass" round @click="doFollow">{{ followBtnText }}</el-button>
           </el-row>
           <el-dialog
               :show-close="false"
@@ -52,22 +52,22 @@
     </el-row>
     <el-row style="text-align: left;margin-top: 50px;margin-left: 16px">
       <el-row style="font-size: 20px;font-weight: bolder">
-        {{user.nickname}}
+        {{ user.nickname }}
       </el-row>
       <el-row style="font-size: 14px;color:#606266;margin-top: 6px">
-        @{{user.username}}
+        @{{ user.username }}
       </el-row>
       <el-row style="margin-top: 14px;font-size: 14px">
-        {{user.description}}
+        {{ user.description }}
       </el-row>
       <el-row style="margin-top: 20px;color:#606266">
         <i class="el-icon-date"/>
-        <span>&nbsp;{{new Date(user.createTime).toLocaleDateString()}}&nbsp;加入</span>
+        <span>&nbsp;{{ new Date(user.createTime).toLocaleDateString() }}&nbsp;加入</span>
       </el-row>
       <el-row style="margin-top: 16px">
-        <el-link style="color:#000;" type="info">{{getCount(user.followingNum)}}
+        <el-link style="color:#000;" type="info">{{ getCount(user.followingNum) }}
           <span style="color:#606266;"> 正在关注</span></el-link>
-        <el-link style="margin-left: 20px;color:#000;" type="info">{{getCount(user.followNum)}}
+        <el-link style="margin-left: 20px;color:#000;" type="info">{{ getCount(user.followNum) }}
           <span style="color:#606266;"> 关注者</span></el-link>
 
       </el-row>

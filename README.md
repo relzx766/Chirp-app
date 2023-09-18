@@ -2,6 +2,7 @@
 
 模仿Twitter的web应用，前端使用Vue2，后端使用Spring Cloud<br>
 后端:[https://github.com/relzx766/Chirp-server](https://github.com/relzx766/Chirp-server)
+
 ### 注册
 
 目前并没有实现oauth2

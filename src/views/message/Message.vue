@@ -9,7 +9,8 @@
           </span>
             <el-tooltip content="新私信">
               <el-button circle
-                         icon="el-icon-chat-dot-square" style="float:right;border: none;font-size: 20px;padding: 4px"></el-button>
+                         icon="el-icon-chat-dot-square"
+                         style="float:right;border: none;font-size: 20px;padding: 4px"></el-button>
             </el-tooltip>
           </el-row>
           <group-card/>

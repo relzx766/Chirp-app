@@ -55,7 +55,6 @@ import {getToken} from "@/util/tools";
 import {getDetail, getReply} from "@/api/chirper";
 import {getShortProfile} from "@/api/user";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
-import ChirperClickBar from "./ChirperClickBar.vue";
 import ReferCard from "./ReferCard.vue";
 
 export default {

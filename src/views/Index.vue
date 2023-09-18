@@ -4,42 +4,41 @@
       <li style="width: 20%;position: fixed">
         <img src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;"/>
         <el-menu
+            :default-active="$route.path"
+            :router="true"
             active-text-color="#409EFF"
             background-color="#ffffff"
             class="nav-menu"
-            default-active="home"
         >
-          <el-menu-item class="nav-item" index="home" @click="to('/home')">
+          <el-menu-item class="nav-item" index="/home">
             <img class="nav-icon" src="../assets/homepage.svg"/>
             <span>主页</span>
           </el-menu-item>
-          <el-menu-item class="nav-item" index="explore">
+          <el-menu-item class="nav-item" index="/explore">
             <img class="nav-icon" src="../assets/explore.svg"/>
             <span slot="title">探索</span>
           </el-menu-item>
           <el-menu-item
               :disabled="getToken()===null"
-              class="nav-item" index="notifications"
-              @click="()=>{$router.push('/notice')}">
+              class="nav-item" index="/notice">
             <img class="nav-icon" src="../assets/notice.svg"/>
             <span slot="title">通知</span>
           </el-menu-item>
           <el-menu-item
               :disabled="getToken()===null"
-              class="nav-item" index="messages"
-              @click="()=>{$router.push('/message')}">
+              class="nav-item" index="/message">
             <img class="nav-icon" src="../assets/mail.svg"/>
             <span slot="title">私信</span>
           </el-menu-item>
           <el-menu-item
               :disabled="getToken()===null"
-              class="nav-item" index="community">
+              class="nav-item" index="/community">
             <img class="nav-icon" src="../assets/user-group.svg"/>
             <span slot="title">社区</span>
           </el-menu-item>
           <el-menu-item :disabled="getToken()===null" class="nav-item"
-                        index="profile"
-                        @click="$router.push('/profile?id='+$store.getters.getUser.id)">
+                        index="/profile"
+          >
             <img class="nav-icon" src="../assets/profile.svg"/>
             <span slot="title">个人资料</span>
           </el-menu-item>
@@ -84,14 +83,7 @@ import {getDetailProfile} from "@/api/user";
 export default {
   name: "Index",
   data() {
-    return {
-      socket: null,
-      url: 'ws://localhost:8080/advice-service/interaction/',
-      reconnect: {
-        count: 0,
-        lock: false
-      }
-    }
+    return {}
   },
   methods: {
     getToken,
@@ -107,64 +99,13 @@ export default {
       getDetailProfile(localStorage.getItem("id")).then(r => {
         this.$store.commit("setUser", r.data.record);
       })
-    },
-    classifyMessage(messages) {
-      return messages.reduce((arr, item) => {
-        Object.keys(item).forEach(k => {
-          item[k] = item[k].toString();
-        })
-        if (arr[item.type]) {
-          arr[item.type].push(item);
-        } else {
-          arr[item.type] = [item];
-        }
-        return arr;
-      }, {});
-    },
-    socketConnect() {
-      let url = this.url + getToken();
-      let socket = new WebSocket(url);
-      socket.onopen = (() => {
-        this.$store.commit("clearMessage")
-        this.reconnect.count = 0;
-        console.log("建立websocket连接");
-      });
-      socket.onmessage = ((e) => {
-        let messages = this.classifyMessage(JSON.parse(e.data));
-        Object.keys(messages).forEach(type => {
-          this.$store.commit("pushNotice", {notice: messages[type], type: type});
-        })
-      });
-      this.socket = socket;
-    },
-    doReconnect() {
-      if (!this.reconnect.lock && !this.reconnect.count > 20) {
-        this.reconnect.lock = true;
-        setTimeout(() => {
-          this.socketConnect();
-          this.reconnect.lock = false;
-          this.reconnect.count++;
-        }, 5000)
-      }
     }
   },
 
   created() {
-    console.log(getToken())
     if (getToken() != null && getToken().length > 0) {
       this.loadUser();
-    }
-  },
-  mounted() {
-    if (getToken() != null && getToken().length > 0) {
-      this.socketConnect();
-    }
-  },
-  destroyed() {
-    console.log("asdasdasdasdsd")
-    this.reconnect.lock = true;
-    if (this.socket) {
-      this.socket.close();
+      this.$store.dispatch('wsInit');
     }
   }
 }

@@ -20,7 +20,8 @@
               <el-tab-pane name="chirper">
                 <span slot="label" style="font-size: 16px;font-weight: bold">推文</span>
                 <div id="chirper" style="padding: 6px">
-                  <chirper-card v-for="item in chirpers" :chirper="item" shadow="hover" style="border-bottom: 1px solid #E4E7ED;"
+                  <chirper-card v-for="item in chirpers" :chirper="item" shadow="hover"
+                                style="border-bottom: 1px solid #E4E7ED;"
                                 type="list"/>
                 </div>
               </el-tab-pane>
@@ -88,7 +89,8 @@ export default {
   methods: {
     getToken,
     init() {
-      let id = this.$route.query.id;
+      let id;
+      id = this.$route.query.id ? this.$route.query.id : this.$store.getters.getUser.id;
       if (id === this.$store.getters.getUser.id) {
         this.user = this.$store.getters.getUser;
       }

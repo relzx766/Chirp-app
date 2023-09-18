@@ -10,8 +10,8 @@
             通知
           </span>
               </el-row>
-              <el-row v-for="item in Object.keys(notice)" style="border-bottom:1px solid #EBEEF5;">
-                <notice-card :notice="notice[item]" :type="item"/>
+              <el-row>
+                <notice-card/>
               </el-row>
             </el-main>
           </el-container>
@@ -43,37 +43,7 @@ export default {
     'trend-card': TrendListCard,
     'input-card': InputCard
   },
-  data() {
-    return {
-      notice: {},
 
-      //后面接收的通知
-      appendNotice: {},
-      isInit: false
-    }
-  },
-  methods: {
-    classifyNotice(notice) {
-      return notice.reduce((arr, item) => {
-        if (arr[item.type]) {
-          arr[item.type].push(item);
-        } else {
-          arr[item.type] = [item];
-        }
-        return arr;
-      }, {});
-    },
-  },
-  watch: {
-    '$store.state.msgCount': {
-      handler() {
-        if (!Object.keys(this.notice).length > 0) {
-          this.notice = structuredClone(this.$store.getters.getNotice);
-        }
-      },
-      immediate: true
-    }
-  },
   mounted() {
   }
 }

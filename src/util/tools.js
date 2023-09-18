@@ -88,3 +88,11 @@ export const getNewMsgCount = (num) => {
     return num > 99 ? 99 : num;
 }
 
+export const bigNumberToString = (num) => {
+    let str = "";
+    num.c.forEach(n => {
+        str = str + n;
+    })
+    return str;
+}
+  

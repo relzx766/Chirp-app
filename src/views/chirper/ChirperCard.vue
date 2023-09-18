@@ -10,11 +10,14 @@
           <el-row v-if="straight">
             <el-col :span="16">
               <el-link :href="'/profile?id='+chirper.authorId" style="font-size: 16px;font-weight: bold">{{
-                chirper.nickname }}
+                  chirper.nickname
+                }}
               </el-link>
               <span
                   style="color:#909399;margin-left: 10px">@{{ chirper.username }}</span>
-              <span v-if="dataVisible" style="color: #909399;margin-left: 10px">{{ getDate(new Date(chirper.createTime)) }}</span>
+              <span v-if="dataVisible" style="color: #909399;margin-left: 10px">{{
+                  getDate(new Date(chirper.createTime))
+                }}</span>
             </el-col>
             <el-col :span="8" style="text-align: right">
             </el-col>
@@ -22,7 +25,8 @@
           <el-row v-if="!straight">
             <el-row>
               <el-link :href="'/profile?id='+chirper.authorId" style="font-size: 16px;font-weight: bold">{{
-                chirper.nickname }}
+                  chirper.nickname
+                }}
               </el-link>
             </el-row>
             <el-row style="color:#909399;font-size: 12px">@{{ chirper.username }}</el-row>
