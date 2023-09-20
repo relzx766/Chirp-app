@@ -27,7 +27,8 @@
               autosize
               placeholder="发布你的回复!"
               style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-              type="textarea" @input="inputLimit()">
+              type="textarea" @input="inputLimit()"
+              @keyup.enter.native="()=>{text=text+'\u200B'}">
           </el-input>
         </div>
         <el-row style="margin-top: 20px;">

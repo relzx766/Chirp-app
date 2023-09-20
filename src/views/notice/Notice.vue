@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-row>
-        <el-col :span="14" style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
+        <el-col :span="15" style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
           <el-container>
             <el-main>
               <el-row style="text-align: left;margin-bottom: 16px">
@@ -17,7 +17,7 @@
           </el-container>
 
         </el-col>
-        <el-col :span="10">
+        <el-col :span="9">
           <el-container>
             <el-main>
               <input-card/>

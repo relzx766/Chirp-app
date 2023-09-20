@@ -53,7 +53,6 @@ import LoginCard from "@/views/sign/LoginCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
 import {getToken} from "@/util/tools";
 import {getDetail, getReply} from "@/api/chirper";
-import {getShortProfile} from "@/api/user";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
 import ReferCard from "./ReferCard.vue";
 
@@ -72,7 +71,7 @@ export default {
       currentChirper: {},
       reply: [],
       page: 1,
-      isLoading: false,
+      isLoading: true,
       isBottom: false
     }
   },
@@ -81,9 +80,11 @@ export default {
     getToken,
     getReply() {
       getReply(this.currentChirper.id, this.page).then((res) => {
-        this.combineWithUser(res.data.record).then((data => {
-          this.reply.push(...Array.from(data));
-        }));
+        Array.from(res.data.record).forEach(reply => {
+          reply.mediaKeys = JSON.parse(reply.mediaKeys);
+          this.reply.push(reply);
+        })
+
       })
     },
     loadMoreReply() {
@@ -95,8 +96,9 @@ export default {
         this.isLoading = true;
         getReply(this.currentChirper.id, this.page).then((res) => {
           if (res.data.record.length > 0) {
-            this.combineWithUser(res.data.record).then((data) => {
-              this.reply.push(...data)
+            Array.from(res.data.record).forEach(reply => {
+              reply.mediaKeys = JSON.parse(reply.mediaKeys);
+              this.reply.push(reply);
             })
           } else {
             this.isBottom = true;
@@ -111,43 +113,26 @@ export default {
       this.reply = [];
       this.page = 1;
       getDetail(id).then((res) => {
-        this.combineWithUser([res.data.record]).then((data) => {
-          this.currentChirper = data[0];
-          //进入这个界面既是浏览了该推文，因为加载在统计前，所以手动+1
-          this.currentChirper.viewCount++
-          if (this.currentChirper.replyCount > 0) {
-            this.getReply();
-          }
-        })
-      })
-    },
-    combineWithUser(chirpers = []) {
-      let authorIds = [];
-      for (let i = 0; i < chirpers.length; i++) {
-        authorIds.push(chirpers[i].authorId);
-      }
-      return getShortProfile(authorIds).then((res) => {
-        if (res.code === 200) {
-          let users = res.data.record;
-          return chirpers.map(chirper => {
-            let user = users.find(u => u.id === chirper.authorId);
-            chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
-            chirper.username = user.username;
-            chirper.nickname = user.nickname;
-            chirper.avatar = user.smallAvatarUrl;
-            return chirper;
-          });
+        this.currentChirper = res.data.record;
+        this.currentChirper.mediaKeys = JSON.parse(this.currentChirper.mediaKeys);
+        //进入这个界面既是浏览了该推文，因为加载在统计前，所以手动+1
+        this.currentChirper.viewCount++
+        if (this.currentChirper.replyCount > 0) {
+          this.getReply();
+          this.isLoading = false;
         }
-        ;
-        return {};
       })
+
     },
     doPost(chirper) {
       getDetail(chirper.id).then((res) => {
-        this.combineWithUser([res.data.record]).then((data) => {
-          chirper = data[0];
-          this.reply.unshift(chirper)
-        })
+        let chirper = res.data.record;
+        let user = this.$store.getters.getUser;
+        chirper.username = user.username;
+        chirper.nickname = user.nickname;
+        chirper.avatar = user.smallAvatarUrl;
+        this.reply.unshift(chirper);
+
       })
     }
   },

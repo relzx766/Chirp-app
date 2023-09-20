@@ -34,8 +34,11 @@
 
 ### 个人资料编辑
 
-.![](./docs/profile-edit.png)
+![](./docs/profile-edit.png)
 
 ### 通知
 
+全部<br>
 ![](./docs/notice.png)
+提及<br>
+![](./docs/mention.png)

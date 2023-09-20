@@ -20,7 +20,9 @@ export function Get({url, params = {}, data = {}}) {
     }
     return new Promise((resolve, reject) => {
         service
-            .get(url, data)
+            .get(url, {
+                params: data
+            })
             .then((res) => {
                 resolve(res.data)
             })

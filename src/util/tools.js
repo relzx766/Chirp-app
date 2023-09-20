@@ -95,4 +95,9 @@ export const bigNumberToString = (num) => {
     })
     return str;
 }
-  
+export const formatText = (text) => {
+// 查找@username
+    const regex = /@(\w+)(?=\s|$)/g;
+    return text.replace(regex, "<a href='/profile?id=$1&type=username' @click.stop style='color:#409EFF;text-decoration: none;'>@$1</a>").replace("\u200B", "</br>");
+
+}

@@ -9,7 +9,7 @@
     </el-row>
     <el-row style="text-align: left;">
       <el-card shadow="hover" style="background:none;border: none">
-        <el-row style="font-size: 14px;color: #409EFF">显示更多
+        <el-row style="font-size: 14px;color: #409EFF;cursor: pointer;">显示更多
         </el-row>
       </el-card>
     </el-row>

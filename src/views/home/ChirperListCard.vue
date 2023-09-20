@@ -26,7 +26,8 @@
           </div>
         </el-row>
         <el-row v-for="item in chirper" :key="chirper.id" style="border-bottom: 1px solid #E4E7ED;">
-          <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :value="item" style="margin-top: 8px;"/>
+          <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                      :value="item" style="margin-top: 8px;"/>
           <chirper-card
               v-else :chirper="item"
               style="margin-top: 8px;"/>
@@ -43,7 +44,6 @@
 <script>
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import {getChirperPage} from "@/api/chirper";
-import {getShortProfile} from '@/api/user';
 import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
 
@@ -95,23 +95,10 @@ export default {
     },
     async getChirper(page) {
       let chirpers = (await getChirperPage(page)).data.record;
-      if (chirpers.length > 0) {
-        let authorIds = [];
-        for (let i = 0; i < chirpers.length; i++) {
-          authorIds.push(chirpers[i].authorId);
-        }
-        let users = (await getShortProfile(authorIds)).data.record;
-        return chirpers.map(chirper => {
-          let user = users.find(u => u.id === chirper.authorId);
-          chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
-          chirper.username = user.username;
-          chirper.nickname = user.nickname;
-          chirper.avatar = user.smallAvatarUrl;
-          return chirper;
-        });
-      }
-      return Promise.resolve([]);
-
+      return chirpers.map(chirper => {
+        chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
+        return chirper;
+      });
     }
   },
   components: {

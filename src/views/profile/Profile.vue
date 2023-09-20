@@ -91,10 +91,12 @@ export default {
     init() {
       let id;
       id = this.$route.query.id ? this.$route.query.id : this.$store.getters.getUser.id;
+      let type;
+      type = this.$route.query.type ? this.$route.query.type : null;
       if (id === this.$store.getters.getUser.id) {
         this.user = this.$store.getters.getUser;
       }
-      getDetailProfile(id).then((res) => {
+      getDetailProfile(id, type).then((res) => {
         this.user = res.data.record;
         this.doChirperSelectClick();
       })
@@ -166,6 +168,15 @@ html, body {
 li {
   list-style-type: none;
   float: left;
+}
+
+::v-deep .el-tabs__active-bar {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+      90deg, transparent 0, transparent 30%,
+      #4d72f6 0, #4d72f6 70%,
+      transparent 0, transparent
+  );
 }
 
 .back-bar {

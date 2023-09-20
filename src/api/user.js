@@ -9,10 +9,11 @@ export const getShortProfile = (ids) => {
         data: data
     })
 }
-export const getDetailProfile = (id) => {
+export const getDetailProfile = (id, type) => {
     return Get({
         url: sever + "/user/profile",
-        params: {id}
+        params: {id},
+        data: {type: type}
     })
 }
 export const putProfile = (user) => {

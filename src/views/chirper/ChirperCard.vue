@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card :shadow="shadow" style="border: none;">
+    <el-card :shadow="shadow" style="border: none;padding: 4px;border-radius: 12px;">
       <el-row>
         <el-col :span="2" style="text-align: left;">
           <el-avatar :src="chirper.avatar" fit="cover" size="large" style="  cursor: pointer;"
@@ -15,7 +15,7 @@
               </el-link>
               <span
                   style="color:#909399;margin-left: 10px">@{{ chirper.username }}</span>
-              <span v-if="dataVisible" style="color: #909399;margin-left: 10px">{{
+              <span v-if="dataVisible" style="color: #909399;margin-left: 10px;font-size: 14px;">{{
                   getDate(new Date(chirper.createTime))
                 }}</span>
             </el-col>
@@ -34,11 +34,15 @@
           <el-row style="cursor: pointer;"
                   @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+chirper.id)}}">
             <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
-            >{{ chirper.text }}
-            </el-row>
+                    v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
+
             <div v-if="mediaVisible&&chirper.mediaKeys&&chirper.mediaKeys.length>0" id="media" ref="media">
               <MediaCard :media="chirper.mediaKeys"/>
             </div>
+          </el-row>
+          <el-row v-if="!straight" style="text-align: left;font-size: 14px;color: #909399;margin-top: 12px;">{{
+              getDate(new Date(chirper.createTime))
+            }}
           </el-row>
           <el-row>
             <click-bar v-if="barVisible"
@@ -53,7 +57,7 @@
 </template>
 
 <script>
-import {getDate} from "../../util/tools";
+import {formatText, getDate} from "../../util/tools";
 import ChirperClickBar from "@/views/chirper/ChirperClickBar.vue";
 
 import moment from "moment";
@@ -90,7 +94,7 @@ export default {
     }
   },
   methods: {
-    getDate,
+    getDate, formatText,
     formatDate(timestamp) {
       let date = moment(new Date(timestamp));
       let format;
@@ -134,4 +138,5 @@ li {
 /deep/ .el-card__body {
   padding: 0 !important;
 }
+
 </style>

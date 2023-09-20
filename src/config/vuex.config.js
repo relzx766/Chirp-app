@@ -36,6 +36,10 @@ const store = new Vuex.Store({
                     let messages = JSON.parse(e.data);
                     messages.forEach(item => {
                         if (item.entityType === 'CHIRPER') {
+                            item.sonEntity = JSON.parse(item.sonEntity);
+                            item.sonEntity.mediaKeys = JSON.parse(item.sonEntity.mediaKeys);
+                        }
+                        if (item.entity !== 'null') {
                             item.entity = JSON.parse(item.entity);
                             item.entity.mediaKeys = JSON.parse(item.entity.mediaKeys);
                         }
