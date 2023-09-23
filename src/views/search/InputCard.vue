@@ -5,6 +5,7 @@
         :clearable="true"
         placeholder="搜索"
         prefix-icon="el-icon-search"
+        @keyup.enter.native="$router.push('/search?keyword='+keyword)"
     >
     </el-input>
   </el-row>

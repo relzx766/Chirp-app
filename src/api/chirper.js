@@ -86,3 +86,19 @@ export const getByAuthor = (id, page) => {
         params: {id, page}
     })
 }
+export const getTrend = (page) => {
+    return Get({
+        url: sever + "/chirper/trend",
+        params: {page}
+    })
+}
+export const search = (keyword, page, isMedia) => {
+    let data = new FormData();
+    data.append("keyword", keyword);
+    data.append("page", page);
+    data.append("isMedia", isMedia);
+    return FormPost({
+        url: sever + "/chirper/search",
+        data: data
+    })
+}

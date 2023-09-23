@@ -32,12 +32,12 @@
             <el-row style="color:#909399;font-size: 12px">@{{ chirper.username }}</el-row>
           </el-row>
           <el-row style="cursor: pointer;"
-                  @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+chirper.id)}}">
+                  @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+bigNumberToString(chirper.id))}}">
             <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
                     v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
 
-            <div v-if="mediaVisible&&chirper.mediaKeys&&chirper.mediaKeys.length>0" id="media" ref="media">
-              <MediaCard :media="chirper.mediaKeys"/>
+            <div v-if="mediaVisible&&parseMedia.length>0" id="media" ref="media">
+              <MediaCard :media="parseMedia"/>
             </div>
           </el-row>
           <el-row v-if="!straight" style="text-align: left;font-size: 14px;color: #909399;margin-top: 12px;">{{
@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import {formatText, getDate} from "../../util/tools";
+import {bigNumberToString, formatText, getDate} from "../../util/tools";
 import ChirperClickBar from "@/views/chirper/ChirperClickBar.vue";
 
 import moment from "moment";
@@ -93,7 +93,16 @@ export default {
       default: true
     }
   },
+  computed: {
+    parseMedia() {
+      if ((typeof this.chirper.mediaKeys) === 'string') {
+        return JSON.parse(this.chirper.mediaKeys);
+      }
+      return this.chirper.mediaKeys;
+    }
+  },
   methods: {
+    bigNumberToString,
     getDate, formatText,
     formatDate(timestamp) {
       let date = moment(new Date(timestamp));
@@ -112,9 +121,6 @@ export default {
   },
   components: {
     'click-bar': ChirperClickBar, MediaCard
-  },
-  mounted() {
-
   }
 }
 </script>

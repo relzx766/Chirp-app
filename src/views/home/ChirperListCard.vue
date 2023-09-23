@@ -6,34 +6,33 @@
           <span style="float: left;font-weight: bold;font-size: 20px">主页</span>
         </el-row>
         <el-row>
-          <el-menu default-active="forYou" mode="horizontal"
-                   style="font-weight: bold;margin-bottom: 16px">
-            <el-menu-item index="forYou" style="width: 50%"
-                          @click="refreshPage()">
-              <span>为你推荐</span>
-            </el-menu-item>
-            <el-menu-item :disabled="!isLogin" index="following" style="width: 50%">
-              <span>正在关注</span>
-            </el-menu-item>
-          </el-menu>
-
-        </el-row>
-        <edit-card v-if="isLogin"
-                   style="border-bottom: 2px solid #EBEEF5;"/>
-        <el-row v-if="isLoading" style="text-align: center">
-          <div class="loading-box">
-            <div class="loading"/>
-          </div>
-        </el-row>
-        <el-row v-for="item in chirper" :key="chirper.id" style="border-bottom: 1px solid #E4E7ED;">
-          <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                      :value="item" style="margin-top: 8px;"/>
-          <chirper-card
-              v-else :chirper="item"
-              style="margin-top: 8px;"/>
-        </el-row>
-        <el-row>
-          <span v-if="isBottom" style="color:#909399;">到底了</span>
+          <el-tabs :stretch="true" value="forYou" @tab-click="refreshPage">
+            <el-tab-pane name="forYou">
+              <span slot="label" style="font-size: 16px;font-weight: bold;">为你推荐</span>
+              <edit-card v-if="isLogin"
+                         style="border-bottom: 2px solid #EBEEF5;"/>
+              <el-row v-if="isLoading" style="text-align: center">
+                <div class="loading-box">
+                  <div class="loading"/>
+                </div>
+              </el-row>
+              <el-row v-for="item in chirper" :key="chirper.id" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+              <el-row>
+                <span v-if="isBottom" style="color:#909399;">到底了</span>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane :disabled="!isLogin" name="following">
+              <span slot="label" style="font-size: 16px;font-weight: bold;">正在关注</span>
+              <edit-card v-if="isLogin"
+                         style="border-bottom: 2px solid #EBEEF5;"/>
+            </el-tab-pane>
+          </el-tabs>
         </el-row>
       </el-row>
     </el-main>
@@ -46,6 +45,7 @@ import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import {getChirperPage} from "@/api/chirper";
 import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
+import {getToken} from "@/util/tools";
 
 export default {
   name: "ChirperListCard",
@@ -61,6 +61,7 @@ export default {
     }
   },
   methods: {
+    getToken,
     refreshPage() {
       this.page = 1;
       this.isBottom = false;
@@ -146,5 +147,20 @@ export default {
   }
 }
 
+::v-deep .el-tabs__item {
+  color: #8d8f94;
+}
 
+::v-deep .el-tabs__item.is-active {
+  color: #303133;
+}
+
+::v-deep .el-tabs__active-bar {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+      90deg, transparent 0, transparent 36%,
+      #4d72f6 0, #4d72f6 64%,
+      transparent 0, transparent
+  );
+}
 </style>

@@ -42,3 +42,11 @@
 ![](./docs/notice.png)
 提及<br>
 ![](./docs/mention.png)
+
+### 趋势
+
+![](./docs/trend.png)
+
+### 搜索
+
+![](./docs/search.png)

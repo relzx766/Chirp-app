@@ -11,6 +11,10 @@ body::-webkit-scrollbar {
 
 }
 
+.el-textarea__inner {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

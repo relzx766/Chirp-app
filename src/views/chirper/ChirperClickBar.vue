@@ -18,7 +18,7 @@
       <li>
 
         <el-popover
-
+            popper-class="consumer-popper"
             trigger="click"
             width="auto"
         >
@@ -174,4 +174,9 @@ li {
   font-size: 20px;
 }
 
+</style>
+<style>
+.el-popover {
+  min-width: 10px !important;
+}
 </style>

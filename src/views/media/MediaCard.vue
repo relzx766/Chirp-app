@@ -4,7 +4,7 @@
 
 
     <waterfall v-else-if="category==='image'" :col="media.length>2?2:media.length" :data="media" :isTransition="false"
-               style="width: 90%;">
+               style="width: 90%;overflow: hidden">
       <el-image v-for="(item,index) in media" :key="item.name"
                 :preview-src-list="getUrls"
                 :src="item.url"

@@ -4,7 +4,7 @@ export const getCount = (num) => {
     if (num > 1000) {
         return (num / 1000).toFixed(1) + 'k';
     }
-    return num;
+    return num ? num : 0;
 }
 export const getDate = (date) => {
     let before = new Date(date);

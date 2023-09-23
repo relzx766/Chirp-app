@@ -87,4 +87,6 @@ export default {
   border: 0;
   resize: none; /* 这个是去掉 textarea 下面拉伸的那个标志，如下图 */
 }
+
+
 </style>

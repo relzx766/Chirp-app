@@ -7,6 +7,7 @@ import Chirper from "@/views/chirper/Chirper.vue";
 import Profile from "@/views/profile/Profile.vue";
 import Message from "@/views/message/Message.vue";
 import Notice from "@/views/notice/Notice.vue";
+import Search from "@/views/search/Search.vue";
 
 Vue.use(VueRouter)
 
@@ -42,6 +43,10 @@ const routes = [
             {
                 path: '/notice',
                 component: Notice
+            },
+            {
+                path: '/search',
+                component: Search
             }
         ]
     },

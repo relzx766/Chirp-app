@@ -39,3 +39,9 @@ export const unFollow = (id) => {
         }
     })
 }
+export const search = (keyword, page) => {
+    return Get({
+        url: `${sever}/user/search/${page}`,
+        data: {keyword}
+    })
+}
