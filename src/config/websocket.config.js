@@ -26,6 +26,10 @@ class websocketLink {
         }
     }
 
+    close() {
+        this.socket && this.socket.close();
+    }
+
     doReconnect() {
         if (!this.reconnectLock && this.reconnectTimes <= this.reconnectLimit) {
             setTimeout(() => {

@@ -86,10 +86,11 @@ export const getByAuthor = (id, page) => {
         params: {id, page}
     })
 }
-export const getTrend = (page) => {
+export const getTrend = (page, type) => {
     return Get({
         url: sever + "/chirper/trend",
-        params: {page}
+        params: {page},
+        data: {type}
     })
 }
 export const search = (keyword, page, isMedia) => {

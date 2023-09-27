@@ -47,7 +47,7 @@ export default {
     loadTrend() {
       this.isLoading = true;
       if (!this.isBottom) {
-        getTrend(this.page).then(res => {
+        getTrend(this.page, "hot").then(res => {
           if (Object.keys(res.data.record).length > 0) {
             this.trend = Object.assign(this.trend, res.data.record);
             this.page++;

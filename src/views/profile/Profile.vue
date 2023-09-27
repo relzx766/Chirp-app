@@ -19,11 +19,13 @@
             <el-tabs v-model="activeName" :stretch="true" @tab-click="doChirperSelectClick">
               <el-tab-pane name="chirper">
                 <span slot="label" style="font-size: 16px;font-weight: bold">推文</span>
-                <div id="chirper" style="padding: 6px">
-                  <chirper-card v-for="item in chirpers" :chirper="item" shadow="hover"
-                                style="border-bottom: 1px solid #E4E7ED;"
-                                type="list"/>
-                </div>
+                <el-row v-for="item in chirpers" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
+                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                              :value="item" style="margin-top: 8px;"/>
+                  <chirper-card
+                      v-else :chirper="item"
+                      style="margin-top: 8px;"/>
+                </el-row>
               </el-tab-pane>
               <el-tab-pane name="reply"><span slot="label" style="font-size: 16px;font-weight: bold">回复</span>
               </el-tab-pane>
@@ -60,17 +62,19 @@
 
 <script>
 import ProfileCard from "@/views/profile/ProfileCard.vue";
-import {getDetailProfile, getShortProfile} from "@/api/user";
+import {getDetailProfile} from "@/api/user";
 import {getToken} from "@/util/tools";
 import {getByAuthor} from "@/api/chirper";
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
 import TrendListCard from "@/views/explore/TrendListCard.vue";
+import ReferCard from "@/views/chirper/ReferCard.vue";
 
 export default {
   name: "Profile",
   components: {
+    'refer-card': ReferCard,
     'profile-card': ProfileCard,
     'chirper-card': ChirperCard,
     'input-card': InputCard,
@@ -108,41 +112,15 @@ export default {
       if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom) {
         this.page++;
         getByAuthor(this.user.id, this.page).then((res) => {
-          this.combineWithUser(res.data.record).then((data) => {
-            this.isBottom = data.length <= 0;
-            this.chirpers.push(...data);
-          })
+          this.chirpers.push(...res.data.record)
         })
       }
     },
     doChirperSelectClick() {
       this.page = 1;
       getByAuthor(this.user.id, this.page).then((res) => {
-        this.combineWithUser(res.data.record).then((data) => {
-          this.chirpers = data;
-        })
+        this.chirpers = res.data.record;
       })
-    },
-    combineWithUser(chirpers = []) {
-      if (chirpers.length > 0) {
-        let authorIds = [];
-        for (let i = 0; i < chirpers.length; i++) {
-          authorIds.push(chirpers[i].authorId);
-        }
-        return getShortProfile(authorIds).then((res) => {
-          let users = res.data.record;
-          return chirpers.map(chirper => {
-            let user = users.find(u => u.id === chirper.authorId);
-            chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
-            chirper.username = user.username;
-            chirper.nickname = user.nickname;
-            chirper.avatar = user.smallAvatarUrl;
-            return chirper;
-          });
-        })
-      }
-      return Promise.resolve([]);
-
     },
   },
   watch: {

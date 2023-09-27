@@ -43,14 +43,8 @@
             <span slot="title">个人资料</span>
           </el-menu-item>
         </el-menu>
-
-        <el-button
-            round
-            style="width: 60%;height: 50px;font-size: 16px;font-weight: bold;
-           text-align: center;margin-left: 18%;margin-top: 14%" type="primary">发帖
-        </el-button>
         <el-row v-if="getToken()!=null&&getToken().length>0"
-                style="margin-left: 30%;margin-top: 40%">
+                style="margin-left: 30%;margin-top: 70%">
           <el-col :span="5" style="text-align: left">
             <el-avatar :src="$store.getters.getUser.smallAvatarUrl" fit="cover" size="large"/>
           </el-col>
@@ -79,9 +73,13 @@
 
 import {getToken} from "@/util/tools";
 import {getDetailProfile} from "@/api/user";
+import OriginCard from "@/views/edit/OriginCard.vue";
 
 export default {
   name: "Index",
+  components: {
+    OriginCard
+  },
   data() {
     return {}
   },
@@ -91,6 +89,7 @@ export default {
       this.$router.push(url)
     },
     signOut() {
+      this.$store.commit("websocketClose")
       localStorage.clear();
       this.$store.commit("setUser", {});
       window.location.href = "/home";

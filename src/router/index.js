@@ -8,6 +8,7 @@ import Profile from "@/views/profile/Profile.vue";
 import Message from "@/views/message/Message.vue";
 import Notice from "@/views/notice/Notice.vue";
 import Search from "@/views/search/Search.vue";
+import Explore from "@/views/explore/Explore.vue";
 
 Vue.use(VueRouter)
 
@@ -47,6 +48,10 @@ const routes = [
             {
                 path: '/search',
                 component: Search
+            },
+            {
+                path: '/explore',
+                component: Explore
             }
         ]
     },

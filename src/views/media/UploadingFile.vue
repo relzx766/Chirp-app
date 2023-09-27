@@ -6,7 +6,7 @@
               fit="cover"
               style="border-radius: 20px;margin-bottom: 0"/>
 
-    <div v-else-if="type==='video'||type==='application'">
+    <div v-else-if="type==='video'||type==='application'" style="padding: 4px">
       <video-player :url="fileUrl"/>
     </div>
 
@@ -136,7 +136,7 @@ export default {
 
 .progress-bar {
   margin-left: 20px;
-
+  margin-top: -4px;
   max-width: calc(100% - 40px);
   height: 2px;
   z-index: 999

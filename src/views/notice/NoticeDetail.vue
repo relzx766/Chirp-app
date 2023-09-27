@@ -19,10 +19,11 @@
       <el-row style="font-size: 14px;">
         <span style="font-weight: bold;">{{ name }}</span>
         <span v-if="urls.length>1">等{{ urls.length }}人</span>
-        <span>{{ getEvent }}了</span>
+        <span>{{ getEvent }}了你的</span>
+        <span>{{ chirperTypeConvert }}</span>
       </el-row>
       <el-row
-          style="padding: 10px;zoom: 0.92;border-radius: 12px;border: 1px solid #EBEEF5;padding: 8px;margin-top: 8px;margin-bottom: 8px;">
+          style="zoom: 0.92;border-radius: 12px;border: 1px solid #EBEEF5;margin-top: 8px;margin-bottom: 8px;">
         <chirper-card :bar-visible="false" :chirper="sonEntity" :data-visible="false"/>
       </el-row>
     </el-col>
@@ -88,6 +89,24 @@ export default {
           break;
       }
       return event;
+    },
+    chirperTypeConvert() {
+      let item;
+      switch (this.sonEntity.type) {
+        case "ORIGIN":
+          item = "推文";
+          break;
+        case "REPLY":
+          item = "回复";
+          break;
+        case "QUOTE":
+          item = "引用";
+          break;
+        default:
+          item = "推文";
+          break;
+      }
+      return item;
     }
   },
   created() {

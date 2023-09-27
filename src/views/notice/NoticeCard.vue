@@ -44,7 +44,7 @@
 </template>
 
 <script>
-import {bigNumberToString, getMessageDate, getNewMsgCount} from "../../util/tools";
+import {getMessageDate, getNewMsgCount} from "../../util/tools";
 import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
 
@@ -66,48 +66,17 @@ export default {
   watch: {
     '$store.state.msgCount': {
       handler() {
-        let messages = this.$store.getters.getMessage;
-        if (messages && messages.length > 0) {
-
-
-          //根据推文或接收者id分类
-          let classifyById = messages.reduce((arr, item) => {
-            let id;
-            id = item.entityType === 'CHIRPER' ? id = item.sonEntity.id : id = item.receiverId;
-            id = bigNumberToString(id);
-            //只要有一个被确定为mention
-            this.mentionEmpty = !this.mentionEmpty ? false : item.event !== 'MENTIONED';
-            console.log(this.mentionEmpty);
-            if (arr[id]) {
-              arr[id].push(item);
-            } else {
-              arr[id] = [item];
-            }
-            return arr;
-          }, {});
-          let classifyByEvent = {};
-          Object.keys(classifyById).forEach(key => {
-            let eventMap = classifyById[key].reduce((arr, item) => {
-              let event = item.event;
-              if (arr[event]) {
-                arr[event].push(item);
-              } else {
-                arr[event] = [item];
-              }
-              return arr;
-            }, []);
-            classifyByEvent[key] = eventMap;
-          });
+        let messages = structuredClone(this.$store.getters.getMessage);
+        if (messages && Object.entries(messages).length > 0) {
           this.notifications = [];
-          Object.values(classifyByEvent).forEach(classify => {
+          Object.values(messages).forEach(classify => {
+            this.mentionEmpty = !this.mentionEmpty ? false : Object.keys(classify)[0] !== 'MENTIONED';
             Object.values(classify).forEach(messageArr => {
               this.notifications.push(messageArr);
             })
           });
-          this.notifications.sort((last, next) => {
-            let message1 = last[last.length - 1];
-            let message2 = next[next.length - 1];
-            return Date.parse(message2.createTime) - Date.parse(message1.createTime);
+          this.notifications.sort((a, b) => {
+            return Date.parse(b[0].createTime) - Date.parse(a[0].createTime);
           })
         }
       },

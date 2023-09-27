@@ -16,7 +16,7 @@
                   <div class="loading"/>
                 </div>
               </el-row>
-              <el-row v-for="item in chirper" :key="chirper.id" style="border-bottom: 1px solid #E4E7ED;">
+              <el-row v-for="item in chirper" :key="item.createTime" style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                             :value="item" style="margin-top: 8px;"/>
                 <chirper-card
