@@ -16,7 +16,7 @@
               <span
                   style="color:#909399;margin-left: 10px">@{{ chirper.username }}</span>
               <span v-if="dataVisible" style="color: #909399;margin-left: 10px;font-size: 14px;">{{
-                  getDate(new Date(chirper.createTime))
+                  yMdHm(new Date(chirper.createTime))
                 }}</span>
             </el-col>
             <el-col :span="8" style="text-align: right">
@@ -32,7 +32,7 @@
             <el-row style="color:#909399;font-size: 12px">@{{ chirper.username }}</el-row>
           </el-row>
           <el-row style="cursor: pointer;"
-                  @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+bigNumberToString(chirper.id))}}">
+                  @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+chirper.id)}}">
             <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
                     v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
 
@@ -41,7 +41,7 @@
             </div>
           </el-row>
           <el-row v-if="!straight" style="text-align: left;font-size: 14px;color: #909399;margin-top: 12px;">{{
-              getDate(new Date(chirper.createTime))
+              yMdHm(new Date(chirper.createTime))
             }}
           </el-row>
           <el-row>
@@ -62,6 +62,7 @@ import ChirperClickBar from "@/views/chirper/ChirperClickBar.vue";
 
 import moment from "moment";
 import MediaCard from "@/views/media/MediaCard.vue";
+import {yMdHm} from "../../util/formatter";
 
 export default {
   name: "ChirperCard",
@@ -102,6 +103,7 @@ export default {
     }
   },
   methods: {
+    yMdHm,
     bigNumberToString,
     getDate, formatText,
     formatDate(timestamp) {

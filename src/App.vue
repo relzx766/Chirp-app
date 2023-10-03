@@ -5,11 +5,7 @@
 </template>
 
 <style>
-body::-webkit-scrollbar {
 
-  display: none
-
-}
 
 .el-textarea__inner {
   font-family: Arial, Helvetica, sans-serif !important;

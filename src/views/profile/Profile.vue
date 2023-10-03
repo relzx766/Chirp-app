@@ -19,7 +19,7 @@
             <el-tabs v-model="activeName" :stretch="true" @tab-click="doChirperSelectClick">
               <el-tab-pane name="chirper">
                 <span slot="label" style="font-size: 16px;font-weight: bold">推文</span>
-                <el-row v-for="item in chirpers" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
+                <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
                   <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                               :value="item" style="margin-top: 8px;"/>
                   <chirper-card
@@ -112,7 +112,8 @@ export default {
       if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom) {
         this.page++;
         getByAuthor(this.user.id, this.page).then((res) => {
-          this.chirpers.push(...res.data.record)
+          this.isBottom = Array.from(res.data.record).length <= 0
+          this.chirpers.push(...Array.from(res.data.record))
         })
       }
     },

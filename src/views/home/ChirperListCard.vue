@@ -31,7 +31,7 @@
               <span slot="label" style="font-size: 16px;font-weight: bold;">正在关注</span>
               <el-button v-if="updateAdvice.visible" class="btn-advice-update" icon="el-icon-top" round type="primary"
                          @click="toFollowingTop">
-                最新{{ updateAdvice.record.length }}条推文
+                查看最新推文
               </el-button>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
@@ -105,20 +105,22 @@ export default {
     bigNumberToString,
     getToken,
     refreshPage() {
-      this.following.page = 1;
-      this.following.isBottom = false;
-      this.following.isLoading = true;
-      this.following.chirper = [];
-      getPage(this.following.page).then(res => {
-        this.following.isBottom = res.data.record.length <= 0;
-        let ids = res.data.record.map(feed => feed.contentId);
-        if (ids.length > 0) {
-          getByIds(ids).then(r => {
-            this.following.chirper.push(...r.data.record);
-            this.following.isLoading = false;
-          })
-        }
-      });
+      if (getToken() != null) {
+        this.following.page = 1;
+        this.following.isBottom = false;
+        this.following.isLoading = true;
+        this.following.chirper = [];
+        getPage(this.following.page).then(res => {
+          this.following.isBottom = res.data.record.length <= 0;
+          let ids = res.data.record.map(feed => feed.contentId);
+          if (ids.length > 0) {
+            getByIds(ids).then(r => {
+              this.following.chirper.push(...r.data.record);
+              this.following.isLoading = false;
+            })
+          }
+        });
+      }
       this.recommend.page = 1;
       this.recommend.isBottom = false
       this.recommend.isLoading = true;
@@ -163,6 +165,7 @@ export default {
     },
     toFollowingTop() {
       this.updateAdvice.visible = false;
+      this.updateAdvice.record = [];
       document.documentElement.scrollTop = 0;
       getPage(1).then(res => {
         let ids = res.data.record.map(feed => feed.contentId)
@@ -189,8 +192,7 @@ export default {
           }
           this.updateAdvice.visible = true;
         }
-      },
-      immediate: true
+      }
     }
   },
   created() {

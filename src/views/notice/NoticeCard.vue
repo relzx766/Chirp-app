@@ -4,12 +4,13 @@
       <el-tab-pane name="all">
         <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
         <el-row v-for="item in notifications" style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
-          <notice-detail v-if="item[0].entity==='null'" :date="item[0].createTime"
+
+          <notice-detail v-if="item[0].entity===null||item[0].entity==='null'" :date="item[0].createTime"
                          :name="item[0].senderName"
                          :sonEntity="item[0].sonEntity"
                          :type="item[0].event"
                          :urls="[item.map((i) => i.senderAvatar)][0]"/>
-          <notice-detail v-for="i in item" v-if="item[0].entity!=='null'"
+          <notice-detail v-for="i in item" v-else-if="item[0].entity!==null||item[0].entity!=='null'"
                          :date="i.createTime"
                          :entity="i.entity"
                          :name="i.senderName"

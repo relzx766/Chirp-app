@@ -5,6 +5,7 @@
       <i v-if="type==='QUOTE'" class="el-icon-edit" style="color: #fdd835;font-size: 30px;"/>
       <i v-if="type==='LIKE'" class="el-icon-star-on" style="color:#F56C6C;font-size: 30px"/>
       <i v-if="type==='FORWARD'" class="el-icon-connection" style="color:#67C23A;font-size: 30px"/>
+      <i v-if="type==='FOLLOW'" class="el-icon-user-solid" style="color: #409EFF;font-size: 30px "/>
     </el-col>
     <el-col v-if="!entity&&type!=='MENTIONED'" :span="22" style="text-align: left;">
       <el-row>
@@ -13,17 +14,18 @@
                      style="margin-right: 4px;"></el-avatar>
         </el-col>
         <el-col :span="4" style="text-align: right;">
-          <span style="font-size: 12px;color: #909399;">{{ getDate(new Date(date)) }}</span>
+          <span style="font-size: 12px;color: #909399;">{{ yearMonthDay(new Date(date)) }}</span>
         </el-col>
       </el-row>
-      <el-row style="font-size: 14px;">
+      <el-row style="font-size: 14px;margin-bottom: 8px">
         <span style="font-weight: bold;">{{ name }}</span>
         <span v-if="urls.length>1">等{{ urls.length }}人</span>
-        <span>{{ getEvent }}了你的</span>
-        <span>{{ chirperTypeConvert }}</span>
+        <span>{{ getEvent }}了</span>
+        <span v-if="sonEntity">{{ chirperTypeConvert }}</span>
+        <span v-if="type==='FOLLOW'">你</span>
       </el-row>
-      <el-row
-          style="zoom: 0.92;border-radius: 12px;border: 1px solid #EBEEF5;margin-top: 8px;margin-bottom: 8px;">
+      <el-row v-if="sonEntity"
+              style="zoom: 0.92;border-radius: 12px;border: 1px solid #EBEEF5;margin-bottom: 8px;">
         <chirper-card :bar-visible="false" :chirper="sonEntity" :data-visible="false"/>
       </el-row>
     </el-col>
@@ -41,6 +43,7 @@
 import {getDate} from '@/util/tools';
 import ChirperCard from '../chirper/ChirperCard.vue';
 import ReferCard from '../chirper/ReferCard.vue';
+import {yearMonthDay} from "../../util/formatter";
 
 
 export default {
@@ -55,10 +58,10 @@ export default {
     name: '',
     entity: {},
     sonEntity: {},
-    chirper: {},
     date: ""
   },
   methods: {
+    yearMonthDay,
     getDate
   },
   computed: {
@@ -110,6 +113,9 @@ export default {
     }
   },
   created() {
+    if (this.type === 'FOLLOW') {
+      console.log(this.urls)
+    }
   }
 }
 </script>

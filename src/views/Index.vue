@@ -51,7 +51,9 @@
           <el-col :span="12" style="text-align: left">
             <el-row>
               <el-row>
-                <el-link style="font-size: 16px;font-weight: bold">{{ $store.getters.getUser.nickname }}</el-link>
+                <el-link :href="'/profile?id='+$store.getters.getUser.id" style="font-size: 16px;font-weight: bold">
+                  {{ $store.getters.getUser.nickname }}
+                </el-link>
               </el-row>
               <el-row style="color:#909399;">@{{ $store.getters.getUser.username }}</el-row>
             </el-row>

@@ -33,6 +33,7 @@ const store = new Vuex.Store({
             return state.notice.record;
         },
         popFollowingUpdate: state => {
+            console.log(structuredClone(state.followingUpdate.record))
             return state.followingUpdate.record.splice(0, state.followingUpdate.record.length);
         }
     },
@@ -49,7 +50,7 @@ const store = new Vuex.Store({
                         if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
                             if (item.event === 'TWEETED') {
                                 state.followingUpdate.record.unshift(item);
-                                state.followingUpdate.count++;
+                                state.followingUpdate.count += 1;
                             } else {
                                 if (item.entityType === 'CHIRPER') {
                                     item.sonEntity = JSON.parse(item.sonEntity);
@@ -77,17 +78,20 @@ const store = new Vuex.Store({
                                     } else {
                                         state.notice.record[item.sonEntity.id][item.event].unshift(item);
                                     }
-                                } else {
-                                    if (!state.notice.record[item.event]) {
-                                        state.notice.record[item.event] = [];
+                                } else if (item.event === 'FOLLOW') {
+                                    if (!state.notice.record[item.receiverId]) {
+                                        state.notice.record[item.receiverId] = {}
+                                        if (!state.notice.record[item.receiverId][item.event]) {
+                                            state.notice.record[item.receiverId][item.event] = [];
+                                        }
                                     }
                                     if (messages.length > 1) {
-                                        state.notice.record[item.event].push(item);
+                                        state.notice.record[item.receiverId][item.event].push(item);
                                     } else {
-                                        state.notice.record[item.event].unshift(item);
+                                        state.notice.record[item.receiverId][item.event].unshift(item);
                                     }
                                 }
-                                state.notice.count++;
+                                state.notice.count += 1;
                             }
                         }
                     });

@@ -88,9 +88,10 @@ service.interceptors.response.use(
         // 如果返回的状态码为200，说明接口请求成功，可以正常拿到数据
         // 否则的话抛出错误
         if (response.status === 200) {
-
             return Promise.resolve(response);
 
+        } else if (response.status === 401 || response.data.code === 401) {
+            window.location.href = "/home"
         } else {
             return Promise.reject(response)
         }

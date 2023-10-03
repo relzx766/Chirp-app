@@ -2,8 +2,8 @@
   <el-row>
     <ul>
       <li style="margin-left: -10%;">
-        <el-button circle class="btn-interact" icon="el-icon-chat-square" size="medium"
-                   @click.stop="replyDialog=true"></el-button>
+        <el-button :disabled="getToken()===null" circle class="btn-interact" icon="el-icon-chat-square"
+                   size="medium" @click.stop="replyDialog=true"></el-button>
         <el-dialog
             :modal="false"
             :show-close="false"
@@ -48,17 +48,19 @@
               </el-row>
             </el-dialog>
           </el-row>
-          <el-button slot="reference" :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }"
-                     circle class="btn-interact" icon="el-icon-connection"
+          <el-button slot="reference" :disabled="getToken()===null"
+                     :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }" circle class="btn-interact"
+                     icon="el-icon-connection"
                      size="medium"></el-button>
         </el-popover>
         <span class="num">{{ getCount(chirper.forwardCount + chirper.quoteCount) }}</span>
 
       </li>
       <li :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }">
-        <el-button :icon="chirper.isLike?'el-icon-star-on':'el-icon-star-off'"
-                   :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }"
-                   circle class="btn-interact" size="medium"
+        <el-button :disabled="getToken()===null"
+                   :icon="chirper.isLike?'el-icon-star-on':'el-icon-star-off'"
+                   :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }" circle class="btn-interact"
+                   size="medium"
                    @click.stop="doLike()"></el-button>
         <span class="num"> {{ getCount(chirper.likeCount) }} </span></li>
       <li>
@@ -73,7 +75,7 @@
 </template>
 
 <script>
-import {getCount} from "../../util/tools";
+import {getCount, getToken} from "../../util/tools";
 import {cancelForward, cancelLike, doLike, forwardChirper} from "@/api/chirper";
 import QuoteCard from "@/views/edit/QuoteCard.vue";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
@@ -85,7 +87,6 @@ export default {
     'reply-card': ReplyCard
   },
   props: {
-
     value: {}
   },
   data() {
@@ -106,6 +107,7 @@ export default {
     }
   },
   methods: {
+    getToken,
     getCount,
     doLike() {
       if (!this.chirper.isLike) {
