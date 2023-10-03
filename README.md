@@ -8,6 +8,8 @@
 目前并没有实现oauth2
 
 ![](./docs/sign.png)
+### 关注推送
+![](docs/home_following.png)
 
 ### 编辑
 
