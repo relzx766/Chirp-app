@@ -10,7 +10,15 @@ const store = new Vuex.Store({
     state: {
         ws: null,
         message: {},
-        appendMessage: {},
+        notice: {
+            record: {},
+            isInit: false,
+            count: 0
+        },
+        followingUpdate: {
+            record: [],
+            count: 0
+        },
         msgCount: 0,
         user: {}
     },
@@ -20,6 +28,12 @@ const store = new Vuex.Store({
         },
         getUser: state => {
             return state.user;
+        },
+        getNotice: state => {
+            return state.notice.record;
+        },
+        popFollowingUpdate: state => {
+            return state.followingUpdate.record.splice(0, state.followingUpdate.record.length);
         }
     },
     mutations: {
@@ -32,38 +46,52 @@ const store = new Vuex.Store({
                 onmessage: e => {
                     let messages = JSON.parse(e.data);
                     messages.forEach(item => {
-                        if (item.entityType === 'CHIRPER') {
-                            item.sonEntity = JSON.parse(item.sonEntity);
-                            item.sonEntity.mediaKeys = JSON.parse(item.sonEntity.mediaKeys);
-                            if (item.entity !== 'null') {
-                                item.entity = JSON.parse(item.entity);
-                                item.entity.mediaKeys = JSON.parse(item.entity.mediaKeys);
-                            }
-                            //按照[推文id][事件]分类
-                            if (!state.message[item.sonEntity.id]) {
-                                state.message[item.sonEntity.id] = {};
-                            }
-                            if (!state.message[item.sonEntity.id][item.event]) {
-                                state.message[item.sonEntity.id][item.event] = []
-                            }
-                            //消息本身已是按时间排序，所以多条时使用push，才不会打乱
-                            if (messages.length > 1) {
-                                state.message[item.sonEntity.id][item.event].push(item);
+                        if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
+                            if (item.event === 'TWEETED') {
+                                state.followingUpdate.record.unshift(item);
+                                state.followingUpdate.count++;
                             } else {
-                                state.message[item.sonEntity.id][item.event].unshift(item);
-                            }
-                        } else {
-                            if (!state.message[item.event]) {
-                                state.message[item.event] = [];
-                            }
-                            if (messages.length > 1) {
-                                state.message[item.event].push(item);
-                            } else {
-                                state.message[item.event].unshift(item);
+                                if (item.entityType === 'CHIRPER') {
+                                    item.sonEntity = JSON.parse(item.sonEntity);
+                                    item.sonEntity.mediaKeys = JSON.parse(item.sonEntity.mediaKeys);
+                                    if (item.entity !== 'null') {
+                                        item.entity = JSON.parse(item.entity);
+                                        item.entity.mediaKeys = JSON.parse(item.entity.mediaKeys);
+                                    }
+                                    //按照[推文id][事件]分类
+                                    if (!state.notice.isInit) {
+                                        if (!state.notice.record[item.sonEntity.id]) {
+                                            state.notice.record[item.sonEntity.id] = {};
+                                        }
+                                    } else {
+                                        let obj = {};
+                                        obj[item.sonEntity.id] = {};
+                                        state.notice.record = Object.assign(obj, state.notice.record);
+                                    }
+                                    if (!state.notice.record[item.sonEntity.id][item.event]) {
+                                        state.notice.record[item.sonEntity.id][item.event] = []
+                                    }
+                                    //消息本身已是按时间排序，所以多条时使用push，才不会打乱
+                                    if (messages.length > 1) {
+                                        state.notice.record[item.sonEntity.id][item.event].push(item);
+                                    } else {
+                                        state.notice.record[item.sonEntity.id][item.event].unshift(item);
+                                    }
+                                } else {
+                                    if (!state.notice.record[item.event]) {
+                                        state.notice.record[item.event] = [];
+                                    }
+                                    if (messages.length > 1) {
+                                        state.notice.record[item.event].push(item);
+                                    } else {
+                                        state.notice.record[item.event].unshift(item);
+                                    }
+                                }
+                                state.notice.count++;
                             }
                         }
-                        state.msgCount++;
                     });
+                    state.notice.isInit = true;
                 },
                 onerror: err => {
                     console.log("websocket连接出错\n", err);

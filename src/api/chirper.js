@@ -7,6 +7,14 @@ export const getDetail = (id) => {
         params: {id}
     })
 }
+export const getByIds = (ids) => {
+    let data = new FormData();
+    data.append("ids", ids)
+    return FormPost({
+        url: `${sever}/chirper/page/id`,
+        data: data
+    })
+}
 export const getChirperPage = (page) => {
     return Get({
         url: sever + "/chirper/page",

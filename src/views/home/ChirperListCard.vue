@@ -6,17 +6,17 @@
           <span style="float: left;font-weight: bold;font-size: 20px">主页</span>
         </el-row>
         <el-row>
-          <el-tabs :stretch="true" value="forYou" @tab-click="refreshPage">
-            <el-tab-pane name="forYou">
+          <el-tabs v-model="active" :stretch="true">
+            <el-tab-pane name="recommend">
               <span slot="label" style="font-size: 16px;font-weight: bold;">为你推荐</span>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
-              <el-row v-if="isLoading" style="text-align: center">
+              <el-row v-if="recommend.isLoading" style="text-align: center">
                 <div class="loading-box">
                   <div class="loading"/>
                 </div>
               </el-row>
-              <el-row v-for="item in chirper" :key="item.createTime" style="border-bottom: 1px solid #E4E7ED;">
+              <el-row v-for="item in recommend.chirper" style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                             :value="item" style="margin-top: 8px;"/>
                 <chirper-card
@@ -24,13 +24,32 @@
                     style="margin-top: 8px;"/>
               </el-row>
               <el-row>
-                <span v-if="isBottom" style="color:#909399;">到底了</span>
+                <span v-if="recommend.isBottom" style="color:#909399;">到底了</span>
               </el-row>
             </el-tab-pane>
             <el-tab-pane :disabled="!isLogin" name="following">
               <span slot="label" style="font-size: 16px;font-weight: bold;">正在关注</span>
+              <el-button v-if="updateAdvice.visible" class="btn-advice-update" icon="el-icon-top" round type="primary"
+                         @click="toFollowingTop">
+                最新{{ updateAdvice.record.length }}条推文
+              </el-button>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
+              <el-row v-if="following.isLoading" style="text-align: center">
+                <div class="loading-box">
+                  <div class="loading"/>
+                </div>
+              </el-row>
+              <el-row v-for="item in following.chirper" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+              <el-row>
+                <span v-if="following.isBottom" style="color:#909399;">已没有更多</span>
+              </el-row>
             </el-tab-pane>
           </el-tabs>
         </el-row>
@@ -42,10 +61,11 @@
 
 <script>
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
-import {getChirperPage} from "@/api/chirper";
+import {getByIds, getChirperPage} from "@/api/chirper";
 import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
-import {getToken} from "@/util/tools";
+import {bigNumberToString, getToken} from "@/util/tools";
+import {getPage} from "@/api/feed";
 
 export default {
   name: "ChirperListCard",
@@ -54,58 +74,124 @@ export default {
   },
   data() {
     return {
+      active: "recommend",
       chirper: [],
+      recommend: {
+        chirper: [],
+        isLoading: false,
+        isBottom: false,
+        page: 1
+      },
+      following: {
+        chirper: [],
+        isLoading: false,
+        isBottom: false,
+        page: 1,
+        updateAdvice: {
+          record: [],
+          visible: true
+        }
+      },
       page: 1,
       isLoading: false,
-      isBottom: false
+      isBottom: false,
+      updateAdvice: {
+        record: [],
+        visible: false
+      }
     }
   },
   methods: {
+    bigNumberToString,
     getToken,
     refreshPage() {
-      this.page = 1;
-      this.isBottom = false;
-      this.isLoading = true;
-      let startTime = Date.now();
-      this.getChirper(1).then((record) => {
-        let loadTime = Date.now() - startTime;
-        if (loadTime < 1000) {
-          setTimeout(() => {
-            this.chirper = record;
-            this.isLoading = false;
-          }, 1000 - loadTime);
-        } else {
-          this.chirper = record;
-          this.isLoading = false;
+      this.following.page = 1;
+      this.following.isBottom = false;
+      this.following.isLoading = true;
+      this.following.chirper = [];
+      getPage(this.following.page).then(res => {
+        this.following.isBottom = res.data.record.length <= 0;
+        let ids = res.data.record.map(feed => feed.contentId);
+        if (ids.length > 0) {
+          getByIds(ids).then(r => {
+            this.following.chirper.push(...r.data.record);
+            this.following.isLoading = false;
+          })
         }
+      });
+      this.recommend.page = 1;
+      this.recommend.isBottom = false
+      this.recommend.isLoading = true;
+      this.recommend.chirper = [];
+      getChirperPage(this.recommend.page).then(res => {
+        this.recommend.chirper.push(...res.data.record);
+        this.recommend.isBottom = res.data.record.length <= 0;
+        this.recommend.isLoading = false;
       })
     },
     loadPage() {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const clientHeight = document.documentElement.clientHeight
       const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
-        this.page++;
-        this.isLoading = true;
-        this.getChirper(this.page).then((data) => {
-          this.isBottom = data.length <= 0;
-          this.chirper.push(...data);
-          this.isLoading = false;
-        })
+      if (scrollTop + clientHeight + 10 >= scrollHeight) {
+        if (this.active === 'following' && !this.following.isBottom && !this.following.isLoading) {
+          this.following.page++;
+          this.following.isLoading = true;
+          //当feed流更新后，这种方式获取会导致重复
+          getPage(this.following.page).then(res => {
+            this.following.isBottom = res.data.record.length <= 0;
+            let ids = res.data.record.map(feed => feed.contentId)
+            if (ids.length > 0) {
+              getByIds(ids).then(r => {
+                this.following.chirper.push(...r.data.record);
+                this.following.isLoading = false
+              })
+            } else {
+              this.following.isLoading = false;
+            }
+          })
+        } else if (this.active === 'recommend' && !this.recommend.isLoading && !this.recommend.isBottom) {
+          this.recommend.page++;
+          this.recommend.isLoading = true;
+          getChirperPage(this.recommend.page).then(res => {
+            this.recommend.chirper.push(...res.data.record);
+            this.recommend.isBottom = res.data.record.length <= 0;
+            this.recommend.isLoading = false;
+          })
+        }
       }
     },
-    async getChirper(page) {
-      let chirpers = (await getChirperPage(page)).data.record;
-      return chirpers.map(chirper => {
-        chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
-        return chirper;
-      });
+    toFollowingTop() {
+      this.updateAdvice.visible = false;
+      document.documentElement.scrollTop = 0;
+      getPage(1).then(res => {
+        let ids = res.data.record.map(feed => feed.contentId)
+        getByIds(ids).then(r => {
+          this.following.chirper.unshift(...r.data.record)
+        })
+      })
     }
   },
   components: {
     'edit-card': OriginCard,
     'chirper-card': ChirperCard,
     'refer-card': ReferCard
+  },
+  watch: {
+    '$store.state.followingUpdate.count': {
+      handler() {
+        let record = this.$store.getters.popFollowingUpdate;
+        if (record.length > 0) {
+          if (this.updateAdvice.visible) {
+            this.updateAdvice.record.unshift(record);
+          } else {
+            this.updateAdvice.record = record;
+          }
+          this.updateAdvice.visible = true;
+        }
+      },
+      immediate: true
+    }
   },
   created() {
     this.refreshPage();
@@ -118,6 +204,13 @@ export default {
 </script>
 
 <style scoped>
+.btn-advice-update {
+  position: fixed;
+  z-index: 999;
+  width: 150px;
+  left: calc(50% - 110px);
+}
+
 .loading {
   display: inline-flex;
   width: 16px;
@@ -163,4 +256,5 @@ export default {
       transparent 0, transparent
   );
 }
+
 </style>

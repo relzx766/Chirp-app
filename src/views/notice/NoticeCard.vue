@@ -64,9 +64,9 @@ export default {
     getNewMsgCount, getMessageDate
   },
   watch: {
-    '$store.state.msgCount': {
+    '$store.state.notice.count': {
       handler() {
-        let messages = structuredClone(this.$store.getters.getMessage);
+        let messages = structuredClone(this.$store.getters.getNotice);
         if (messages && Object.entries(messages).length > 0) {
           this.notifications = [];
           Object.values(messages).forEach(classify => {
@@ -75,9 +75,6 @@ export default {
               this.notifications.push(messageArr);
             })
           });
-          this.notifications.sort((a, b) => {
-            return Date.parse(b[0].createTime) - Date.parse(a[0].createTime);
-          })
         }
       },
       immediate: true
