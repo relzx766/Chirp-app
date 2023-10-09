@@ -6,6 +6,9 @@ import 'element-ui/lib/theme-chalk/index.css';
 import jsonBig from 'json-bigint'
 import store from "@/config/vuex.config";
 import waterfall from 'vue-waterfall2';
+import Video from "video.js";
+import "video.js/dist/video-js.min.css"
+Vue.prototype.$video = Video
 
 window.JSON = jsonBig
 Vue.config.productionTip = false

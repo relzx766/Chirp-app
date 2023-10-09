@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5'
 import {merge, uploadSlice} from "@/api/media";
 
-const CHUNK_SIZE = 3 * 1024 * 1024;
+const CHUNK_SIZE =3 * 1024 * 1024;
 const MAX_RETRY = 3;
 export const getMd5 = (file) => {
     return new Promise((resolve, reject) => {

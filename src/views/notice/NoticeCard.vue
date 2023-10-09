@@ -48,6 +48,7 @@
 import {getMessageDate, getNewMsgCount} from "../../util/tools";
 import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
+import {getPage, getUnreadCount, markAsRead} from "@/api/advice";
 
 export default {
   name: "NoticeCard",
@@ -58,16 +59,40 @@ export default {
   data() {
     return {
       notifications: [],
-      mentionEmpty: true
+      mentionEmpty: true,
+      isLoading:false,
+      isBottom:false,
+      loading:null
     }
   },
   methods: {
-    getNewMsgCount, getMessageDate
+    getNewMsgCount, getMessageDate,getUnreadCount,
+    loadMore(page) {
+        this.isLoading = true;
+        getPage(page).then(res => {
+          this.$store.commit('incrementNoticePage')
+          this.isBottom = res.data.record.length <= 0;
+          this.$store.commit('addNotice', {
+            payload:res.data.record,
+            top:false
+          });
+          this.isLoading = false;
+        })
+    },
+    scrollPage(){
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+      const clientHeight = document.documentElement.clientHeight
+      const scrollHeight = document.documentElement.scrollHeight
+      if (scrollTop + clientHeight + 10 >= scrollHeight&&!this.isBottom&&!this.isLoading) {
+        this.loadMore(this.$store.getters.getNoticePage);
+      }
+    }
   },
   watch: {
     '$store.state.notice.count': {
       handler() {
         let messages = structuredClone(this.$store.getters.getNotice);
+        console.log(messages)
         if (messages && Object.entries(messages).length > 0) {
           this.notifications = [];
           Object.values(messages).forEach(classify => {
@@ -77,10 +102,42 @@ export default {
             })
           });
         }
+        if (this.loading!==null) {
+          this.loading.close()
+        }
       },
       immediate: true
     }
   },
+  created() {
+    if (this.notifications.length<=0) {
+      this.loading = this.$loading({
+        lock: true,
+        text: 'Loading',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+    }
+    this.loadMore(this.$store.getters.getNoticePage)
+      this.getUnreadCount().then(res=>{
+        this.$store.commit('setNoticeUnread',res.data.record.count);
+      })
+    window.addEventListener("scroll", this.scrollPage, true);
+  },
+  destroyed() {
+    this.$store.commit('setNoticeUnread',0);
+    let unread=this.$store.getters.getUnreadNoticeRecord;
+    if (unread.length>0){
+      markAsRead(unread).then(()=>{
+        this.$store.commit('clearUnreadNotice');
+
+      }).catch(e=>{
+        console.log(e);
+        this.$store.commit('clearUnreadNotice');
+      })
+    }
+    window.removeEventListener("scroll", this.scrollPage);
+  }
 }
 </script>
 

@@ -26,6 +26,12 @@ class websocketLink {
         }
     }
 
+    send(text) {
+        if (this.socket) {
+            this.socket.send(text);
+        }
+    }
+
     close() {
         this.socket && this.socket.close();
     }

@@ -21,13 +21,16 @@
           <el-menu-item
               :disabled="getToken()===null"
               class="nav-item" index="/notice">
-            <img class="nav-icon" src="../assets/notice.svg"/>
+              <img  class="nav-icon" src="../assets/notice.svg"/>
+            <div class="read-point" v-show="$store.getters.getUnReadNoticeCount>0&&$route.path!=='/notice'"/>
             <span slot="title">通知</span>
           </el-menu-item>
           <el-menu-item
               :disabled="getToken()===null"
               class="nav-item" index="/message">
+
             <img class="nav-icon" src="../assets/mail.svg"/>
+            <div class="read-point"/>
             <span slot="title">私信</span>
           </el-menu-item>
           <el-menu-item
@@ -102,7 +105,16 @@ export default {
       })
     }
   },
-
+watch:{
+  '$route':{
+    handler(to,form){
+      if (to.path==='/notice'){
+        this.$store.commit('readAllNotice')
+      }
+    },
+   immediate:true
+  }
+},
   created() {
     if (getToken() != null && getToken().length > 0) {
       this.loadUser();
@@ -113,6 +125,15 @@ export default {
 </script>
 
 <style scoped>
+.read-point{
+  width:8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #F56C6C;
+  position: absolute;
+  left: 36%;
+  top: 10%;
+}
 li {
   list-style-type: none;
   float: left;

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <video-player v-if="category==='video'" :url="media[0].url"/>
+    <video-player v-if="category==='video'" :url="media[0].url" style="width:90%"/>
 
 
     <waterfall v-else-if="category==='image'" :col="media.length>2?2:media.length" :data="media" :isTransition="false"

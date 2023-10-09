@@ -38,7 +38,7 @@
     </el-form-item>
     <el-form-item>
       <el-button size="small" style="width: 100%; border-radius: 23px;color: #FFFFFF;
-    font-weight: bold;height:40px;background-color: #000000" @click="doLogin()">登录
+    font-weight: bold;height:40px;background-color: #000000" :loading="loading" @click="loading=true;doLogin()">登录
       </el-button>
     </el-form-item>
     <el-form-item>
@@ -80,7 +80,8 @@ export default {
         avatar: "https://dogefs.s3.ladydaily.com/~/source/wallhaven/small/rr/rr793m.jpg?w=400&h=200&fmt=webp"
       },
       signUpDialog: false,
-      verifyDialog: false
+      verifyDialog: false,
+      loading:false
     }
   },
   methods: {
