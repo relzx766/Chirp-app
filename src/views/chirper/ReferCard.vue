@@ -6,12 +6,12 @@
         <i class="el-icon-connection" style="font-weight: bold;"/><span>{{ value.nickname }}已转发</span>
       </el-col>
     </el-row>
-    <chirper-card v-if="value.type==='FORWARD'" :chirper="getReference"/>
+    <chirper-card v-if="value.type==='FORWARD'" :chirper="value.referenced"/>
     <chirper-card v-else-if="value.type==='QUOTE'||value.type==='REPLY'" :barVisible="false" :chirper="value"
                   :dataVisible="dateVisible" shadow="never"/>
     <el-row v-if="value.type==='QUOTE'||value.type==='REPLY'">
       <el-col :offset="2" :span="22" style="border: 1px solid #EBEEF5;padding: 1px;zoom: 0.9;border-radius: 12px;">
-        <chirper-card :barVisible="false" :chirper="getReference" :dataVisible="false"/>
+        <chirper-card :barVisible="false" :chirper="value.referenced" :dataVisible="false"/>
       </el-col>
     </el-row>
 
@@ -40,15 +40,6 @@ export default {
     'chirper-card': ChirperCard,
     'click-bar': ChirperClickBar
   },
-  computed: {
-    getReference() {
-      let chirper = this.value.referenced;
-      if ((typeof chirper.mediaKeys) === "string") {
-        chirper.mediaKeys = JSON.parse(chirper.mediaKeys);
-      }
-      return chirper;
-    }
-  }
 }
 </script>
 <style scoped>

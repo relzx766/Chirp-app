@@ -48,7 +48,7 @@
 import {getMessageDate, getNewMsgCount} from "../../util/tools";
 import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
-import {getPage, getUnreadCount, markAsRead} from "@/api/advice";
+import {getPage, getReadRecord, getUnreadCount, markAsRead} from "@/api/advice";
 
 export default {
   name: "NoticeCard",
@@ -77,6 +77,9 @@ export default {
             top:false
           });
           this.isLoading = false;
+          if (this.loading!==null) {
+            this.loading.close()
+          }
         })
     },
     scrollPage(){
@@ -128,9 +131,8 @@ export default {
     this.$store.commit('setNoticeUnread',0);
     let unread=this.$store.getters.getUnreadNoticeRecord;
     if (unread.length>0){
-      markAsRead(unread).then(()=>{
+      markAsRead().then(()=>{
         this.$store.commit('clearUnreadNotice');
-
       }).catch(e=>{
         console.log(e);
         this.$store.commit('clearUnreadNotice');

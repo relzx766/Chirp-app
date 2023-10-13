@@ -10,12 +10,16 @@
             <span>帖子</span>
           </el-row>
           <el-row style="padding: 10px">
-            <chirper-card v-if="currentChirper.type!=='QUOTE'" :chirper="currentChirper" :clickEvent="false"
+
+            <chirper-card v-if="refer.visible" id="refer" ref="refer" :chirper="refer.record" style="margin-top: 40px"/>
+
+            <chirper-card v-if="currentChirper.type!=='QUOTE'" id="current" ref="current" :chirper="currentChirper" :clickEvent="false"
                           :mediaVisible="true"
                           :straight="false" shadow="never" style="margin-top: 40px"/>
-            <refer-card v-if="currentChirper.type==='QUOTE'" :value="currentChirper" style="margin-top: 40px"/>
+            <refer-card v-if="currentChirper.type==='QUOTE'" id="current" ref="current" :value="currentChirper" style="margin-top: 40px"/>
             <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
                        @sent="doPost"/>
+
           </el-row>
           <el-row v-for="item in reply">
             <chirper-card :chirper="item" shadow="hover"
@@ -72,7 +76,11 @@ export default {
       reply: [],
       page: 1,
       isLoading: true,
-      isBottom: false
+      isBottom: false,
+      refer:{
+        record:{},
+        visible:false
+      }
     }
   },
 
@@ -114,12 +122,22 @@ export default {
       this.page = 1;
       getDetail(id).then((res) => {
         this.currentChirper = res.data.record;
-        this.currentChirper.mediaKeys = JSON.parse(this.currentChirper.mediaKeys);
         //进入这个界面既是浏览了该推文，因为加载在统计前，所以手动+1
         this.currentChirper.viewCount++
         if (this.currentChirper.replyCount > 0) {
           this.getReply();
           this.isLoading = false;
+        }
+        if (this.currentChirper.inReplyToChirperId){
+          getDetail(this.currentChirper.inReplyToChirperId).then(res=>{
+            this.refer.record=res.data.record;
+            this.refer.visible=true;
+            this.$nextTick(() => {
+              this.$nextTick(()=>{
+                document.documentElement.scrollTop =window.innerHeight -document.getElementById("current").offsetHeight;
+              })
+            })
+          })
         }
       })
 
@@ -145,6 +163,8 @@ export default {
   created() {
     this.init();
     window.addEventListener("scroll", this.loadMoreReply, true);
+  },
+  mounted() {
   },
   destroyed() {
     window.removeEventListener("scroll", this.loadMoreReply);

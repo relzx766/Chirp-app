@@ -21,6 +21,7 @@ const store = new Vuex.Store({
             count: 0,
             unRead:0,
             unReadRecord:[],
+            filterMap:new Map(),
             page:1
         },
         followingUpdate: {
@@ -90,7 +91,13 @@ const store = new Vuex.Store({
         },
         addNotice(state, {payload,top}){
             let messages=Array.from(payload);
-                messages.forEach(item => {
+            for (let i = 0; i < messages.length; i++) {
+                let item=messages[i];
+                    if (state.notice.filterMap.has(item.id)){
+                        continue;
+                    }else {
+                        state.notice.filterMap.set(item.id,1);
+                    }
                     if (!item.isRead){
                         state.notice.unReadRecord.push(item.id);
                         state.notice.unRead++;
@@ -140,7 +147,9 @@ const store = new Vuex.Store({
                             state.notice.count += 1;
                         }
                     }
-                });
+
+            }
+
         },
         setNoticeUnread(state,payload){
             state.notice.unRead=payload;

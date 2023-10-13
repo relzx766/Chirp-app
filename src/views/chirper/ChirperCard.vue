@@ -36,7 +36,7 @@
             <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
                     v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
 
-            <div v-if="mediaVisible&&parseMedia.length>0" id="media" ref="media">
+            <div v-if="mediaVisible&&parseMedia&&parseMedia.length>0" id="media" ref="media">
               <MediaCard :media="parseMedia"/>
             </div>
           </el-row>
@@ -57,12 +57,12 @@
 </template>
 
 <script>
-import {bigNumberToString, formatText, getDate} from "../../util/tools";
+import {bigNumberToString, formatText, getDate} from "@/util/tools";
 import ChirperClickBar from "@/views/chirper/ChirperClickBar.vue";
 
 import moment from "moment";
 import MediaCard from "@/views/media/MediaCard.vue";
-import {yMdHm} from "../../util/formatter";
+import {yMdHm} from "@/util/formatter";
 
 export default {
   name: "ChirperCard",
@@ -92,6 +92,10 @@ export default {
     dataVisible: {
       type: Boolean,
       default: true
+    },
+    replyVisible:{
+      type:Boolean,
+      default:false
     }
   },
   computed: {

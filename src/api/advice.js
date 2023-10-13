@@ -1,4 +1,4 @@
-import {FormPost, Get} from "@/config/http";
+import {FormPost, Get, JsonPost} from "@/config/http";
 
 const base="/chirp/advice-service/";
 export const getPage = (page) => {
@@ -12,11 +12,9 @@ export const getUnreadCount = () => {
       url:`${base}notice/count/unread`
   })
 }
-export const markAsRead = (messageId) => {
-    let data=new FormData();
-    data.append("messageId",messageId);
-  return FormPost({
-      url:`${base}notice/read/mark`,
-      data:data
+export const markAsRead = (data) => {
+  return Get({
+      url:`${base}notice/read/mark`
   })
 }
+
