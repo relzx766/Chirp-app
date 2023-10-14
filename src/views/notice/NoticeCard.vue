@@ -48,7 +48,7 @@
 import {getMessageDate, getNewMsgCount} from "../../util/tools";
 import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
-import {getPage, getReadRecord, getUnreadCount, markAsRead} from "@/api/advice";
+import {getPage, getUnreadCount, markAsRead} from "@/api/advice";
 
 export default {
   name: "NoticeCard",

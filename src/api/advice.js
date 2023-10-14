@@ -1,4 +1,4 @@
-import {FormPost, Get, JsonPost} from "@/config/http";
+import {Get} from "@/config/http";
 
 const base="/chirp/advice-service/";
 export const getPage = (page) => {

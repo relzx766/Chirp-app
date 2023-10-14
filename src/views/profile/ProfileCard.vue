@@ -65,11 +65,28 @@
         <span>&nbsp;{{ new Date(user.createTime).toLocaleDateString() }}&nbsp;加入</span>
       </el-row>
       <el-row style="margin-top: 16px">
-        <el-link style="color:#000;" type="info">{{ getCount(user.followingNum) }}
+        <el-link style="color:#000;" type="info" @click.native="followingDialog=true">{{ getCount(user.followingNum) }}
           <span style="color:#606266;"> 正在关注</span></el-link>
-        <el-link style="margin-left: 20px;color:#000;" type="info">{{ getCount(user.followNum) }}
+        <el-dialog
+            :visible.sync="followingDialog"
+            :show-close="false"
+            title="Ta的关注"
+            width="40%">
+          <div style="margin-top: -40px">
+            <follower-card type="following" :id="user.id"/>
+          </div>
+        </el-dialog>
+        <el-link style="margin-left: 20px;color:#000;" type="info" @click.native="followerDialog=true">{{ getCount(user.followNum) }}
           <span style="color:#606266;"> 关注者</span></el-link>
-
+        <el-dialog
+            :visible.sync="followerDialog"
+            :show-close="false"
+            title="Ta的关注者"
+            width="40%">
+          <div style="margin-top: -40px">
+            <follower-card type="follower" :id="user.id"/>
+          </div>
+        </el-dialog>
       </el-row>
     </el-row>
   </el-row>
@@ -79,11 +96,13 @@
 import {getCount, getToken} from "@/util/tools";
 import {follow, unFollow} from "@/api/user";
 import ProfileEditCard from "@/views/profile/ProfileEditCard.vue";
+import FollowerCard from "@/views/profile/FollowerCard.vue";
 
 export default {
   name: "ProfileCard",
   components: {
-    'edit-card': ProfileEditCard
+    'edit-card': ProfileEditCard,
+    FollowerCard
   },
 
   props: {
@@ -95,7 +114,9 @@ export default {
       user: {},
       followBtnText: '关注',
       followBtnClass: 'unfollowed',
-      editDialog: false
+      editDialog: false,
+      followerDialog:false,
+      followingDialog:false
     }
   },
   methods: {

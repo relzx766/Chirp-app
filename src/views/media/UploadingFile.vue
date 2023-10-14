@@ -22,7 +22,6 @@
 <script>
 import ChunkUpload, {getMd5} from "@/util/upload";
 import {upload} from "@/api/media";
-import VideoPlayer from "@/views/media/VideoPlayer.vue";
 import VideoUploadCard from "@/views/media/VideoUploadCard.vue";
 
 export default {

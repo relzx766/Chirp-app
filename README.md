@@ -35,7 +35,8 @@
 ### 个人资料
 
 ![](./docs/profile.png)
-
+#### 关注者
+![](docs/follower.png)
 ### 个人资料编辑
 
 ![](./docs/profile-edit.png)
