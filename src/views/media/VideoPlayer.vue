@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="player" >
+    <div id="player">
       <video ref="videoPlayer" class="video-js"></video>
     </div>
   </div>
@@ -41,21 +41,23 @@ export default {
       controlBar: {
         // 自定义按钮的位置
         children: [
-          { name: "playToggle" },
-          { name: "progressControl" },
-          { name: "currentTimeDisplay" },
-          { name: "timeDivider" },
-          { name: "durationDisplay" },
-          { name: "volumePanel", // 音量调整方式横线条变为竖线条
-            inline: false },
-          { name: "pictureInPictureToggle" }, //画中画播放模式
-          { name: "fullscreenToggle" },
+          {name: "playToggle"},
+          {name: "progressControl"},
+          {name: "currentTimeDisplay"},
+          {name: "timeDivider"},
+          {name: "durationDisplay"},
+          {
+            name: "volumePanel", // 音量调整方式横线条变为竖线条
+            inline: false
+          },
+          {name: "pictureInPictureToggle"}, //画中画播放模式
+          {name: "fullscreenToggle"},
         ],
       },
       sources: [
         // 指定视频的类型和链接
         {
-          src:this.url,
+          src: this.url,
         },
       ],
     };
@@ -74,6 +76,7 @@ export default {
 <style scoped>
 #player {
 }
+
 .video-js {
   width: 100%;
   border-radius: 12px;

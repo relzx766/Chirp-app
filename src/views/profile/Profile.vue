@@ -134,21 +134,12 @@ export default {
   methods: {
     getToken,
     init() {
-      const loading = this.$loading({
-        lock: true,
-        text: 'Loading',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      });
       let id;
       id = this.$route.query.id ? this.$route.query.id : this.$store.getters.getUser.id;
       let type;
-        if (id) {
-          loading.close();
-        }else {
-          this.init();
-        }
-
+      if (!id) {
+        this.init();
+      }
       type = this.$route.query.type ? this.$route.query.type : null;
       if (id === this.$store.getters.getUser.id) {
         this.user = this.$store.getters.getUser;
@@ -156,7 +147,7 @@ export default {
       getDetailProfile(id, type).then((res) => {
         this.user = res.data.record;
         this.getPage();
-      }).catch(e=>{
+      }).catch(e => {
         console.log(e)
       })
     },
@@ -196,13 +187,13 @@ export default {
           this.chirpers.media.isBottom = res.data.record.length <= 0;
           this.chirpers.media.page++;
         })
-      }else if (this.activeName==='like'&&!this.chirpers.like.isBottom){
-        this.isLoading=true;
-        getLikeByUser(this.chirpers.like.page,this.user.id).then(res=>{
-          this.chirpers.like.isBottom=res.data.record<=0;
+      } else if (this.activeName === 'like' && !this.chirpers.like.isBottom) {
+        this.isLoading = true;
+        getLikeByUser(this.chirpers.like.page, this.user.id).then(res => {
+          this.chirpers.like.isBottom = res.data.record.length <= 0;
           this.chirpers.like.page++;
           this.chirpers.like.chirper.push(...res.data.record);
-          this.isLoading=false;
+          this.isLoading = false;
         })
       }
     },

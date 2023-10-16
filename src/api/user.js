@@ -45,14 +45,14 @@ export const search = (keyword, page) => {
         data: {keyword}
     })
 }
-export const getFollower = (id,page) => {
-  return Get({
-      url:`${sever}/user/follower/${id}/${page}`
-  })
+export const getFollower = (id, page) => {
+    return Get({
+        url: `${sever}/user/follower/${id}/${page}`
+    })
 }
-export const getFollowing = (id,page) => {
-  return Get({
-      url:`${sever}/user/following/${id}/${page}`
-  })
+export const getFollowing = (id, page) => {
+    return Get({
+        url: `${sever}/user/following/${id}/${page}`
+    })
 
 }

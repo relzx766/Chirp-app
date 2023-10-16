@@ -10,19 +10,19 @@ const store = new Vuex.Store({
     state: {
         ws: null,
         message: {
-            record:{},
-            isInit:false,
-            count:0,
-            unRead:0
+            record: {},
+            isInit: false,
+            count: 0,
+            unRead: 0
         },
         notice: {
             record: {},
             isInit: false,
             count: 0,
-            unRead:0,
-            unReadRecord:[],
-            filterMap:new Map(),
-            page:1
+            unRead: 0,
+            unReadRecord: [],
+            filterMap: new Map(),
+            page: 1
         },
         followingUpdate: {
             record: [],
@@ -41,16 +41,16 @@ const store = new Vuex.Store({
         getNotice: state => {
             return state.notice.record;
         },
-        getUnReadNoticeCount:state=>{
-          return state.notice.unRead;
+        getUnReadNoticeCount: state => {
+            return state.notice.unRead;
         },
         popFollowingUpdate: state => {
             return state.followingUpdate.record.splice(0, state.followingUpdate.record.length);
         },
-        getNoticePage:state=>{
+        getNoticePage: state => {
             return state.notice.page;
         },
-        getUnreadNoticeRecord:state => {
+        getUnreadNoticeRecord: state => {
             return state.notice.unReadRecord;
         }
     },
@@ -63,9 +63,9 @@ const store = new Vuex.Store({
                 },
                 onmessage: e => {
                     let messages = JSON.parse(e.data);
-                    this.dispatch('pushNotice',{
-                        payload:messages,
-                        top:true
+                    this.dispatch('pushNotice', {
+                        payload: messages,
+                        top: true
                     });
                 },
                 onerror: err => {
@@ -77,8 +77,8 @@ const store = new Vuex.Store({
         websocketClose(state) {
             state.ws.close();
         },
-        wsSend(state,payload){
-          state.ws.send(payload);
+        wsSend(state, payload) {
+            state.ws.send(payload);
         },
         deleteMsgByType(state, type) {
             state.message[type] = [];
@@ -86,82 +86,79 @@ const store = new Vuex.Store({
         setUser(state, payload) {
             state.user = payload;
         },
-        readAllNotice(state){
-            state.notice.unRead=0;
+        readAllNotice(state) {
+            state.notice.unRead = 0;
         },
-        addNotice(state, {payload,top}){
-            let messages=Array.from(payload);
+        addNotice(state, {payload, top}) {
+            const suffix = "id:";
+            let messages = Array.from(payload);
             for (let i = 0; i < messages.length; i++) {
-                let item=messages[i];
-                    if (state.notice.filterMap.has(item.id)){
-                        continue;
-                    }else {
-                        state.notice.filterMap.set(item.id,1);
-                    }
-                    if (!item.isRead){
-                        state.notice.unReadRecord.push(item.id);
-                        state.notice.unRead++;
-                    }
-                    if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
-                        if (item.event === 'TWEETED') {
-                            state.followingUpdate.record.unshift(item);
-                            state.followingUpdate.count += 1;
-                        } else {
-                            if (item.entityType === 'CHIRPER') {
-                                item.sonEntity = JSON.parse(item.sonEntity);
-                                if (item.entity !== 'null') {
-                                    item.entity = JSON.parse(item.entity);
-                                }
-                                //按照[推文id][事件]分类
-                                if (!top) {
-                                    if (!state.notice.record[item.sonEntity.id]) {
-                                        state.notice.record[item.sonEntity.id] = {};
-                                    }
-                                } else {
-                                    let obj = {};
-                                    obj[item.sonEntity.id] = {};
-                                    state.notice.record = Object.assign(obj, state.notice.record);
-                                }
-                                if (!state.notice.record[item.sonEntity.id][item.event]) {
-                                    state.notice.record[item.sonEntity.id][item.event] = []
-                                }
-                                //消息本身已是按时间排序，所以多条时使用push，才不会打乱
-                                if (messages.length > 1) {
-                                    state.notice.record[item.sonEntity.id][item.event].push(item);
-                                } else {
-                                    state.notice.record[item.sonEntity.id][item.event].unshift(item);
-                                }
-                            } else if (item.event === 'FOLLOW') {
-                                if (!state.notice.record[item.receiverId]) {
-                                    state.notice.record[item.receiverId] = {}
-                                }
-                                if (!state.notice.record[item.receiverId][item.event]) {
-                                    state.notice.record[item.receiverId][item.event] = [];
-                                }
-                                if (messages.length > 1) {
-                                    state.notice.record[item.receiverId][item.event].push(item);
-                                } else {
-                                    state.notice.record[item.receiverId][item.event].unshift(item);
-                                }
+                let item = messages[i];
+                if (state.notice.filterMap.has(item.id)) {
+                    continue;
+                } else {
+                    state.notice.filterMap.set(item.id, 1);
+                }
+                if (!item.isRead) {
+                    state.notice.unReadRecord.push(item.id);
+                    state.notice.unRead++;
+                }
+                if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
+                    if (item.event === 'TWEETED') {
+                        state.followingUpdate.record.unshift(item);
+                        state.followingUpdate.count += 1;
+                    } else {
+                        if (item.entityType === 'CHIRPER') {
+                            item.sonEntity = JSON.parse(item.sonEntity);
+                            if (item.entity !== 'null') {
+                                item.entity = JSON.parse(item.entity);
                             }
-                            state.notice.count += 1;
+                            let key = `${item.event}${item.sonEntity.id}`;
+                            //按照[推文id][事件]分类
+                            if (!top) {
+                                if (!state.notice.record[key]) {
+                                    state.notice.record[key] = [];
+                                }
+                            } else {
+                                let obj = {};
+                                obj[key] = [];
+                                state.notice.record = Object.assign(obj, state.notice.record);
+                            }
+                            //消息本身已是按时间排序，所以多条时使用push，才不会打乱
+                            if (messages.length > 1) {
+                                state.notice.record[key].push(item);
+                            } else {
+                                state.notice.record[key].unshift(item);
+                            }
+                        } else if (item.event === 'FOLLOW') {
+                            let key = `${item.event}${item.receiverId}`;
+                            if (!state.notice.record[key]) {
+                                state.notice.record[key] = []
+                            }
+                            if (messages.length > 1) {
+                                state.notice.record[key].push(item);
+                            } else {
+                                state.notice.record[key].unshift(item);
+                            }
                         }
+                        state.notice.count += 1;
                     }
+                }
 
             }
 
         },
-        setNoticeUnread(state,payload){
-            state.notice.unRead=payload;
+        setNoticeUnread(state, payload) {
+            state.notice.unRead = payload;
         },
-        setNoticePage(state,payload){
-            state.notice.page=payload;
+        setNoticePage(state, payload) {
+            state.notice.page = payload;
         },
-        incrementNoticePage(state){
+        incrementNoticePage(state) {
             state.notice.page++;
         },
-        clearUnreadNotice(state){
-            state.notice.unReadRecord=[];
+        clearUnreadNotice(state) {
+            state.notice.unReadRecord = [];
         }
 
     },
@@ -169,8 +166,8 @@ const store = new Vuex.Store({
         wsInit({commit}) {
             commit('websocketInit');
         },
-        pushNotice({commit},payload){
-            commit('addNotice',payload)
+        pushNotice({commit}, payload) {
+            commit('addNotice', payload)
         }
     }
 })

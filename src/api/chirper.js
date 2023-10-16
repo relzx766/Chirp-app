@@ -15,8 +15,8 @@ export const getByIds = (ids) => {
         data: data
     })
 }
-export const getChirperPage = (page,options) => {
-    let data=new FormData();
+export const getChirperPage = (page, options) => {
+    let data = new FormData();
     if (options) {
         if (options.userId) {
             data.append("userId", options.userId);
@@ -33,7 +33,7 @@ export const getChirperPage = (page,options) => {
     }
     return FormPost({
         url: sever + `/chirper/page/${page}`,
-        data:data
+        data: data
     })
 }
 export const doLike = (id) => {
@@ -126,8 +126,8 @@ export const search = (keyword, page, isMedia) => {
         data: data
     })
 }
-export const getLikeByUser = (page,userId) => {
-  return Get({
-      url:`${sever}/chirper/like/${userId}/${page}`
-  })
+export const getLikeByUser = (page, userId) => {
+    return Get({
+        url: `${sever}/chirper/like/${userId}/${page}`
+    })
 }

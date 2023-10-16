@@ -93,9 +93,9 @@ export default {
       type: Boolean,
       default: true
     },
-    replyVisible:{
-      type:Boolean,
-      default:false
+    replyVisible: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

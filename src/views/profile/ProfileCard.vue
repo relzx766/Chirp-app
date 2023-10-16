@@ -68,23 +68,24 @@
         <el-link style="color:#000;" type="info" @click.native="followingDialog=true">{{ getCount(user.followingNum) }}
           <span style="color:#606266;"> 正在关注</span></el-link>
         <el-dialog
-            :visible.sync="followingDialog"
             :show-close="false"
+            :visible.sync="followingDialog"
             title="Ta的关注"
             width="40%">
           <div style="margin-top: -40px">
-            <follower-card type="following" :id="user.id"/>
+            <follower-card :id="user.id" type="following"/>
           </div>
         </el-dialog>
-        <el-link style="margin-left: 20px;color:#000;" type="info" @click.native="followerDialog=true">{{ getCount(user.followNum) }}
+        <el-link style="margin-left: 20px;color:#000;" type="info" @click.native="followerDialog=true">
+          {{ getCount(user.followNum) }}
           <span style="color:#606266;"> 关注者</span></el-link>
         <el-dialog
-            :visible.sync="followerDialog"
             :show-close="false"
+            :visible.sync="followerDialog"
             title="Ta的关注者"
             width="40%">
           <div style="margin-top: -40px">
-            <follower-card type="follower" :id="user.id"/>
+            <follower-card :id="user.id" type="follower"/>
           </div>
         </el-dialog>
       </el-row>
@@ -115,8 +116,8 @@ export default {
       followBtnText: '关注',
       followBtnClass: 'unfollowed',
       editDialog: false,
-      followerDialog:false,
-      followingDialog:false
+      followerDialog: false,
+      followingDialog: false
     }
   },
   methods: {
@@ -137,7 +138,6 @@ export default {
           this.changeFollowBtnText(1);
         })
       }
-
     },
     changeFollowBtnText(type) {
       if (type === 1) {
@@ -220,5 +220,14 @@ export default {
 
 .avatar-container:hover .overlay {
   height: 116px;
+}
+
+
+</style>
+<style>
+.el-dialog__wrapper {
+  .el-dialog {
+    border-radius: 10px;
+  }
 }
 </style>

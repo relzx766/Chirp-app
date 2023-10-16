@@ -43,9 +43,10 @@ export default {
     'trend-card': TrendListCard,
     'input-card': InputCard
   },
-created() {
-    },
-  mounted() {this.$store.commit('readAllNotice');
+  created() {
+  },
+  mounted() {
+    this.$store.commit('readAllNotice');
 
   }
 }

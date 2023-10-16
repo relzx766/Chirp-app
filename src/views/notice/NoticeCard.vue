@@ -60,33 +60,33 @@ export default {
     return {
       notifications: [],
       mentionEmpty: true,
-      isLoading:false,
-      isBottom:false,
-      loading:null
+      isLoading: false,
+      isBottom: false,
+      loading: null
     }
   },
   methods: {
-    getNewMsgCount, getMessageDate,getUnreadCount,
+    getNewMsgCount, getMessageDate, getUnreadCount,
     loadMore(page) {
-        this.isLoading = true;
-        getPage(page).then(res => {
-          this.$store.commit('incrementNoticePage')
-          this.isBottom = res.data.record.length <= 0;
-          this.$store.commit('addNotice', {
-            payload:res.data.record,
-            top:false
-          });
-          this.isLoading = false;
-          if (this.loading!==null) {
-            this.loading.close()
-          }
-        })
+      this.isLoading = true;
+      getPage(page).then(res => {
+        this.$store.commit('incrementNoticePage')
+        this.isBottom = res.data.record.length <= 0;
+        this.$store.commit('addNotice', {
+          payload: res.data.record,
+          top: false
+        });
+        this.isLoading = false;
+        if (this.loading !== null) {
+          this.loading.close()
+        }
+      })
     },
-    scrollPage(){
+    scrollPage() {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
       const clientHeight = document.documentElement.clientHeight
       const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight + 10 >= scrollHeight&&!this.isBottom&&!this.isLoading) {
+      if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
         this.loadMore(this.$store.getters.getNoticePage);
       }
     }
@@ -95,45 +95,32 @@ export default {
     '$store.state.notice.count': {
       handler() {
         let messages = structuredClone(this.$store.getters.getNotice);
-        console.log(messages)
         if (messages && Object.entries(messages).length > 0) {
           this.notifications = [];
           Object.values(messages).forEach(classify => {
-            this.mentionEmpty = !this.mentionEmpty ? false : Object.keys(classify)[0] !== 'MENTIONED';
-            Object.values(classify).forEach(messageArr => {
-              this.notifications.push(messageArr);
-            })
+            this.mentionEmpty = !this.mentionEmpty ? false : classify[0].event !== 'MENTIONED';
+            this.notifications.push(classify);
           });
         }
-        if (this.loading!==null) {
-          this.loading.close()
-        }
+        console.log(this.notifications)
       },
       immediate: true
     }
   },
   created() {
-    if (this.notifications.length<=0) {
-      this.loading = this.$loading({
-        lock: true,
-        text: 'Loading',
-        spinner: 'el-icon-loading',
-        background: 'rgba(0, 0, 0, 0.7)'
-      });
-    }
     this.loadMore(this.$store.getters.getNoticePage)
-      this.getUnreadCount().then(res=>{
-        this.$store.commit('setNoticeUnread',res.data.record.count);
-      })
+    this.getUnreadCount().then(res => {
+      this.$store.commit('setNoticeUnread', res.data.record.count);
+    })
     window.addEventListener("scroll", this.scrollPage, true);
   },
   destroyed() {
-    this.$store.commit('setNoticeUnread',0);
-    let unread=this.$store.getters.getUnreadNoticeRecord;
-    if (unread.length>0){
-      markAsRead().then(()=>{
+    this.$store.commit('setNoticeUnread', 0);
+    let unread = this.$store.getters.getUnreadNoticeRecord;
+    if (unread.length > 0) {
+      markAsRead().then(() => {
         this.$store.commit('clearUnreadNotice');
-      }).catch(e=>{
+      }).catch(e => {
         console.log(e);
         this.$store.commit('clearUnreadNotice');
       })

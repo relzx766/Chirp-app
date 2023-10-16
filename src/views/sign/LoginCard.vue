@@ -37,8 +37,8 @@
       <el-input v-model="user.password" placeholder="请输入密码" show-password></el-input>
     </el-form-item>
     <el-form-item>
-      <el-button size="small" style="width: 100%; border-radius: 23px;color: #FFFFFF;
-    font-weight: bold;height:40px;background-color: #000000" :loading="loading" @click="loading=true;doLogin()">登录
+      <el-button :loading="loading" size="small" style="width: 100%; border-radius: 23px;color: #FFFFFF;
+    font-weight: bold;height:40px;background-color: #000000" @click="loading=true;doLogin()">登录
       </el-button>
     </el-form-item>
     <el-form-item>
@@ -81,7 +81,7 @@ export default {
       },
       signUpDialog: false,
       verifyDialog: false,
-      loading:false
+      loading: false
     }
   },
   methods: {

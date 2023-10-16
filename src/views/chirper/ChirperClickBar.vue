@@ -49,7 +49,8 @@
             </el-dialog>
           </el-row>
           <el-button slot="reference" :disabled="getToken()===null"
-                     :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }" circle class="btn-interact"
+                     :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }" circle
+                     class="btn-interact"
                      icon="el-icon-connection"
                      size="medium"></el-button>
         </el-popover>
