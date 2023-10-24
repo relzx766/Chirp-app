@@ -188,8 +188,8 @@ export default {
 }
 
 .profile-avatar {
-  width: 116px;
-  height: 116px;
+  width: 100%;
+  height: 100%;
   border-radius: 100%;
 }
 
@@ -199,6 +199,7 @@ export default {
   border: 4px solid #FFFFFF;
   background-color: #FFFFFF;
   border-radius: 100%;
+  align-items: center;
   position: absolute;
   margin-top: -10%;
   left: 16px;
@@ -208,9 +209,9 @@ export default {
 
 .overlay {
   position: absolute;
-  top: 0;
-  left: 2px;
-  width: 116px;
+  top: -2px;
+  left: 0;
+  width: 100%;
   height: 0;
   border-radius: 100%;
   background-color: rgba(0, 0, 0, 0.3);
@@ -219,7 +220,7 @@ export default {
 }
 
 .avatar-container:hover .overlay {
-  height: 116px;
+  height: 100%;
 }
 
 

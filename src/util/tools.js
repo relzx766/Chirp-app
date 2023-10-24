@@ -101,3 +101,14 @@ export const formatText = (text) => {
     return text.replace(regex, "<a href='/profile?id=$1&type=username' @click.stop style='color:#409EFF;text-decoration: none;'>@$1</a>").replace("\u200B", "</br>");
 
 }
+/**
+ *
+ * @param date1 时间戳
+ * @param date2 时间戳
+ * @returns {number} date1-date2
+ */
+export const subtractDates = (date1, date2) => {
+    date1 = new Date(date1);
+    date2 = new Date(date2);
+    return date1.getTime() - date2.getTime();
+}

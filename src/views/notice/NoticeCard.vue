@@ -3,7 +3,8 @@
     <el-tabs :stretch="true" value="all">
       <el-tab-pane name="all">
         <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
-        <el-row v-for="item in notifications" style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
+        <el-row v-for="item in notifications" :key="item[0].id"
+                style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
 
           <notice-detail v-if="item[0].entity===null||item[0].entity==='null'" :date="item[0].createTime"
                          :name="item[0].senderName"

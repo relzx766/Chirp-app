@@ -27,9 +27,9 @@
 
 ### 引用
 
-弹窗<br>
+#### 弹窗
 ![](./docs/quote.png)
-显示<br>
+#### 显示
 ![](./docs/quote-view.png)
 
 ### 个人资料
@@ -46,10 +46,18 @@
 
 ### 通知
 
-全部<br>
+#### 全部
 ![](./docs/notice.png)
-提及<br>
+#### 提及
 ![](./docs/mention.png)
+
+### 私信
+#### 创建新私信
+![](./docs/new_chat.png)
+#### 下一步
+![](./docs/new_chat_send.png)
+#### 话题界面
+![](./docs/chat.png)
 
 ### 趋势
 

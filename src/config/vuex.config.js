@@ -1,7 +1,7 @@
 import Vuex from 'vuex'
 import Vue from "vue";
 import websocketLink from './websocket.config';
-import {getToken} from '@/util/tools';
+import {getToken} from "@/util/tools";
 
 Vue.use(Vuex);
 
@@ -10,10 +10,22 @@ const store = new Vuex.Store({
     state: {
         ws: null,
         message: {
-            record: {},
+            record: {
+                /**
+                 * key:{
+                 *     messages:[],
+                 *     unreadCount:0,
+                 *     date:""
+                 * }
+                 */
+            },
+
             isInit: false,
             count: 0,
-            unRead: 0
+            unRead: 0,
+            filterMap: new Map(),
+            //每个发送者都需要存储
+            page: new Map()
         },
         notice: {
             record: {},
@@ -52,6 +64,15 @@ const store = new Vuex.Store({
         },
         getUnreadNoticeRecord: state => {
             return state.notice.unReadRecord;
+        },
+        getPrivateMessage: state => {
+            return state.message;
+        },
+        getChatHistory: (state) => (conversationId) => {
+            return state.message.record[conversationId];
+        },
+        getChatUnreadCount: state => {
+            return state.message.unRead;
         }
     },
     mutations: {
@@ -63,10 +84,21 @@ const store = new Vuex.Store({
                 },
                 onmessage: e => {
                     let messages = JSON.parse(e.data);
-                    this.dispatch('pushNotice', {
-                        payload: messages,
-                        top: true
-                    });
+                    let notice = messages.NOTICE;
+                    let chat = messages.CHAT;
+                    console.log(messages)
+                    if (notice && notice.length > 0) {
+                        this.dispatch('pushNotice', {
+                            payload: notice,
+                            top: true
+                        });
+                    }
+                    if (chat && chat.length > 0) {
+                        this.dispatch('pushMessage', {
+                            payload: chat,
+                            top: true
+                        })
+                    }
                 },
                 onerror: err => {
                     console.log("websocket连接出错\n", err);
@@ -90,7 +122,6 @@ const store = new Vuex.Store({
             state.notice.unRead = 0;
         },
         addNotice(state, {payload, top}) {
-            const suffix = "id:";
             let messages = Array.from(payload);
             for (let i = 0; i < messages.length; i++) {
                 let item = messages[i];
@@ -113,7 +144,7 @@ const store = new Vuex.Store({
                             if (item.entity !== 'null') {
                                 item.entity = JSON.parse(item.entity);
                             }
-                            let key = `${item.event}${item.sonEntity.id}`;
+                            let key = `${item.event}${item.sonEntity.id}${state.notice.page}`;
                             //按照[推文id][事件]分类
                             if (!top) {
                                 if (!state.notice.record[key]) {
@@ -159,6 +190,106 @@ const store = new Vuex.Store({
         },
         clearUnreadNotice(state) {
             state.notice.unReadRecord = [];
+        },
+        addPrivateMessage(state, {payload, top}) {
+            let messages = Array.from(payload);
+            for (let i = 0; i < messages.length; i++) {
+                let item = messages[i];
+                let key = item.conversationId;
+                if (item.tempId && state.message.record[key] && state.message.record[key].messages) {
+                    let index = state.message.record[key].messages.findIndex(message =>
+                        message.tempId === item.tempId
+                    );
+                    if (index !== -1) {
+                        state.message.record[key].messages.splice(index, 1);
+                    }
+                }
+                if (state.message.filterMap.has(item.id)) {
+                    continue;
+                } else {
+                    state.message.filterMap.set(item.id, 1);
+                }
+                if (!state.message.record[key]) {
+                    state.message.record[key] = {
+                        conversation: key,
+                        messages: [],
+                        unreadCount: 0,
+                        user: {},
+                        reading: false
+                    };
+                }
+                let user = state.user;
+                switch (user.id) {
+                    case item.senderId: {
+                        state.message.record[key].user.id = item.receiverId;
+                        state.message.record[key].user.smallAvatarUrl = item.receiverAvatar;
+                        state.message.record[key].user.nickname = item.receiverName;
+                    }
+                        break;
+                    case item.receiverId: {
+                        state.message.record[key].user.id = item.senderId;
+                        state.message.record[key].user.smallAvatarUrl = item.senderAvatar;
+                        state.message.record[key].user.nickname = item.senderName;
+                    }
+                        break;
+                    default : {
+                        state.message.record[key].user = user;
+                    }
+                }
+                if (top) {
+                    state.message.record[key].messages.unshift(item);
+                    if (!state.message.record[key].reading && item.status === 1 && state.user.id !== item.senderId) {
+                        state.message.record[key].unreadCount++;
+                        state.message.unRead++;
+                    }
+                } else {
+                    state.message.record[key].messages.push(item);
+                }
+            }
+
+            this.dispatch('addMessageCount', messages.length);
+        },
+        addMessageCount(state, count) {
+            state.message.count += count;
+        },
+        initChatIndex(state, payload) {
+            Object.keys(payload).forEach(key => {
+                state.message.record[key] = {
+                    conversation: key,
+                    messages: [],
+                    unreadCount: payload[key].unreadCount,
+                    user: {},
+                    reading: false
+                };
+                state.message.unRead += payload[key].unreadCount;
+                this.dispatch('pushMessage', {
+                    payload: payload[key].data,
+                    top: false
+                })
+            })
+        },
+        setConversationUnread(state, {conversation, count}) {
+            if (state.message.record[conversation]) {
+                let unread = state.message.record[conversation].unreadCount;
+                state.message.record[conversation].unreadCount = count;
+                state.message.unRead += count - unread;
+            }
+        },
+        setConvReadStatus(state, {conversation, status}) {
+            if (state.message.record[conversation]) {
+                state.message.record[conversation].reading = status;
+            }
+        },
+        addConversation(state, {conversation, user}) {
+            if (!state.message.record[conversation]) {
+                state.message.record[conversation] = {
+                    conversation: conversation,
+                    messages: [],
+                    unreadCount: 0,
+                    user: user,
+                    reading: false
+                }
+            }
         }
 
     },
@@ -168,6 +299,12 @@ const store = new Vuex.Store({
         },
         pushNotice({commit}, payload) {
             commit('addNotice', payload)
+        },
+        pushMessage({commit}, payload) {
+            commit('addPrivateMessage', payload)
+        },
+        addMessageCount({commit}, count) {
+            commit('addMessageCount', count);
         }
     }
 })

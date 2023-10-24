@@ -30,7 +30,7 @@
               class="nav-item" index="/message">
 
             <img class="nav-icon" src="../assets/mail.svg"/>
-            <div class="read-point"/>
+            <div v-show="$store.getters.getChatUnreadCount>0" class="read-point"/>
             <span slot="title">私信</span>
           </el-menu-item>
           <el-menu-item

@@ -177,8 +177,8 @@ export default {
 
 <style scoped>
 .profile-avatar {
-  width: 116px;
-  height: 116px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 100%;
 }
 
@@ -215,8 +215,8 @@ export default {
   position: absolute;
   top: 0;
   left: 2px;
-  width: 116px;
-  height: 116px;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 100%;
   background-color: rgba(0, 0, 0, 0.3);
   text-align: center;
