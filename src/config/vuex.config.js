@@ -11,13 +11,12 @@ const store = new Vuex.Store({
         ws: null,
         message: {
             record: {
-                /**
-                 * key:{
-                 *     messages:[],
-                 *     unreadCount:0,
-                 *     date:""
-                 * }
-                 */
+             /*   conversation: "",
+                messages: [],
+                unreadCount: 0,
+                user: {},
+                reading: false,
+                page:1*/
             },
 
             isInit: false,
@@ -215,7 +214,8 @@ const store = new Vuex.Store({
                         messages: [],
                         unreadCount: 0,
                         user: {},
-                        reading: false
+                        reading: false,
+                        page:1
                     };
                 }
                 let user = state.user;
@@ -259,7 +259,8 @@ const store = new Vuex.Store({
                     messages: [],
                     unreadCount: payload[key].unreadCount,
                     user: {},
-                    reading: false
+                    reading: false,
+                    page:1
                 };
                 state.message.unRead += payload[key].unreadCount;
                 this.dispatch('pushMessage', {
@@ -280,6 +281,9 @@ const store = new Vuex.Store({
                 state.message.record[conversation].reading = status;
             }
         },
+        setConvPage(state, {conversation, page}){
+            state.message.record[conversation].page=page
+        },
         addConversation(state, {conversation, user}) {
             if (!state.message.record[conversation]) {
                 state.message.record[conversation] = {
@@ -287,7 +291,8 @@ const store = new Vuex.Store({
                     messages: [],
                     unreadCount: 0,
                     user: user,
-                    reading: false
+                    reading: false,
+                    page:1
                 }
             }
         }
