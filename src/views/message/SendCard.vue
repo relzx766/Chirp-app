@@ -2,11 +2,11 @@
   <el-row style="background-color: #ecf4f4">
     <el-col :span="2">
       <el-upload
-          :auto-upload="false"
           :limit="1"
           :show-file-list="false"
+          :before-upload="beforeUpload"
           action="#"
-          multiple
+          :http-request="doUpload"
           style="display: inline-block">
         <el-button circle class="edit-btn" size="small">
           <img alt="文件" class="bt-icon" src="../../assets/image.svg">
@@ -16,7 +16,7 @@
     <el-col :span="20">
       <el-input
           v-model="message.content"
-          :autosize="{minRows:1}"
+          :autosize="{minRows:1,maxRows:5}"
           maxlength="500"
           placeholder="发送一条私信"
           style="font-weight: bold;font-size: 18px;  text-align: left;"
@@ -51,6 +51,8 @@
 </template>
 <script>
 
+import ChunkUpload from "@/util/upload";
+
 export default {
   name: "SendCard",
   props: {
@@ -62,10 +64,21 @@ export default {
         content: "",
         type: "TEXT"
       },
+      file:null,
+      fileUrl:"",
       postBtnDisabled: true
     }
   },
   methods: {
+    init(){
+      this.message={
+        content: "",
+        type: "TEXT"
+      };
+      this.file=null;
+      this.fileUrl="";
+      this.postBtnDisabled=false;
+    },
     inputLimit() {
       this.postBtnDisabled = this.message.content.length <= 0;
     },
@@ -76,31 +89,64 @@ export default {
         this.send();
       }
     },
+    beforeUpload(file){
+      this.file=file;
+      this.fileUrl=URL.createObjectURL(this.file);
+      this.message.type=file.type.split('/').shift().toUpperCase();
+    },
+    doUpload(){
+      let id=Date.now();
+      let messages = this.generateMessage(id);
+      this.$store.commit('addPrivateMessage', {
+        payload: messages,
+        top: true
+      });
+    let upload= new ChunkUpload(this.file, {
+        onSuccess: (res) => {
+          upload.stop();
+            this.fileUrl=res.data.record.url;
+            this.message.type=res.data.record.category.toUpperCase();
+          messages = this.generateMessage(id);
+          messages.forEach(msg => {
+            this.$store.commit('wsSend', JSON.stringify(msg));
+          });
+        this.init();
+        },
+        onError: (res) => {
+          this.$message.error("文件上传失败\n" + res.message);
+        }
+      });
+      upload.start();
+    },
+    generateMessage(tempId){
+      let user = this.$store.getters.getUser;
+      let messages = [];
+      let id =tempId?tempId:Date.now();
+      let content=this.message.type==='TEXT'?this.message.content:this.fileUrl;
+      this.receiver.forEach(receiver => {
+        let conversation = Math.min(receiver.id, user.id) + "_" + Math.max(receiver.id, user.id);
+        let message = {
+          content: content,
+          type: this.message.type,
+          conversationId: conversation,
+          senderId: user.id,
+          senderName: user.nickname,
+          senderAvatar: user.smallAvatarUrl,
+          receiverId: receiver.id,
+          receiverName: receiver.nickname,
+          receiverAvatar: receiver.smallAvatarUrl,
+          id: id,
+          tempId: `${id}`,
+          isSending: true,
+          createTime: id
+        };
+        messages.push(message);
+      });
+      return messages;
+    },
     send() {
-      console.log(this.receiver)
       if (this.message.content.length > 0) {
-        let user = this.$store.getters.getUser;
-        let messages = [];
-        this.receiver.forEach(receiver => {
-          let conversation = Math.min(receiver.id, user.id) + "_" + Math.max(receiver.id, user.id);
-          let id = Date.now();
-          let message = {
-            content: this.message.content,
-            type: this.message.type,
-            conversationId: conversation,
-            senderId: user.id,
-            senderName: user.nickname,
-            senderAvatar: user.smallAvatarUrl,
-            receiverId: receiver.id,
-            receiverName: receiver.nickname,
-            receiverAvatar: receiver.smallAvatarUrl,
-            id: id,
-            tempId: `${id}`,
-            isSending: true,
-            createTime: id
-          };
-          messages.push(message);
-        })
+     let messages=this.generateMessage();
         this.$store.commit('addPrivateMessage', {
           payload: messages,
           top: true
@@ -108,7 +154,7 @@ export default {
         messages.forEach(msg => {
           this.$store.commit('wsSend', JSON.stringify(msg));
         })
-        this.message.content = "";
+        this.init();
       }
     }
   }

@@ -9,11 +9,19 @@
           </div>
           <div class="col-10" style="text-align: left">
             <el-row v-if="message.type==='TEXT'">
-              <span class="text_chat_msg shadow p-3 mb-5  rounded-end rounded-bottom"
+              <span class="text_chat_msg shadow p-3   rounded-end rounded-bottom"
                     v-html="formatText( message.content)"></span>
             </el-row>
+            <el-row v-else-if="message.type==='IMAGE'">
+              <el-image
+              fit="container"
+              :src="message.content"
+              :preview-src-list="[message.content]"
+              style="max-width: 60%;max-height: 500px;border-radius: 12px"
+              />
+            </el-row>
             <el-row v-else>
-              <span class="text_chat_msg shadow p-3 mb-5  rounded-end rounded-bottom">&nbsp;</span>
+              <span class="text_chat_msg shadow p-3   rounded-end rounded-bottom">&nbsp;</span>
             </el-row>
           </div>
         </div>
@@ -24,9 +32,16 @@
         <div class="row">
           <div class="col-1"></div>
           <div class="col-10" style="text-align: left">
-            <el-row v-if="message.type==='TEXT'" style="text-align: right">
-              <div v-if="message.isSending" class="loading" style="margin-right: 2px"/>
-              <span class="text_chat_msg shadow p-3 mb-5 bs-primary
+            <el-row  style="text-align: right;">
+              <div v-if="message.isSending" class="loading"/>
+              <el-image v-if="message.type==='IMAGE'"
+                  fit="container"
+                  :src="message.content"
+                  :preview-src-list="[message.content]"
+                        style="max-width: 60%;max-height: 500px;"
+                        class="rounded-start rounded-bottom "
+              />
+              <span v-else class="text_chat_msg shadow p-3  bs-primary
               rounded-start rounded-bottom " style="background-color:#409EFF;color: white;text-align: left"
                     v-html="formatText( message.content)"></span>
             </el-row>
@@ -42,8 +57,8 @@
 </template>
 
 <script>
-import {formatText, getDate, getMessageDate, getNewMsgCount} from "../../util/tools";
-import {msgDate} from "../../util/formatter";
+import {formatText, getDate, getMessageDate, getNewMsgCount} from "@/util/tools";
+import {msgDate} from "@/util/formatter";
 
 export default {
   name: "MessageCard",
@@ -65,13 +80,13 @@ export default {
 }
 
 .loading {
+  margin-right: 2px;
   display: inline-flex;
   width: 16px;
   height: 16px;
   border: 2px solid #409EFF;
   border-top-color: transparent;
   border-radius: 100%;
-  margin-top: 6px;
   animation: circle infinite 0.75s linear;
 }
 
