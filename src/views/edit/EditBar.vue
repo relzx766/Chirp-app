@@ -80,7 +80,6 @@ export default {
     },
     removeFile(index) {
       this.fileList.splice(index, 1);
-      console.log(this.fileList)
       this.$emit("removeMedia", index);
     },
     addMediaKey(media) {

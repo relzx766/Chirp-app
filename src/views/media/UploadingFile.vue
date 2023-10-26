@@ -5,17 +5,12 @@
               :src="fileUrl"
               fit="cover"
               style="border-radius: 20px;margin-bottom: 0"/>
-
     <div v-else-if="type==='video'||type==='application'" style="padding: 4px">
       <video-player :url="fileUrl"/>
     </div>
-
-
     <el-button circle class="btn-remove" icon="el-icon-close" style="padding: 0" type="info"
                @click="doRemove"></el-button>
     <div :style="progress" class="progress-bar"></div>
-
-
   </div>
 </template>
 
@@ -114,9 +109,6 @@ export default {
     this.fileUrl = URL.createObjectURL(this.file);
     this.type = this.file.type.split("/").shift();
     this.doUpload();
-  },
-  destroyed() {
-    console.log(this.file.name)
   }
 }
 </script>
