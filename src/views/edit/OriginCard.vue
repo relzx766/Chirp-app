@@ -7,19 +7,20 @@
       <el-col :span="20" style="text-align: left">
         <div class="input-area">
           <el-input
+              id="input-origin"
               v-model="text"
               autosize
               placeholder="有什么新鲜事?!"
               style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
               type="textarea"
-              @input="inputLimit()"
               @keyup.enter.native="()=>{text=text+'\u200B'}">
           </el-input>
         </div>
         <el-row style="margin-top: 20px;">
-          <edit-bar :post-btn-disabled="postBtnDisabled" @addMedia="addMedia"
+          <edit-bar :post-btn-disabled="this.text.trim().length <= 0" @addMedia="addMedia"
                     @post="doPost"
-                    @removeMedia="removeMedia"/>
+                    @removeMedia="removeMedia"
+          @emoji="setEmoji"/>
         </el-row>
       </el-col>
     </el-row>
@@ -40,13 +41,9 @@ export default {
     return {
       text: '',
       media: [],
-      postBtnDisabled: true
     }
   },
   methods: {
-    inputLimit() {
-      this.postBtnDisabled = this.text.trim().length <= 0;
-    },
     doPost() {
       postChirper(this.text, JSON.stringify(this.media)).then((res) => {
         if (res.code === 200) {
@@ -66,6 +63,16 @@ export default {
     removeMedia(index) {
       this.media.splice(index, 1);
       this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
+    },
+    setEmoji(emoji){
+      let input=document.getElementById("input-origin")
+      let startPos=input.selectionStart;
+      let endPos=input.selectionEnd;
+      let result=this.text.substring(0, startPos) + emoji.data + this.text.substring(endPos)
+      this.$set(this,'text',result);
+      input.focus();
+      input.selectionStart = startPos + emoji.data.length;
+      input.selectionEnd = startPos + emoji.data.length;
     }
 
   }

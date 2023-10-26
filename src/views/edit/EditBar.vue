@@ -1,6 +1,5 @@
 <template>
   <el-row>
-
     <waterfall :col="fileList.length>2?2:fileList.length"
 
                :data="fileList"
@@ -25,11 +24,19 @@
             multiple
             style="display: inline-block">
           <el-button circle size="small" style="border: none">
-            <img class="bt-icon" src="../../assets/image.svg">
+            <img class="bt-icon" src="../../assets/image.svg" alt="媒体">
           </el-button>
         </el-upload>
+        <el-popover
 
-
+            width="auto"
+            trigger="click"
+        >
+          <VEmojiPicker  @select="selectEmoji"/>
+          <el-button slot="reference" circle style="border: none" size="small">
+            <img class="bt-icon" src="../../assets/emoji.svg" alt="emoji">
+          </el-button>
+        </el-popover>
       </el-col>
       <el-col :span="10" style="text-align: right">
         <el-button ref="btn-post" :disabled="postBtnDisabled" icon="el-icon-s-promotion"
@@ -43,6 +50,7 @@
 
 <script>
 import UploadingFile from "@/views/media/UploadingFile.vue";
+import {VEmojiPicker} from "v-emoji-picker";
 
 export default {
   name: "EditBar",
@@ -50,7 +58,8 @@ export default {
     postBtnDisabled: true
   },
   components: {
-    'uploading-card': UploadingFile
+    'uploading-card': UploadingFile,
+  VEmojiPicker
   },
   data() {
     return {
@@ -84,6 +93,9 @@ export default {
     },
     addMediaKey(media) {
       this.$emit("addMedia", media);
+    },
+    selectEmoji(emoji){
+      this.$emit("emoji",emoji)
     }
   }
 }

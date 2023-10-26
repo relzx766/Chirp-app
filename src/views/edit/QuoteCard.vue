@@ -6,18 +6,20 @@
     <el-col :span="22" style="text-align: left">
       <div class="input-area">
         <el-input
+            id="input-quote"
             v-model="text"
             autosize
             placeholder="发表你的看法!"
             style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-            type="textarea" @input="inputLimit()"
+            type="textarea"
             @keyup.enter.native="()=>{text=text+'\u200B'}">
         </el-input>
       </div>
       <el-row style="margin-top: 20px;">
-        <edit-bar :post-btn-disabled="postBtnDisabled" @addMedia="addMedia"
+        <edit-bar :post-btn-disabled="this.text.trim().length <= 0" @addMedia="addMedia"
                   @post="doPost()"
-                  @removeMedia="removeMedia"/>
+                  @removeMedia="removeMedia"
+                  @emoji="setEmoji"/>
       </el-row>
       <el-row style="margin-top: 20px;border: 1px solid #EBEEF5;border-radius: 12px;padding: 8px;zoom: 0.92;">
         <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false" shadow="hover"></chirper-card>
@@ -43,14 +45,10 @@ export default {
   data() {
     return {
       text: '',
-      media: [],
-      postBtnDisabled: true
+      media: []
     }
   },
   methods: {
-    inputLimit() {
-      this.postBtnDisabled = this.text.trim().length <= 0;
-    },
     doPost() {
       quoteChirper(this.text, this.chirper.id, JSON.stringify(this.media)).then((res) => {
         if (res.code === 200) {
@@ -71,6 +69,17 @@ export default {
     removeMedia(index) {
       this.media.splice(index, 1);
       this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
+    },
+    setEmoji(emoji){
+      let input=document.getElementById("input-quote")
+      let startPos=input.selectionStart;
+      let endPos=input.selectionEnd;
+      let resultText = input.value.substring(0, startPos) + emoji.data + input.value.substring(endPos)
+      input.value = resultText
+      input.focus()
+      input.selectionStart = startPos + emoji.data.length
+      input.selectionEnd = startPos + emoji.data.length
+      this.text = resultText
     }
   },
 }

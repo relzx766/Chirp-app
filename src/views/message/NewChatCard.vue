@@ -60,7 +60,7 @@
       </div>
     </div>
     <div v-if="step2&&Object.keys(receivers).length>0" style="padding: 8px;">
-      <send-card :receiver="Object.values(receivers)" style="border-radius: 12px"/>
+      <send-card emoji-pos="left-start" :receiver="Object.values(receivers)" style="border-radius: 12px"/>
     </div>
   </div>
 </template>
