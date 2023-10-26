@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <el-row>
-        <el-col :span="10" style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
+        <el-col :span="9" style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
           <el-row style="text-align: left;margin-bottom: 14px;">
           <span style="font-weight: bold;margin-left: 6px;font-size: 20px">
             私信
@@ -21,7 +21,7 @@
           </el-row>
           <group-card/>
         </el-col>
-        <el-col :span="14" style="min-height: 100vh">
+        <el-col :span="14" style="min-height: 100vh;border-right:2px solid #EBEEF5;">
           <chat-card v-if="$route.query.conversation" :key="$route.query.conversation" :conversation="$route.query.conversation"
                      style="margin-left: 2px"/>
         </el-col>
