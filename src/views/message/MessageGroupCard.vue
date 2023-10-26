@@ -9,8 +9,10 @@
         </el-col>
         <el-col :span="18">
           <el-row style="font-size: 16px;color: #303133;font-weight: 560">{{ item.user.nickname }}</el-row>
-          <el-row class="text-truncate" style="font-size: 14px;color:#909399;max-width: 90%; display: inline-block">
-            {{ item.messages[0].content }}
+          <el-row>
+            <span class="text-truncate" style="font-size: 14px;color:#909399;max-width: 90%; display: inline-block">
+                  {{getPlaceholder( item.messages[0]) }}
+            </span>
           </el-row>
         </el-col>
         <el-col :span="3" style="text-align: right;font-size: 12px">
@@ -52,7 +54,16 @@ export default {
         this.$store.commit('initChatIndex', res.data.record);
         console.log(res.data.record)
       })
-    }
+    },
+getPlaceholder(message){
+      let  placeholder="";
+  switch (message.type) {
+    case "IMAGE":placeholder="[图片]";break;
+    case "VIDEO":placeholder="[视频]";break;
+    default:placeholder=message.content;
+  }
+  return placeholder;
+}
   },
   watch: {
     '$store.state.message.count': {
