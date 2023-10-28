@@ -11,12 +11,13 @@ const store = new Vuex.Store({
         ws: null,
         message: {
             record: {
-             /*   conversation: "",
-                messages: [],
-                unreadCount: 0,
-                user: {},
-                reading: false,
-                page:1*/
+
+                /*{ key:  conversation: "",
+                   messages: [],
+                   unreadCount: 0,
+                   user: {},
+                   reading: false,
+                   page:1}*/
             },
 
             isInit: false,
@@ -72,6 +73,9 @@ const store = new Vuex.Store({
         },
         getChatUnreadCount: state => {
             return state.message.unRead;
+        },
+        getAllConversation: state => {
+            return state.message.record.map(obj => obj.conversation);
         }
     },
     mutations: {
@@ -85,7 +89,6 @@ const store = new Vuex.Store({
                     let messages = JSON.parse(e.data);
                     let notice = messages.NOTICE;
                     let chat = messages.CHAT;
-                    console.log(messages)
                     if (notice && notice.length > 0) {
                         this.dispatch('pushNotice', {
                             payload: notice,
@@ -195,6 +198,11 @@ const store = new Vuex.Store({
             for (let i = 0; i < messages.length; i++) {
                 let item = messages[i];
                 let key = item.conversationId;
+                if (state.message.filterMap.has(item.id)) {
+                    continue;
+                } else {
+                    state.message.filterMap.set(item.id, 1);
+                }
                 if (item.tempId && state.message.record[key] && state.message.record[key].messages) {
                     let index = state.message.record[key].messages.findIndex(message =>
                         message.tempId === item.tempId
@@ -203,11 +211,7 @@ const store = new Vuex.Store({
                         state.message.record[key].messages.splice(index, 1);
                     }
                 }
-                if (state.message.filterMap.has(item.id)) {
-                    continue;
-                } else {
-                    state.message.filterMap.set(item.id, 1);
-                }
+
                 if (!state.message.record[key]) {
                     state.message.record[key] = {
                         conversation: key,
@@ -215,7 +219,7 @@ const store = new Vuex.Store({
                         unreadCount: 0,
                         user: {},
                         reading: false,
-                        page:1
+                        page: 1
                     };
                 }
                 let user = state.user;
@@ -237,37 +241,19 @@ const store = new Vuex.Store({
                     }
                 }
                 if (top) {
-                    state.message.record[key].messages.unshift(item);
+                    state.message.record[key].messages.push(item);
                     if (!state.message.record[key].reading && item.status === 1 && state.user.id !== item.senderId) {
                         state.message.record[key].unreadCount++;
                         state.message.unRead++;
                     }
                 } else {
-                    state.message.record[key].messages.push(item);
+                    state.message.record[key].messages.unshift(item);
                 }
             }
-
             this.dispatch('addMessageCount', messages.length);
         },
         addMessageCount(state, count) {
             state.message.count += count;
-        },
-        initChatIndex(state, payload) {
-            Object.keys(payload).forEach(key => {
-                state.message.record[key] = {
-                    conversation: key,
-                    messages: [],
-                    unreadCount: payload[key].unreadCount,
-                    user: {},
-                    reading: false,
-                    page:1
-                };
-                state.message.unRead += payload[key].unreadCount;
-                this.dispatch('pushMessage', {
-                    payload: payload[key].data,
-                    top: false
-                })
-            })
         },
         setConversationUnread(state, {conversation, count}) {
             if (state.message.record[conversation]) {
@@ -281,8 +267,8 @@ const store = new Vuex.Store({
                 state.message.record[conversation].reading = status;
             }
         },
-        setConvPage(state, {conversation, page}){
-            state.message.record[conversation].page=page
+        setConvPage(state, {conversation, page}) {
+            state.message.record[conversation].page = page
         },
         addConversation(state, {conversation, user}) {
             if (!state.message.record[conversation]) {
@@ -292,7 +278,7 @@ const store = new Vuex.Store({
                     unreadCount: 0,
                     user: user,
                     reading: false,
-                    page:1
+                    page: 1
                 }
             }
         }
