@@ -24,17 +24,17 @@
             multiple
             style="display: inline-block">
           <el-button circle size="small" style="border: none">
-            <img class="bt-icon" src="../../assets/image.svg" alt="媒体">
+            <img alt="媒体" class="bt-icon" src="../../assets/image.svg">
           </el-button>
         </el-upload>
         <el-popover
 
-            width="auto"
             trigger="click"
+            width="auto"
         >
-          <VEmojiPicker  @select="selectEmoji"/>
-          <el-button slot="reference" circle style="border: none" size="small">
-            <img class="bt-icon" src="../../assets/emoji.svg" alt="emoji">
+          <VEmojiPicker @select="selectEmoji"/>
+          <el-button slot="reference" circle size="small" style="border: none">
+            <img alt="emoji" class="bt-icon" src="../../assets/emoji.svg">
           </el-button>
         </el-popover>
       </el-col>
@@ -59,7 +59,7 @@ export default {
   },
   components: {
     'uploading-card': UploadingFile,
-  VEmojiPicker
+    VEmojiPicker
   },
   data() {
     return {
@@ -94,8 +94,8 @@ export default {
     addMediaKey(media) {
       this.$emit("addMedia", media);
     },
-    selectEmoji(emoji){
-      this.$emit("emoji",emoji)
+    selectEmoji(emoji) {
+      this.$emit("emoji", emoji)
     }
   }
 }

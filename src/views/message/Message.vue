@@ -22,7 +22,8 @@
           <group-card/>
         </el-col>
         <el-col :span="14" style="min-height: 100vh;border-right:2px solid #EBEEF5;">
-          <chat-card v-if="$route.query.conversation" :key="$route.query.conversation" :conversation="$route.query.conversation"
+          <chat-card v-if="$route.query.conversation" :key="$route.query.conversation"
+                     :conversation="$route.query.conversation"
                      style="margin-left: 2px"/>
         </el-col>
       </el-row>

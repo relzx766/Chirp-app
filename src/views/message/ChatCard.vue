@@ -8,25 +8,30 @@
             {{ getChat.user.nickname }}
           </span>
       </div>
-      <div class="overflow-y-auto content" ref="content"
-           style="height: 90%;  display: flex;flex-direction: column-reverse;padding-bottom: 24px;padding-top: 24px"
-      @scroll="loadMore">
+      <div ref="content" class="overflow-y-scroll content"
+           style="height: 90%;  padding-bottom: 24px;padding-top: 24px"
+           @scroll="loadMore">
+        <div style="height: 104%;">
+          <el-row v-for="(item,index) in getChat.messages" :key="item.id">
+            <!--          如果消息间隔相差2分组同时不是第一条-->
+            <el-row
+                v-if="index>0&&subtractDates(getChat.messages[index].createTime,getChat.messages[index-1].createTime)>2*60*1000"
+                class=" text-body-tertiary chat-date">
+              {{ chatDate(item.createTime) }}
+            </el-row>
+            <el-row v-if="index===0" class="text-body-tertiary chat-date">
+              {{ chatDate(item.createTime) }}
+            </el-row>
+            <message-card :id="item.id"
+                          :class="index===getChat.messages.length-1?'mb-4':'mb-2'"
+                          :message="item"
+                          :reverse="item.senderId===$store.getters.getUser.id"
+                          :user="item.senderId===$store.getters.getUser.id?$store.getters.getUser:getChat.user"
+                          class="mt-2 mb-2"/>
 
-        <el-row v-for="(item,index) in getChat.messages" :key="item.id">
-          <!--          如果消息间隔相差2分组同时不是第一条（在此为最后一条）-->
-          <el-row v-if="index<getChat.messages.length-1&&subtractDates(getChat.messages[index].createTime,getChat.messages[index+1].createTime)>2*60*1000"
-                  class=" text-body-tertiary chat-date">
-            {{ chatDate(item.createTime) }}
           </el-row>
-          <el-row v-if="index===getChat.messages.length-1" class="text-body-tertiary chat-date">
-            {{ chatDate(item.createTime) }}
-          </el-row>
-          <message-card :message="item"
-                        :reverse="item.senderId===$store.getters.getUser.id"
-                        :user="item.senderId===$store.getters.getUser.id?$store.getters.getUser:getChat.user"
-          class="mt-2 mb-2"/>
+        </div>
 
-        </el-row>
       </div>
     </div>
     <div class="position-fixed bottom-0 end-1"
@@ -55,10 +60,10 @@ export default {
     SendCard,
     MessageCard
   },
-  data(){
-    return{
-      isBottom:false,
-      isLoading:false
+  data() {
+    return {
+      isBottom: false,
+      isLoading: false
     }
   },
   computed: {
@@ -75,27 +80,28 @@ export default {
       }
     }
   },
-  methods: {chatDate, msgDate, subtractDates,
-    loadMore(){
+  methods: {
+    chatDate, msgDate, subtractDates,
+    loadMore() {
       const scrollTop = this.$refs.content.scrollTop
       const clientHeight = this.$refs.content.clientHeight
       const scrollHeight = this.$refs.content.scrollHeight
-      if (scrollTop +  scrollHeight-10<=clientHeight&&!this.isBottom&&!this.isLoading) {
-        this.isLoading=true;
-        let page=this.getChat.page;
-        getChatHistory(this.getChat.user.id,page).then(res=>{
-          if (res.data.record.length<=0){
-            this.isBottom=true;
-          }else {
-            this.$store.commit('addPrivateMessage',{
-              payload:res.data.record,
-              top:false
+      if (scrollTop + scrollHeight - 30 <= clientHeight && !this.isBottom && !this.isLoading) {
+        this.isLoading = true;
+        let page = this.getChat.page;
+        getChatHistory(this.getChat.user.id, page).then(res => {
+          if (res.data.record.length <= 0) {
+            this.isBottom = true;
+          } else {
+            this.$store.commit('addPrivateMessage', {
+              payload: res.data.record,
+              top: false
             });
-            this.$store.commit('setConvPage',{
-              conversation:this.getChat.conversation,
-              page:page+1
+            this.$store.commit('setConvPage', {
+              conversation: this.getChat.conversation,
+              page: page + 1
             });
-            this.isLoading=false;
+            this.isLoading = false;
           }
         });
       }
@@ -105,6 +111,9 @@ export default {
     markConversationRead([this.conversation]);
     this.$store.commit('setConversationUnread', {conversation: this.conversation, count: 0});
     this.$store.commit('setConvReadStatus', {conversation: this.conversation, status: true});
+  },
+  mounted() {
+    document.getElementById(this.getChat.messages[this.getChat.messages.length - 1].id).scrollIntoView({behavior: 'smooth'})
   },
   destroyed() {
     this.$store.commit('setConvReadStatus', {conversation: this.conversation, status: false})
@@ -131,7 +140,8 @@ export default {
   -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
   border-radius: 10px;
   background: #ededed;
-  margin-top: -30px;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 
 /* 滚动条两端按钮 */

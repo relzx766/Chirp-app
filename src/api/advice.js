@@ -19,7 +19,7 @@ export const markAsRead = (data) => {
 
 export const getChatIndexPage = (page) => {
     return Get({
-        url: `${base}chat/page/${page}`
+        url: `${base}chat/index`
     })
 }
 export const getChatHistory = (senderId, page) => {

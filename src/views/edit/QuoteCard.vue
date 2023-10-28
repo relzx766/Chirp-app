@@ -17,9 +17,9 @@
       </div>
       <el-row style="margin-top: 20px;">
         <edit-bar :post-btn-disabled="this.text.trim().length <= 0" @addMedia="addMedia"
+                  @emoji="setEmoji"
                   @post="doPost()"
-                  @removeMedia="removeMedia"
-                  @emoji="setEmoji"/>
+                  @removeMedia="removeMedia"/>
       </el-row>
       <el-row style="margin-top: 20px;border: 1px solid #EBEEF5;border-radius: 12px;padding: 8px;zoom: 0.92;">
         <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false" shadow="hover"></chirper-card>
@@ -70,10 +70,10 @@ export default {
       this.media.splice(index, 1);
       this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     },
-    setEmoji(emoji){
-      let input=document.getElementById("input-quote")
-      let startPos=input.selectionStart;
-      let endPos=input.selectionEnd;
+    setEmoji(emoji) {
+      let input = document.getElementById("input-quote")
+      let startPos = input.selectionStart;
+      let endPos = input.selectionEnd;
       let resultText = input.value.substring(0, startPos) + emoji.data + input.value.substring(endPos)
       input.value = resultText
       input.focus()

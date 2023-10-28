@@ -14,10 +14,10 @@
             </el-row>
             <el-row v-else-if="message.type==='IMAGE'">
               <el-image
-              fit="container"
-              :src="message.content"
-              :preview-src-list="[message.content]"
-              style="max-width: 60%;max-height: 500px;border-radius: 12px"
+                  :preview-src-list="[message.content]"
+                  :src="message.content"
+                  fit="container"
+                  style="max-width: 60%;max-height: 500px;border-radius: 12px"
               />
             </el-row>
             <el-row v-else>
@@ -32,14 +32,14 @@
         <div class="row">
           <div class="col-1"></div>
           <div class="col-10" style="text-align: left">
-            <el-row  style="text-align: right;">
+            <el-row style="text-align: right;">
               <div v-if="message.isSending" class="loading"/>
               <el-image v-if="message.type==='IMAGE'"
-                  fit="container"
-                  :src="message.content"
-                  :preview-src-list="[message.content]"
-                        style="max-width: 60%;max-height: 500px;"
+                        :preview-src-list="[message.content]"
+                        :src="message.content"
                         class="rounded-start rounded-bottom "
+                        fit="container"
+                        style="max-width: 60%;max-height: 500px;"
               />
               <span v-else class="text_chat_msg shadow p-3  bs-primary
               rounded-start rounded-bottom " style="background-color:#409EFF;color: white;text-align: left"

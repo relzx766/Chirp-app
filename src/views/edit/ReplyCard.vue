@@ -34,9 +34,9 @@
         </div>
         <el-row style="margin-top: 20px;">
           <edit-bar :post-btn-disabled="this.text.trim().length <= 0" @addMedia="addMedia"
+                    @emoji="setEmoji"
                     @post="doPost"
-                    @removeMedia="removeMedia"
-                    @emoji="setEmoji"/>
+                    @removeMedia="removeMedia"/>
         </el-row>
       </el-col>
     </el-row>
@@ -86,10 +86,10 @@ export default {
       this.media.splice(index, 1);
       this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     },
-    setEmoji(emoji){
-      let input=document.getElementById("input-reply")
-      let startPos=input.selectionStart;
-      let endPos=input.selectionEnd;
+    setEmoji(emoji) {
+      let input = document.getElementById("input-reply")
+      let startPos = input.selectionStart;
+      let endPos = input.selectionEnd;
       let resultText = input.value.substring(0, startPos) + emoji.data + input.value.substring(endPos)
       input.value = resultText
       input.focus()
