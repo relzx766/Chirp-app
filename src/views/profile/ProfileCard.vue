@@ -35,7 +35,9 @@
           </el-button>
           <el-row v-if="!isSelf">
             <el-button circle icon="el-icon-more"></el-button>
-            <el-button circle icon="el-icon-message"></el-button>
+            <el-button circle icon="el-icon-message" @click="toChat" style="margin-right: 12px"></el-button>
+
+
             <el-button :class="followBtnClass" round @click="doFollow">{{ followBtnText }}</el-button>
           </el-row>
           <el-dialog
@@ -98,12 +100,14 @@ import {getCount, getToken} from "@/util/tools";
 import {follow, unFollow} from "@/api/user";
 import ProfileEditCard from "@/views/profile/ProfileEditCard.vue";
 import FollowerCard from "@/views/profile/FollowerCard.vue";
+import SendCard from "@/views/message/SendCard.vue";
 
 export default {
   name: "ProfileCard",
   components: {
     'edit-card': ProfileEditCard,
-    FollowerCard
+    FollowerCard,
+    SendCard
   },
 
   props: {
@@ -148,6 +152,15 @@ export default {
         this.followBtnText = "关注";
         this.followBtnClass = "unfollowed";
       }
+    },
+    toChat(){
+      let user=this.$store.getters.getUser;
+      let conversation=`${Math.min(this.user.id,user.id)}_${Math.max(this.user.id,user.id)}`;
+      this.$store.commit('addConversation',{
+        conversation:conversation,
+        user:this.user
+      });
+      this.$router.push('/message?conversation='+conversation);
     }
   },
   created() {

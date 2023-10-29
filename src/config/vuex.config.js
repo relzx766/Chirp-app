@@ -2,10 +2,7 @@ import Vuex from 'vuex'
 import Vue from "vue";
 import websocketLink from './websocket.config';
 import {getToken} from "@/util/tools";
-
 Vue.use(Vuex);
-
-
 const store = new Vuex.Store({
     state: {
         ws: null,
@@ -17,6 +14,7 @@ const store = new Vuex.Store({
                    unreadCount: 0,
                    user: {},
                    reading: false,
+                   date:timestamp
                    page:1}*/
             },
 
@@ -25,7 +23,8 @@ const store = new Vuex.Store({
             unRead: 0,
             filterMap: new Map(),
             //每个发送者都需要存储
-            page: new Map()
+            page: new Map(),
+            newChatQueue:[]
         },
         notice: {
             record: {},
@@ -76,6 +75,9 @@ const store = new Vuex.Store({
         },
         getAllConversation: state => {
             return state.message.record.map(obj => obj.conversation);
+        },
+        popNewChatQueue: state => {
+            return state.message.newChatQueue.pop()
         }
     },
     mutations: {
@@ -132,15 +134,15 @@ const store = new Vuex.Store({
                 } else {
                     state.notice.filterMap.set(item.id, 1);
                 }
-                if (!item.isRead) {
-                    state.notice.unReadRecord.push(item.id);
-                    state.notice.unRead++;
-                }
-                if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
-                    if (item.event === 'TWEETED') {
-                        state.followingUpdate.record.unshift(item);
-                        state.followingUpdate.count += 1;
-                    } else {
+                if (item.event === 'TWEETED') {
+                    state.followingUpdate.record.unshift(item);
+                    state.followingUpdate.count += 1;
+                }else {
+                    if (!item.isRead) {
+                        state.notice.unReadRecord.push(item.id);
+                        state.notice.unRead++;
+                    }
+                    if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
                         if (item.entityType === 'CHIRPER') {
                             item.sonEntity = JSON.parse(item.sonEntity);
                             if (item.entity !== 'null') {
@@ -177,7 +179,6 @@ const store = new Vuex.Store({
                         state.notice.count += 1;
                     }
                 }
-
             }
 
         },
@@ -219,8 +220,12 @@ const store = new Vuex.Store({
                         unreadCount: 0,
                         user: {},
                         reading: false,
+                        date:new Date(item.createTime).getTime(),
                         page: 1
                     };
+                }else {
+
+                    state.message.record[key].date=Math.max(new Date(item.createTime).getTime(),state.message.record[key].date);
                 }
                 let user = state.user;
                 switch (user.id) {
@@ -245,7 +250,9 @@ const store = new Vuex.Store({
                     if (!state.message.record[key].reading && item.status === 1 && state.user.id !== item.senderId) {
                         state.message.record[key].unreadCount++;
                         state.message.unRead++;
+                        state.message.newChatQueue.push(item)
                     }
+
                 } else {
                     state.message.record[key].messages.unshift(item);
                 }
@@ -278,6 +285,7 @@ const store = new Vuex.Store({
                     unreadCount: 0,
                     user: user,
                     reading: false,
+                    date:Date.now(),
                     page: 1
                 }
             }

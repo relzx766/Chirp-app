@@ -103,7 +103,6 @@ export default {
             this.notifications.push(classify);
           });
         }
-        console.log(this.notifications)
       },
       immediate: true
     }

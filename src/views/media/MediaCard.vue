@@ -10,7 +10,7 @@
                 :src="item.url"
                 :style="{width:'99%',
              marginTop:index>1?'4px':'0px',
-             height:media.length>1?'200px':'auto' }"
+             height:media.length>1?'200px':'auto'}"
                 fit="cover"
                 style="border-radius: 14px;">
       </el-image>

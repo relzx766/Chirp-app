@@ -17,7 +17,7 @@ export const markAsRead = (data) => {
     })
 }
 
-export const getChatIndexPage = (page) => {
+export const getChatIndexPage = () => {
     return Get({
         url: `${base}chat/index`
     })

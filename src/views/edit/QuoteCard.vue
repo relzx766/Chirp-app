@@ -16,7 +16,7 @@
         </el-input>
       </div>
       <el-row style="margin-top: 20px;">
-        <edit-bar :post-btn-disabled="this.text.trim().length <= 0" @addMedia="addMedia"
+        <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0" @addMedia="addMedia"
                   @emoji="setEmoji"
                   @post="doPost()"
                   @removeMedia="removeMedia"/>

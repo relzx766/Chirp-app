@@ -1,7 +1,7 @@
 <template>
 
   <div>
-    <div v-if="getChat.messages.length>0" style="height: 100vh">
+    <div  style="height: 100vh">
       <div style="display: flex;align-items: center;border-bottom: 1px solid #DCDFE6;padding: 12px">
         <el-avatar :size="36" :src="getChat.user.smallAvatarUrl"/>
         <span style="font-weight: bold;font-size: 16px;margin-left: 12px">
@@ -113,6 +113,7 @@ export default {
     this.$store.commit('setConvReadStatus', {conversation: this.conversation, status: true});
   },
   mounted() {
+    if (this.getChat.messages.length>0)
     document.getElementById(this.getChat.messages[this.getChat.messages.length - 1].id).scrollIntoView({behavior: 'smooth'})
   },
   destroyed() {

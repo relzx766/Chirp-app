@@ -58,7 +58,9 @@
 ![](./docs/mention.png)
 
 ### 私信
+#### 新消息通知
 
+![](./docs/new_chat_notice.png)
 #### 创建新私信
 
 ![](./docs/new_chat.png)

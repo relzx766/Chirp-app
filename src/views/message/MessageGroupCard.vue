@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card v-for="(item, index) in messages" :key="item.messages[item.messages.length-1].id"
+    <el-card v-for="(item, index) in messages" :key="item.date"
              :style="item.conversation===$route.query.conversation?focusConversation:''" shadow="hover"
              style="border: none;border-radius: 0;cursor: pointer"
              @click.native="$router.push('/message?conversation='+item.conversation)">
@@ -10,7 +10,7 @@
         </el-col>
         <el-col :span="18">
           <el-row style="font-size: 16px;color: #303133;font-weight: 560">{{ item.user.nickname }}</el-row>
-          <el-row>
+          <el-row v-if="item.messages.length>0">
             <span class="text-truncate" style="font-size: 14px;color:#909399;max-width: 90%; display: inline-block">
                   {{ getPlaceholder(item.messages[item.messages.length - 1]) }}
             </span>
@@ -18,7 +18,7 @@
         </el-col>
         <el-col :span="3" style="text-align: right;font-size: 12px">
           <el-row style="color:#909399;margin-bottom: 2px">
-            {{ msgDate(item.messages[item.messages.length - 1].createTime) }}
+            {{ msgDate(item.date) }}
           </el-row>
           <el-row v-if="item.unreadCount>0">
             <el-badge :value="item.unreadCount<=99?item.unreadCount:99" class="item"/>
@@ -54,19 +54,22 @@ export default {
     init() {
       let messages;
       let unreadMap;
-      getChatIndexPage(1).then(res => {
+      getChatIndexPage().then(res => {
         messages = res.data.record;
-        console.log(messages)
-      }).then(() => {
-        getChatUnread(messages.map(msg => msg.conversationId)).then(res => {
-          unreadMap = res.data.record;
-        })
         this.$store.commit('addPrivateMessage', {
           payload: messages,
           top: false
         });
       }).then(() => {
-        console.log(unreadMap);
+        getChatUnread(messages.map(msg => msg.conversationId)).then(res => {
+          unreadMap = res.data.record;
+          Object.keys(unreadMap).forEach(key=>{
+            this.$store.commit('setConversationUnread',{
+              conversation:key,
+              count:unreadMap[key]
+            })
+          })
+        });
       })
     },
     getPlaceholder(message) {
@@ -89,8 +92,9 @@ export default {
       handler() {
         let messages = this.$store.getters.getPrivateMessage.record;
         let arr = Object.values(messages).sort((a, b) => {
-          return new Date(b.messages[b.messages.length - 1].createTime) - new Date(a.messages[a.messages.length - 1].createTime)
+          return new Date(b.date) - new Date(a.date)
         });
+        console.log(arr)
         this.$set(this, 'messages', arr);
       },
       immediate: true

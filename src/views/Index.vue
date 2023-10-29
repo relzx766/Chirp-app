@@ -79,6 +79,8 @@
 import {getToken} from "@/util/tools";
 import {getDetailProfile} from "@/api/user";
 import OriginCard from "@/views/edit/OriginCard.vue";
+import {getChatIndexPage, getChatUnread, getPage} from "@/api/advice";
+import {h} from "vue";
 
 export default {
   name: "Index",
@@ -86,12 +88,23 @@ export default {
     OriginCard
   },
   data() {
-    return {}
+    return {
+      newChatNotice:null
+    }
   },
   methods: {
     getToken,
     to(url) {
       this.$router.push(url)
+    },
+   async init(){
+     if (getToken() != null && getToken().length > 0) {
+   await    this.loadUser();
+   await this.$store.dispatch('wsInit').then(()=>{
+         this.loadNotice();
+         this.loadChat();
+       })
+     }
     },
     signOut() {
       this.$store.commit("websocketClose")
@@ -103,6 +116,36 @@ export default {
       getDetailProfile(localStorage.getItem("id")).then(r => {
         this.$store.commit("setUser", r.data.record);
       })
+    },
+    loadNotice(){
+      getPage(this.$store.getters.getNoticePage).then(res => {
+        this.$store.commit('incrementNoticePage')
+        this.$store.commit('addNotice', {
+          payload: res.data.record,
+          top: false
+        });
+      })
+    },
+    loadChat(){
+      let messages;
+      let unreadMap;
+      getChatIndexPage().then(res => {
+        messages = res.data.record;
+        this.$store.commit('addPrivateMessage', {
+          payload: messages,
+          top: false
+        });
+      }).then(() => {
+        getChatUnread(messages.map(msg => msg.conversationId)).then(res => {
+          unreadMap = res.data.record;
+          Object.keys(unreadMap).forEach(key=>{
+            this.$store.commit('setConversationUnread',{
+              conversation:key,
+              count:unreadMap[key]
+            })
+          })
+        });
+      })
     }
   },
   watch: {
@@ -113,13 +156,47 @@ export default {
         }
       },
       immediate: true
+    },
+    '$store.state.message.unRead': {
+      handler() {
+        let message=this.$store.getters.popNewChatQueue;
+        const h = this.$createElement;
+        if (this.$route.path!=='/message'&&message) {
+
+          if (this.newChatNotice){
+            this.newChatNotice.close();
+          }
+          this.newChatNotice= this.$notify({
+            position:'bottom-right',
+           onClick:()=>{this.newChatNotice.close()},
+            dangerouslyUseHTMLString: true,
+            message: h('div', {
+              style: {
+                display: "flex", alignItems: "center",cursor:"pointer"
+              }, on: {
+                'click': () => {
+                  this.$router.push('/message?conversation=' + message.conversationId)
+                }
+              }
+            }, [
+              h('el-avatar', {props: {src: message.senderAvatar}}, {}),
+              h('span', {style:{marginLeft:"12px"}}, message.content)
+            ])
+          })
+        }
+      }
     }
   },
   created() {
-    if (getToken() != null && getToken().length > 0) {
-      this.loadUser();
-      this.$store.dispatch('wsInit');
-    }
+    const loading = this.$loading({
+      lock: true,
+      text: '',
+      spinner: '',
+      background: '#ffffff'
+    });
+    this.init().then(()=>{
+      loading.close();
+    })
   }
 }
 </script>
@@ -156,4 +233,24 @@ li {
   margin-left: 30%;
 }
 
+</style>
+<style>
+.el-loading-spinner .circular{
+  width: 42px;
+  height: 42px;
+  animation: loading-rotate 2s linear infinite;
+  display: none;
+}
+.el-loading-spinner{
+
+  /* 图片替换为你自定义的即可 */
+  background: url(../assets/logo.svg) no-repeat;
+
+  background-size: 48px 48px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  top: 50%;
+  left: 50%;
+}
 </style>
