@@ -2,6 +2,7 @@ import Vuex from 'vuex'
 import Vue from "vue";
 import websocketLink from './websocket.config';
 import {getToken} from "@/util/tools";
+import {getAdviceAudio} from "@/util/adviceUtil";
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
@@ -250,7 +251,8 @@ const store = new Vuex.Store({
                     if (!state.message.record[key].reading && item.status === 1 && state.user.id !== item.senderId) {
                         state.message.record[key].unreadCount++;
                         state.message.unRead++;
-                        state.message.newChatQueue.push(item)
+                        state.message.newChatQueue.push(key);
+                        getAdviceAudio().play();
                     }
 
                 } else {

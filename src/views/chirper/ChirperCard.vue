@@ -9,7 +9,7 @@
         <el-col :span="21" style="text-align: left;margin-left: 10px">
           <el-row v-if="straight">
             <el-col :span="16">
-              <el-link :href="'/profile?id='+chirper.authorId" style="font-size: 16px;font-weight: bold">{{
+              <el-link style="font-size: 16px;font-weight: bold" @click="$router.push('/profile?id='+chirper.authorId)">{{
                   chirper.nickname
                 }}
               </el-link>
@@ -24,7 +24,7 @@
           </el-row>
           <el-row v-if="!straight">
             <el-row>
-              <el-link :href="'/profile?id='+chirper.authorId" style="font-size: 16px;font-weight: bold">{{
+              <el-link  @click="$router.push('/profile?id='+chirper.authorId)" style="font-size: 16px;font-weight: bold">{{
                   chirper.nickname
                 }}
               </el-link>
@@ -36,8 +36,8 @@
             <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
                     v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
 
-            <div v-if="mediaVisible&&parseMedia&&parseMedia.length>0" id="media" ref="media">
-              <MediaCard :media="parseMedia"/>
+            <div v-if="mediaVisible&&chirper.mediaKeys&&chirper.mediaKeys.length>0" id="media" ref="media">
+              <MediaCard :media="chirper.mediaKeys"/>
             </div>
           </el-row>
           <el-row v-if="!straight" style="text-align: left;font-size: 14px;color: #909399;margin-top: 12px;">{{
@@ -96,14 +96,6 @@ export default {
     replyVisible: {
       type: Boolean,
       default: false
-    }
-  },
-  computed: {
-    parseMedia() {
-      if ((typeof this.chirper.mediaKeys) === 'string') {
-        return JSON.parse(this.chirper.mediaKeys);
-      }
-      return this.chirper.mediaKeys;
     }
   },
   methods: {

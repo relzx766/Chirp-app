@@ -25,6 +25,14 @@
           <chat-card v-if="$route.query.conversation" :key="$route.query.conversation"
                      :conversation="$route.query.conversation"
                      style="margin-left: 2px"/>
+          <div v-else style="text-align: left;padding-left: 20%;padding-top: 30%" class="">
+            <el-row class="fs-2 fw-bold" style="color: #303133">选择一条私信</el-row>
+            <el-row class="fs-6" style="color: #606266">从现有的对话中选择，开始新的对话，或者只是继续浏览。</el-row>
+            <el-row>
+              <el-button round type="primary" @click="newChatDialog=!newChatDialog"
+              class="fs-6 fw-bolder mt-4">新私信</el-button>
+            </el-row>
+          </div>
         </el-col>
       </el-row>
     </el-main>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import {Message} from "element-ui";
 
 const service = axios.create({
     timeout: 30000,  // 请求 30s 超时
@@ -101,6 +102,7 @@ service.interceptors.response.use(
         if (error.response.status) {
             // 处理请求失败的情况
             // 对不同返回码对相应处理
+            Message.error(error.response.data.message)
             return Promise.reject(error.response)
         }
     }

@@ -130,6 +130,9 @@ export default {
         this.recommend.chirper.push(...res.data.record);
         this.recommend.isBottom = res.data.record.length <= 0;
         this.recommend.isLoading = false;
+      }).catch(e=>{
+        this.recommend.isBottom=true;
+        this.recommend.isLoading = false;
       })
     },
     loadPage() {

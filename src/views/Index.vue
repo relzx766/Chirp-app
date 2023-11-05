@@ -37,7 +37,7 @@
               :disabled="getToken()===null"
               class="nav-item" index="/community">
             <img class="nav-icon" src="../assets/user-group.svg"/>
-            <span slot="title">社区</span>
+            <span slot="title">社群</span>
           </el-menu-item>
           <el-menu-item :disabled="getToken()===null" class="nav-item"
                         index="/profile"
@@ -47,18 +47,18 @@
           </el-menu-item>
         </el-menu>
         <el-row v-if="getToken()!=null&&getToken().length>0"
-                style="margin-left: 30%;margin-top: 70%">
+                style="margin-left: 30%;margin-top: 70%;font-size: 14px">
           <el-col :span="5" style="text-align: left">
             <el-avatar :src="$store.getters.getUser.smallAvatarUrl" fit="cover" size="large"/>
           </el-col>
           <el-col :span="12" style="text-align: left">
             <el-row>
               <el-row>
-                <el-link :href="'/profile?id='+$store.getters.getUser.id" style="font-size: 16px;font-weight: bold">
+                <el-link :href="'/profile?id='+$store.getters.getUser.id" class="d-inline-block text-truncate" style="font-size: 16px;font-weight: bold;max-width: 96%">
                   {{ $store.getters.getUser.nickname }}
                 </el-link>
               </el-row>
-              <el-row style="color:#909399;">@{{ $store.getters.getUser.username }}</el-row>
+              <el-row class="d-inline-block text-truncate" style="color:#909399;max-width: 96%">@{{ $store.getters.getUser.username }}</el-row>
             </el-row>
           </el-col>
           <el-col :span="5" style="text-align: left">
@@ -159,28 +159,27 @@ export default {
     },
     '$store.state.message.unRead': {
       handler() {
-        let message=this.$store.getters.popNewChatQueue;
+        let conversation=this.$store.getters.popNewChatQueue;
+        let record=this.$store.getters.getChatHistory(conversation);
         const h = this.$createElement;
-        if (this.$route.path!=='/message'&&message) {
-
+        if (this.$route.path!=='/message'&&conversation&&record.messages.length>0) {
           if (this.newChatNotice){
             this.newChatNotice.close();
           }
+         let message=record.messages[record.messages.length-1]
           this.newChatNotice= this.$notify({
             position:'bottom-right',
-           onClick:()=>{this.newChatNotice.close()},
+           onClick:()=>{this.newChatNotice.close();this.$router.push('/message?conversation=' + conversation)},
+            duration:0,
             dangerouslyUseHTMLString: true,
             message: h('div', {
               style: {
                 display: "flex", alignItems: "center",cursor:"pointer"
-              }, on: {
-                'click': () => {
-                  this.$router.push('/message?conversation=' + message.conversationId)
-                }
               }
             }, [
               h('el-avatar', {props: {src: message.senderAvatar}}, {}),
-              h('span', {style:{marginLeft:"12px"}}, message.content)
+              h('span', {style:{marginLeft:"12px"}}, message.content),
+                h('span',{style:{fontSize:'12px',color:'#909399'}},`[${record.unreadCount}条未读]`)
             ])
           })
         }

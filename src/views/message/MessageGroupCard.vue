@@ -8,7 +8,7 @@
         <el-col :span="3">
           <el-avatar :src="item.user.smallAvatarUrl"/>
         </el-col>
-        <el-col :span="18">
+        <el-col :span="17">
           <el-row style="font-size: 16px;color: #303133;font-weight: 560">{{ item.user.nickname }}</el-row>
           <el-row v-if="item.messages.length>0">
             <span class="text-truncate" style="font-size: 14px;color:#909399;max-width: 90%; display: inline-block">
@@ -16,12 +16,12 @@
             </span>
           </el-row>
         </el-col>
-        <el-col :span="3" style="text-align: right;font-size: 12px">
+        <el-col :span="4" style="text-align: right;font-size: 12px">
           <el-row style="color:#909399;margin-bottom: 2px">
             {{ msgDate(item.date) }}
           </el-row>
           <el-row v-if="item.unreadCount>0">
-            <el-badge :value="item.unreadCount<=99?item.unreadCount:99" class="item"/>
+            <el-badge :value="item.unreadCount" :max="99" class="item"/>
           </el-row>
         </el-col>
       </el-row>
@@ -94,7 +94,6 @@ export default {
         let arr = Object.values(messages).sort((a, b) => {
           return new Date(b.date) - new Date(a.date)
         });
-        console.log(arr)
         this.$set(this, 'messages', arr);
       },
       immediate: true

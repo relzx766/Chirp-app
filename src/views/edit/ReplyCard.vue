@@ -66,7 +66,7 @@ export default {
   },
   methods: {
     doPost() {
-      postReply(this.text, this.chirper.id, JSON.stringify(this.media)).then((res) => {
+      postReply(this.text, this.chirper.id, this.media).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -78,13 +78,11 @@ export default {
         }
       })
     },
-    addMedia({id}) {
-      this.media.push(id);
-      this.postBtnDisabled = false;
+    addMedia(media) {
+      this.media.push(media);
     },
     removeMedia(index) {
       this.media.splice(index, 1);
-      this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     },
     setEmoji(emoji) {
       let input = document.getElementById("input-reply")
@@ -99,7 +97,6 @@ export default {
     }
   },
   created() {
-    console.log(this.chirper)
   }
 }
 </script>

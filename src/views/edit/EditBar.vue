@@ -76,12 +76,13 @@ export default {
       if (type !== 'image' && type !== 'video') {
         this.$message.warning("不支持的文件类型");
       } else {
-        if (this.fileList.length >= 4) {
-          this.$message.warning("最多支持4张图片或者1个视频");
+
+        if (this.fileList.length >= 9) {
+          this.$message.warning("最多支持9张图片或者1个视频");
         } else if (this.fileList.length > 0 && this.fileList[0].raw.type.split("/").shift() === 'video') {
-          this.$message.warning("最多支持4张图片或者1个视频");
+          this.$message.warning("最多支持9张图片或者1个视频");
         } else if (this.fileList.length > 0 && type === 'video') {
-          this.$message.warning("最多支持4张图片或者1个视频");
+          this.$message.warning("最多支持9张图片或者1个视频");
         } else {
           this.fileList.push(file);
         }

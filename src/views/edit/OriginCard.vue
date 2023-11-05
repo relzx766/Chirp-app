@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     doPost() {
-      postChirper(this.text, JSON.stringify(this.media)).then((res) => {
+      postChirper(this.text, this.media).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -56,13 +56,11 @@ export default {
         }
       })
     },
-    addMedia({id}) {
-      this.media.push(id);
-      this.postBtnDisabled = false;
+    addMedia(media) {
+      this.media.push(media);
     },
     removeMedia(index) {
       this.media.splice(index, 1);
-      this.postBtnDisabled = this.media.length <= 0 && this.text.trim().length <= 0;
     },
     setEmoji(emoji) {
       let input = document.getElementById("input-origin")
