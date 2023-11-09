@@ -1,6 +1,6 @@
 import Vuex from 'vuex'
 import Vue from "vue";
-import websocketLink from './websocket.config';
+import websocketLink from '../websocket.config';
 import {getToken} from "@/util/tools";
 import {getAdviceAudio} from "@/util/adviceUtil";
 Vue.use(Vuex);
@@ -18,6 +18,8 @@ const store = new Vuex.Store({
                    date:timestamp
                    page:1}*/
             },
+            reply:null
+            ,
 
             isInit: false,
             count: 0,
@@ -79,6 +81,9 @@ const store = new Vuex.Store({
         },
         popNewChatQueue: state => {
             return state.message.newChatQueue.pop()
+        },
+        getChatToReply:state => {
+            return state.message.reply;
         }
     },
     mutations: {
@@ -248,7 +253,7 @@ const store = new Vuex.Store({
                 }
                 if (top) {
                     state.message.record[key].messages.push(item);
-                    if (!state.message.record[key].reading && item.status === 1 && state.user.id !== item.senderId) {
+                    if (!state.message.record[key].reading && item.status === 'UNREAD' && state.user.id !== item.senderId) {
                         state.message.record[key].unreadCount++;
                         state.message.unRead++;
                         state.message.newChatQueue.push(key);
@@ -291,8 +296,18 @@ const store = new Vuex.Store({
                     page: 1
                 }
             }
+        },
+        setChatToReply(state,message){
+            state.message.reply = message;
+        },
+        delMsg(state, {conversation, messageId}){
+            state.message.record[conversation].messages = state.message.record[conversation].messages.filter(item=>item.id!==messageId);
+        },
+        leaveConv(state, conversation){
+            let size=state.message.record[conversation].messages.length;
+         delete   state.message.record[conversation];
+         state.message.count-=size;
         }
-
     },
     actions: {
         wsInit({commit}) {

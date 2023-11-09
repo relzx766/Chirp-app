@@ -20,6 +20,7 @@
     "v-emoji-picker": "^2.3.3",
     "video.js": "^8.5.2",
     "vue": "^2.7.14",
+    "vue-clamp": "^0.4.1",
     "vue-router": "^3.5.1",
     "vue-socket.io": "^3.0.10",
     "vue-toast-notification": "^1.0.1",

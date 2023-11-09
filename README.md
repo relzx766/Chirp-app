@@ -72,7 +72,8 @@
 #### 话题界面
 
 ![](./docs/chat.png)
-
+#### 引用私信
+![](./docs/chat_reply.png)
 ### 趋势
 
 ![](./docs/trend.png)

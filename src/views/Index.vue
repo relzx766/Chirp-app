@@ -150,9 +150,11 @@ export default {
   },
   watch: {
     '$route': {
-      handler(to, form) {
+      handler(to, from) {
         if (to.path === '/notice') {
-          this.$store.commit('readAllNotice')
+          this.$store.commit('readAllNotice');
+        }else if ((to.path==='/message'||(from&&from.path==='/message'))&&this.newChatNotice){
+          this.newChatNotice.close()
         }
       },
       immediate: true

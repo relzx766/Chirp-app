@@ -21,6 +21,9 @@
             popper-class="consumer-popper"
             trigger="click"
             width="auto"
+            placement="top"
+            :visible-arrow="false"
+
         >
           <el-row>
             <el-row>
@@ -34,7 +37,7 @@
                          icon="el-icon-edit"
                          size="medium"
                          style="font-size: 16px"
-                         @click="quoteDialog=true"><span
+                         @click="quoteDialog=true"><span  style="font-size: 16px"
               >引用</span></el-button>
             </el-row>
             <el-dialog
@@ -179,7 +182,5 @@ li {
 
 </style>
 <style>
-.el-popover {
-  min-width: 10px !important;
-}
+
 </style>

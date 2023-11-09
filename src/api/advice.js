@@ -47,3 +47,13 @@ export const markConversationRead = (conversationIds) => {
         data: data
     })
 }
+export const markAsDel = (id) => {
+  return Get({
+      url:`${base}chat/delete/mark/${id}`
+  })
+}
+export const leaveConv = (id) => {
+  return Get({
+      url:`${base}chat/leave/${id}`
+  })
+}
