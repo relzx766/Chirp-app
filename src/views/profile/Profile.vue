@@ -1,63 +1,70 @@
 <template>
   <el-container>
     <el-main>
-      <ul>
-        <li
-            style="width: calc(60% - 4px);;border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
+      <div class="row">
+        <div class="col-7" style=" border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;">
+<el-container>
+  <el-main class="overflow-y-auto" style="display: flex;flex-direction: column;height: 100vh;padding: 0">
+    <el-row class="fw-bold fs-4" style="height: 80px;align-self: flex-start">
+      <el-button circle icon="el-icon-back" style="border: none;font-size: 24px;font-weight: bold"
+                 @click="$router.back()"></el-button>
+      <span>{{ user.username }}</span>
+    </el-row>
 
-          <el-row class="back-bar">
-            <el-button circle icon="el-icon-back" style="border: none;font-size: 24px;font-weight: bold"
-                       @click="$router.back()"></el-button>
-            <span>{{ user.username }}</span>
-          </el-row>
+    <div class="overflow-y-auto"  style="max-height: 100vh">
+      <div style="margin-bottom: 40px">
+        <el-row>
+          <profile-card :is-self="$store.getters.getUser.id===this.user.id" :value="user"/>
+        </el-row>
+        <el-row >
+          <el-tabs v-model="activeName" :stretch="true" @tab-click="getPage">
+            <el-tab-pane name="all">
+              <span slot="label" style="font-size: 16px;font-weight: bold">推文</span>
+              <el-row v-for="item in chirpers.all.chirper" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane name="reply"><span slot="label" style="font-size: 16px;font-weight: bold">回复</span>
+              <el-row v-for="item in chirpers.reply.chirper" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane name="media"><span slot="label" style="font-size: 16px;font-weight: bold">媒体</span>
+              <el-row v-for="item in chirpers.media.chirper" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+            </el-tab-pane>
+            <el-tab-pane name="like"><span slot="label" style="font-size: 16px;font-weight: bold">喜欢</span>
+              <el-row v-for="item in chirpers.like.chirper" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+            </el-tab-pane>
+          </el-tabs>
+        </el-row>
+      </div>
 
+    </div>
+  </el-main>
+</el-container>
 
-          <el-row style="margin-top: 40px;margin-bottom: 12px;">
-            <profile-card :is-self="$store.getters.getUser.id===this.user.id" :value="user"/>
-          </el-row>
-          <el-row>
-            <el-tabs v-model="activeName" :stretch="true" @tab-click="getPage">
-              <el-tab-pane name="all">
-                <span slot="label" style="font-size: 16px;font-weight: bold">推文</span>
-                <el-row v-for="item in chirpers.all.chirper" style="border-bottom: 1px solid #E4E7ED;">
-                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                              :value="item" style="margin-top: 8px;"/>
-                  <chirper-card
-                      v-else :chirper="item"
-                      style="margin-top: 8px;"/>
-                </el-row>
-              </el-tab-pane>
-              <el-tab-pane name="reply"><span slot="label" style="font-size: 16px;font-weight: bold">回复</span>
-                <el-row v-for="item in chirpers.reply.chirper" style="border-bottom: 1px solid #E4E7ED;">
-                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                              :value="item" style="margin-top: 8px;"/>
-                  <chirper-card
-                      v-else :chirper="item"
-                      style="margin-top: 8px;"/>
-                </el-row>
-              </el-tab-pane>
-              <el-tab-pane name="media"><span slot="label" style="font-size: 16px;font-weight: bold">媒体</span>
-                <el-row v-for="item in chirpers.media.chirper" style="border-bottom: 1px solid #E4E7ED;">
-                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                              :value="item" style="margin-top: 8px;"/>
-                  <chirper-card
-                      v-else :chirper="item"
-                      style="margin-top: 8px;"/>
-                </el-row>
-              </el-tab-pane>
-              <el-tab-pane name="like"><span slot="label" style="font-size: 16px;font-weight: bold">喜欢</span>
-                <el-row v-for="item in chirpers.like.chirper" style="border-bottom: 1px solid #E4E7ED;">
-                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                              :value="item" style="margin-top: 8px;"/>
-                  <chirper-card
-                      v-else :chirper="item"
-                      style="margin-top: 8px;"/>
-                </el-row>
-              </el-tab-pane>
-            </el-tabs>
-          </el-row>
-        </li>
-        <li style="width: 40%">
+        </div>
+        <div class="col-5">
           <el-container>
             <el-main>
               <el-row>
@@ -75,8 +82,8 @@
 
             </el-main>
           </el-container>
-        </li>
-      </ul>
+        </div>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -84,7 +91,7 @@
 <script>
 import ProfileCard from "@/views/profile/ProfileCard.vue";
 import {getDetailProfile} from "@/api/user";
-import {getToken} from "@/util/tools";
+import {getToken} from "@/util/auth";
 import {getChirperPage, getLikeByUser} from "@/api/chirper";
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
@@ -235,7 +242,7 @@ li {
   background-color: transparent !important;
   background-image: linear-gradient(
       90deg, transparent 0, transparent 30%,
-      #4d72f6 0, #4d72f6 70%,
+      #409EFF 0, #409EFF 70%,
       transparent 0, transparent
   );
 }
@@ -244,11 +251,9 @@ li {
   text-align: left;
   font-size: 24px;
   font-weight: bold;
-  position: fixed;
-  z-index: 99;
   background-color: #FFFFFF;
-  height: 60px;
-  width: calc(44% - 5px);
-  top: 0;
+}
+.overflow-y-auto ::-webkit-scrollbar{
+  display: none;
 }
 </style>

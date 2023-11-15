@@ -1,6 +1,11 @@
 import {FormPost, Get, JsonPost} from "@/config/http";
 
 const sever = "/chirp/user-service"
+export const load = () => {
+  return Get({
+      url: sever + '/user/load'
+  })
+}
 export const getShortProfile = (ids) => {
     let data = new FormData();
     data.append("ids", ids);

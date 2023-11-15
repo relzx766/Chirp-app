@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div >
     <el-tabs :stretch="true" value="all">
       <el-tab-pane name="all">
         <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
-        <el-row v-for="item in notifications" :key="item[0].id"
-                style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
+          <el-row v-for="item in notifications" :key="item[0].id"
+                         style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
 
           <notice-detail v-if="item[0].entity===null||item[0].entity==='null'" :date="item[0].createTime"
                          :name="item[0].senderName"
@@ -20,10 +20,11 @@
                          :urls="[i.senderAvatar]"
                          style="border-bottom:1px solid #F2F6FC;margin-top: 12px;"/>
         </el-row>
-        <el-row v-if="notifications.length<=0" style="margin-left: 16%;">
-          <el-row style="font-size: 28px;font-weight: bold;text-align: left;color: black;">这里暂时没有内容</el-row>
-          <el-row style="text-align: left;color: #6c7c84;">从点赞到转贴等等，所有的互动都在这里进行。</el-row>
-        </el-row>
+          <el-row v-if="notifications.length<=0" style="margin-left: 16%;">
+            <el-row style="font-size: 28px;font-weight: bold;text-align: left;color: black;">这里暂时没有内容</el-row>
+            <el-row style="text-align: left;color: #6c7c84;">从点赞到转贴等等，所有的互动都在这里进行。</el-row>
+          </el-row>
+
       </el-tab-pane>
       <el-tab-pane name="mentions">
         <span slot="label" style="font-size: 16px;font-weight: bold">提及</span>
@@ -71,7 +72,9 @@ export default {
     loadMore(page) {
       this.isLoading = true;
       getPage(page).then(res => {
-        this.$store.commit('incrementNoticePage')
+        this.$store.commit('setNoticeOption',{
+          page:this.$store.getters.getNoticePage+1
+        })
         this.isBottom = res.data.record.length <= 0;
         this.$store.commit('addNotice', {
           payload: res.data.record,
@@ -110,20 +113,14 @@ export default {
   created() {
     this.loadMore(this.$store.getters.getNoticePage)
     this.getUnreadCount().then(res => {
-      this.$store.commit('setNoticeUnread', res.data.record.count);
+      this.$store.commit('setNoticeOption', {unread:res.data.record.count});
     })
     window.addEventListener("scroll", this.scrollPage, true);
   },
   destroyed() {
-    this.$store.commit('setNoticeUnread', 0);
-    let unread = this.$store.getters.getUnreadNoticeRecord;
-    if (unread.length > 0) {
-      markAsRead().then(() => {
-        this.$store.commit('clearUnreadNotice');
-      }).catch(e => {
-        console.log(e);
-        this.$store.commit('clearUnreadNotice');
-      })
+    this.$store.commit('setNoticeOption', {unread:0});
+    if (this.$store.getters.getNoticeUnread > 0) {
+      markAsRead();
     }
     window.removeEventListener("scroll", this.scrollPage);
   }
@@ -135,9 +132,12 @@ export default {
   background-color: transparent !important;
   background-image: linear-gradient(
       90deg, transparent 0, transparent 40%,
-      #4d72f6 0, #4d72f6 60%,
+      #409EFF 0, #409EFF 60%,
       transparent 0, transparent
   );
+}
+.overflow-y-auto ::-webkit-scrollbar{
+  display: none;
 }
 </style>
 <style>

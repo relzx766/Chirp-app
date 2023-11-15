@@ -1,13 +1,15 @@
 import Vuex from 'vuex'
 import Vue from "vue";
 import websocketLink from '../websocket.config';
-import {getToken} from "@/util/tools";
+import {getToken} from "@/util/auth";
 import {getAdviceAudio} from "@/util/adviceUtil";
+import {doDecrypt, doEncrypt, getPrivateKey, getPublicKey, getShareKey} from "@/util/encrypt";
+import {fetchPublicKey, getPublicKeys} from "@/api/advice";
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
         ws: null,
-        message: {
+        chat: {
             record: {
 
                 /*{ key:  conversation: "",
@@ -15,26 +17,23 @@ const store = new Vuex.Store({
                    unreadCount: 0,
                    user: {},
                    reading: false,
-                   date:timestamp
+                   date:timestamp,
+                   secretKey:""
                    page:1}*/
             },
-            reply:null
-            ,
-
-            isInit: false,
+            reply:null,
             count: 0,
             unRead: 0,
             filterMap: new Map(),
             //每个发送者都需要存储
             page: new Map(),
-            newChatQueue:[]
+            newChatQueue:[],
+            keys:{}
         },
         notice: {
             record: {},
-            isInit: false,
             count: 0,
             unRead: 0,
-            unReadRecord: [],
             filterMap: new Map(),
             page: 1
         },
@@ -42,20 +41,21 @@ const store = new Vuex.Store({
             record: [],
             count: 0
         },
-        msgCount: 0,
-        user: {}
+        user: {},
+        encrypt: {
+            prime:'',
+            generator:'',
+            init:false
+        }
     },
     getters: {
-        getMessage: state => {
-            return state.message;
-        },
         getUser: state => {
             return state.user;
         },
         getNotice: state => {
             return state.notice.record;
         },
-        getUnReadNoticeCount: state => {
+        getNoticeUnread: state => {
             return state.notice.unRead;
         },
         popFollowingUpdate: state => {
@@ -64,26 +64,32 @@ const store = new Vuex.Store({
         getNoticePage: state => {
             return state.notice.page;
         },
-        getUnreadNoticeRecord: state => {
-            return state.notice.unReadRecord;
+        getChat: state => {
+            return state.chat;
         },
-        getPrivateMessage: state => {
-            return state.message;
+        getConv: (state) => (conversationId) => {
+            return state.chat.record[conversationId];
         },
-        getChatHistory: (state) => (conversationId) => {
-            return state.message.record[conversationId];
+        getChatUnread: state => {
+            return state.chat.unRead;
         },
-        getChatUnreadCount: state => {
-            return state.message.unRead;
-        },
-        getAllConversation: state => {
-            return state.message.record.map(obj => obj.conversation);
+        getConvList: state => {
+            return state.chat.record.map(obj => obj.conversation);
         },
         popNewChatQueue: state => {
-            return state.message.newChatQueue.pop()
+            return state.chat.newChatQueue.pop()
         },
-        getChatToReply:state => {
-            return state.message.reply;
+        getChatReply: state => {
+            return state.chat.reply;
+        },
+        getKeys:state => {
+            return state.chat.keys
+        },
+        getEncrypt: state => {
+            return state.encrypt
+        },
+        getSecretKey: state => (key)=>{
+            return state.chat.keys[key]
         }
     },
     mutations: {
@@ -122,9 +128,6 @@ const store = new Vuex.Store({
         wsSend(state, payload) {
             state.ws.send(payload);
         },
-        deleteMsgByType(state, type) {
-            state.message[type] = [];
-        },
         setUser(state, payload) {
             state.user = payload;
         },
@@ -145,7 +148,6 @@ const store = new Vuex.Store({
                     state.followingUpdate.count += 1;
                 }else {
                     if (!item.isRead) {
-                        state.notice.unReadRecord.push(item.id);
                         state.notice.unRead++;
                     }
                     if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
@@ -188,39 +190,35 @@ const store = new Vuex.Store({
             }
 
         },
-        setNoticeUnread(state, payload) {
-            state.notice.unRead = payload;
+        setNoticeOption(state,{unread,page}){
+            if (unread!==undefined){
+                state.notice.unRead=unread;
+            }
+            if (page!==undefined){
+                state.notice.page=page;
+            }
         },
-        setNoticePage(state, payload) {
-            state.notice.page = payload;
-        },
-        incrementNoticePage(state) {
-            state.notice.page++;
-        },
-        clearUnreadNotice(state) {
-            state.notice.unReadRecord = [];
-        },
-        addPrivateMessage(state, {payload, top}) {
+        addChatRecord(state, {payload, top}) {
             let messages = Array.from(payload);
             for (let i = 0; i < messages.length; i++) {
                 let item = messages[i];
                 let key = item.conversationId;
-                if (state.message.filterMap.has(item.id)) {
+                if (state.chat.filterMap.has(item.id)) {
                     continue;
                 } else {
-                    state.message.filterMap.set(item.id, 1);
+                    state.chat.filterMap.set(item.id, 1);
                 }
-                if (item.tempId && state.message.record[key] && state.message.record[key].messages) {
-                    let index = state.message.record[key].messages.findIndex(message =>
+                if (item.tempId && state.chat.record[key] && state.chat.record[key].messages) {
+                    let index = state.chat.record[key].messages.findIndex(message =>
                         message.tempId === item.tempId
                     );
                     if (index !== -1) {
-                        state.message.record[key].messages.splice(index, 1);
+                        state.chat.record[key].messages.splice(index, 1);
                     }
                 }
 
-                if (!state.message.record[key]) {
-                    state.message.record[key] = {
+                if (!state.chat.record[key]) {
+                    state.chat.record[key] = {
                         conversation: key,
                         messages: [],
                         unreadCount: 0,
@@ -230,84 +228,91 @@ const store = new Vuex.Store({
                         page: 1
                     };
                 }else {
-
-                    state.message.record[key].date=Math.max(new Date(item.createTime).getTime(),state.message.record[key].date);
+                    state.chat.record[key].date=Math.max(new Date(item.createTime).getTime(),state.chat.record[key].date);
                 }
                 let user = state.user;
                 switch (user.id) {
                     case item.senderId: {
-                        state.message.record[key].user.id = item.receiverId;
-                        state.message.record[key].user.smallAvatarUrl = item.receiverAvatar;
-                        state.message.record[key].user.nickname = item.receiverName;
+                        state.chat.record[key].user.id = item.receiverId;
+                        state.chat.record[key].user.smallAvatarUrl = item.receiverAvatar;
+                        state.chat.record[key].user.nickname = item.receiverName;
                     }
                         break;
                     case item.receiverId: {
-                        state.message.record[key].user.id = item.senderId;
-                        state.message.record[key].user.smallAvatarUrl = item.senderAvatar;
-                        state.message.record[key].user.nickname = item.senderName;
+                        state.chat.record[key].user.id = item.senderId;
+                        state.chat.record[key].user.smallAvatarUrl = item.senderAvatar;
+                        state.chat.record[key].user.nickname = item.senderName;
                     }
                         break;
                     default : {
-                        state.message.record[key].user = user;
+                        state.chat.record[key].user = user;
                     }
                 }
+                if (!state.chat.keys[key]){
+                    state.chat.keys[key]=getShareKey(state.chat.keys[state.chat.record[key].user.id],getPrivateKey(state.user.id),state.encrypt.prime).toString();
+                }
+                item.content=doDecrypt(state.chat.keys[key],item.content);
+                if (item.reference&&item.reference.content){
+                    item.reference.content=doDecrypt(state.chat.keys[key],item.reference.content);
+                }
                 if (top) {
-                    state.message.record[key].messages.push(item);
-                    if (!state.message.record[key].reading && item.status === 'UNREAD' && state.user.id !== item.senderId) {
-                        state.message.record[key].unreadCount++;
-                        state.message.unRead++;
-                        state.message.newChatQueue.push(key);
+                    state.chat.record[key].messages.push(item);
+                    if (!state.chat.record[key].reading && item.status === 'UNREAD' && state.user.id !== item.senderId) {
+                        state.chat.record[key].unreadCount++;
+                        state.chat.unRead++;
+                        state.chat.newChatQueue.push(key);
                         getAdviceAudio().play();
                     }
 
                 } else {
-                    state.message.record[key].messages.unshift(item);
+                    state.chat.record[key].messages.unshift(item);
                 }
             }
-            this.dispatch('addMessageCount', messages.length);
+            state.chat.count+=messages.length;
         },
-        addMessageCount(state, count) {
-            state.message.count += count;
-        },
-        setConversationUnread(state, {conversation, count}) {
-            if (state.message.record[conversation]) {
-                let unread = state.message.record[conversation].unreadCount;
-                state.message.record[conversation].unreadCount = count;
-                state.message.unRead += count - unread;
-            }
-        },
-        setConvReadStatus(state, {conversation, status}) {
-            if (state.message.record[conversation]) {
-                state.message.record[conversation].reading = status;
-            }
-        },
-        setConvPage(state, {conversation, page}) {
-            state.message.record[conversation].page = page
-        },
-        addConversation(state, {conversation, user}) {
-            if (!state.message.record[conversation]) {
-                state.message.record[conversation] = {
-                    conversation: conversation,
-                    messages: [],
-                    unreadCount: 0,
-                    user: user,
-                    reading: false,
-                    date:Date.now(),
-                    page: 1
-                }
-            }
+        setConvOption(state,{conversation,unread,status,page,user}){
+          if (!state.chat.record[conversation]&&user)  {
+              state.chat.record[conversation] = {
+                  conversation: conversation,
+                  messages: [],
+                  unreadCount: 0,
+                  user: user,
+                  reading: false,
+                  date:Date.now(),
+                  page: 1
+              }
+          }
+          if (state.chat.record[conversation]&&unread!==undefined){
+              let count=state.chat.record[conversation].unreadCount;
+              state.chat.record[conversation].unreadCount=unread;
+              state.chat.unRead+=unread-count;
+          }
+          if (state.chat.record[conversation]&&status!==undefined){
+              state.chat.record[conversation].reading=status;
+          }
+          if (state.chat.record[conversation]&&page!==undefined){
+              state.chat.record[conversation].page=page;
+          }
         },
         setChatToReply(state,message){
-            state.message.reply = message;
+            state.chat.reply = message;
         },
         delMsg(state, {conversation, messageId}){
-            state.message.record[conversation].messages = state.message.record[conversation].messages.filter(item=>item.id!==messageId);
+            state.chat.record[conversation].messages = state.chat.record[conversation].messages.filter(item=>item.id!==messageId);
         },
         leaveConv(state, conversation){
-            let size=state.message.record[conversation].messages.length;
-         delete   state.message.record[conversation];
-         state.message.count-=size;
-        }
+            let size=state.chat.record[conversation].messages.length;
+         delete   state.chat.record[conversation];
+         state.chat.count-=size;
+        },
+        addKey(state,{id,key}){
+            state.chat.keys[id]=key;
+        },
+        setEncrypt(state,{p,g}){
+            state.encrypt.prime=p;
+            state.encrypt.generator=g;
+            state.encrypt.init=true;
+        },
     },
     actions: {
         wsInit({commit}) {
@@ -316,12 +321,24 @@ const store = new Vuex.Store({
         pushNotice({commit}, payload) {
             commit('addNotice', payload)
         },
-        pushMessage({commit}, payload) {
-            commit('addPrivateMessage', payload)
+        pushMessage({commit}, {payload,top}) {
+            let ids =[];
+                Array.from(payload).forEach(item=> {
+                    ids.push(item.senderId);
+                    ids.push(item.receiverId);
+                });
+
+        getPublicKeys(ids).then(res=>{
+                if (res.code===200){
+                    let record = res.data.record;
+                    ids.forEach(id=>{
+                        commit('addKey',{id,key:record[id]});
+                    })
+                }
+            }).then(()=>{
+            commit('addChatRecord', {payload,top});
+        })
         },
-        addMessageCount({commit}, count) {
-            commit('addMessageCount', count);
-        }
     }
 })
 export default store;

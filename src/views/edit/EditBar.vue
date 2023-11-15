@@ -39,7 +39,7 @@
         </el-popover>
       </el-col>
       <el-col :span="10" style="text-align: right">
-        <el-button ref="btn-post" :disabled="postBtnDisabled" icon="el-icon-s-promotion"
+        <el-button ref="btn-post" :disabled="postBtnDisabled||sending" icon="el-icon-s-promotion"
                    round size="small" type="primary" @click="doSend()">发布
         </el-button>
       </el-col>
@@ -63,13 +63,16 @@ export default {
   },
   data() {
     return {
-      fileList: []
+      fileList: [],
+      sending:false
     }
   },
   methods: {
     doSend() {
+      this.sending=true;
       this.fileList = [];
       this.$emit('post');
+      this.sending=false;
     },
     handlerFileChange(file, fileList) {
       let type = file.raw.type.split("/").shift();

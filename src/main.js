@@ -12,6 +12,7 @@ import {BootstrapVue, IconsPlugin} from 'bootstrap-vue'
 import xss from 'xss';
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
+
 Vue.prototype.xss = xss;
 
 // Make BootstrapVue available throughout your project

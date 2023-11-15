@@ -1,4 +1,4 @@
-import {FormPost, Get} from "@/config/http";
+import {FormPost, Get, JsonPost} from "@/config/http";
 
 const base = "/chirp/advice-service/";
 export const getPage = (offset) => {
@@ -55,5 +55,31 @@ export const markAsDel = (id) => {
 export const leaveConv = (id) => {
   return Get({
       url:`${base}chat/leave/${id}`
+  })
+}
+export const getKeyPair = () => {
+  return Get({
+      url:`${base}e2ee/pair`
+  })
+}
+export const savePublicKey = (key) => {
+    let data=new FormData();
+    data.append("key",key);
+  return FormPost({
+      url:`${base}e2ee`,
+      data:data
+  })
+}
+export const fetchPublicKey = (id) => {
+  return Get(
+    {
+        url:`${base}e2ee/key/${id}`
+    })
+
+}
+export const getPublicKeys = (ids) => {
+  return JsonPost({
+      url:`${base}e2ee/keys`,
+      data:ids
   })
 }

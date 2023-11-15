@@ -33,7 +33,7 @@
                   </el-row>
                   <el-row>
                     <el-button icon="el-icon-document-copy" class="border border-0 fw-bold text-black"
-                               @click="doCopy">复制
+                               @click="copy(message.content)">复制
                     </el-button>
                   </el-row>
                   <el-row>
@@ -46,7 +46,15 @@
               </div>
             </div>
             <div v-if="message.reference&&message.reference.id" class="d-flex align-items-center justify-content-start">
-              <div style="max-width: 80%;text-align: left;">
+              <div v-if="message.reference.status==='DELETE'
+             ||message.reference.status===$store.getters.getUser.id
+             ||message.reference.conversationId!==message.conversationId
+"
+                   class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
+                   style="font-size: 12px">
+                消息已删除或不可用
+              </div>
+              <div v-else style="max-width: 80%;text-align: left;">
               <span class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
                     style="font-size: 12px">
                  <span>{{ message.reference.senderName }}:</span>
@@ -87,7 +95,7 @@
                   </el-row>
                   <el-row>
                     <el-button icon="el-icon-document-copy" class="border border-0 fw-bold text-black"
-                               @click="doCopy">复制
+                               @click="copy(message.content)">复制
                     </el-button>
                   </el-row>
                   <el-row>
@@ -113,7 +121,15 @@
               </div>
             </div>
             <div v-if="message.reference&&message.reference.id" class="d-flex align-items-center justify-content-end">
-              <div style="max-width: 80%;text-align: left;">
+             <div v-if="message.reference.status==='DELETE'
+             ||message.reference.status===$store.getters.getUser.id
+             ||message.reference.conversationId!==message.conversationId
+"
+                  class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
+                  style="font-size: 12px">
+               消息已删除或不可用
+             </div>
+              <div v-else style="max-width: 80%;text-align: left;">
               <span class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
                     style="font-size: 12px">
                  <span>{{ message.reference.senderName }}:</span>
@@ -148,6 +164,7 @@ import {formatText, getDate, getMessageDate, getNewMsgCount} from "@/util/tools"
 import {msgDate} from "@/util/formatter";
 import VClamp from "vue-clamp";
 import {markAsDel} from "@/api/advice";
+import {copy} from "@/util/clipboard";
 export default {
   name: "MessageCard",
   components:{
@@ -163,19 +180,10 @@ export default {
     mediaList: Array,
   },
   methods: {
+    copy,
     formatText, msgDate, getNewMsgCount, getMessageDate, getDate,
     doReply() {
       this.$store.commit('setChatToReply', this.message);
-    },
-    doCopy() {
-      navigator.clipboard.writeText(this.message.content);
-      this.$message({
-        message: '已复制到剪切板',
-        iconClass: "el-icon-document-copy",
-        customClass: "bottom-msg",
-        offset: 630,
-        duration:1000
-      })
     },
     doDelete() {
       this.$store.commit('delMsg',{
@@ -194,7 +202,8 @@ export default {
       })
     }
   },
-
+created() {
+}
 
 }
 </script>

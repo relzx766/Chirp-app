@@ -1,7 +1,7 @@
 <template>
-  <div style="padding: 0 4px">
+  <div style="">
     <div v-if="reply&&currentToReply" class="text-start p-2 row mb-2 "
-         style="font-size: 12px;font-weight: 600;border-left: 4px solid;background-color: #f0f0f0">
+         style="font-size: 12px;margin-left: 0;font-weight: 600;border-left: 4px solid;background-color: #f0f0f0">
       <div class="col-11">
         <div class="row">
           <div class="col-auto d-grid align-items-center" >
@@ -40,7 +40,7 @@
                    @click="doCancelReply"/>
       </div>
     </div>
-    <div style="padding:2px 18px">
+    <div style="padding:4px 18px">
       <el-row c style="background-color: #f0f0f0;border-radius: 12px">
         <el-col :span="4">
           <el-upload
@@ -70,7 +70,7 @@
               id="input-chat"
               v-model="message.content"
               :autosize="{minRows:1,maxRows:5}"
-              maxlength="500"
+              maxlength="5000"
               placeholder="发送一条私信"
               style="font-weight: bold;font-size: 18px;  text-align: left;"
               type="textarea"
@@ -109,6 +109,9 @@
 import ChunkUpload from "@/util/upload";
 import {VEmojiPicker} from "v-emoji-picker";
 import VClamp from "vue-clamp";
+import {doEncrypt, getPrivateKey, getShareKey} from "@/util/encrypt";
+import {fetchPublicKey, getPublicKeys} from "@/api/advice";
+import async from "async";
 
 export default {
   name: "SendCard",
@@ -139,7 +142,7 @@ export default {
   },
   computed: {
     currentToReply() {
-      return this.$store.getters.getChatToReply;
+      return this.$store.getters.getChatReply;
     }
   },
   methods: {
@@ -179,7 +182,7 @@ export default {
     doUpload() {
       let id = Date.now();
       let messages = this.generateMessage(id);
-      this.$store.commit('addPrivateMessage', {
+      this.$store.dispatch('pushMessage', {
         payload: messages,
         top: true
       });
@@ -203,13 +206,12 @@ export default {
     },
     generateMessage(tempId) {
       let user = this.$store.getters.getUser;
-      let messages = [];
       let content = this.message.type === 'TEXT' ? this.message.content : this.fileUrl;
+      let promises = []; // 创建一个空数组，用来存放每个receiver对应的Promise
       this.receiver.forEach(receiver => {
         let id = tempId ? tempId : Math.round(Date.now());
         let conversation = Math.min(receiver.id, user.id) + "_" + Math.max(receiver.id, user.id);
         let message = {
-          content: content,
           type: this.message.type,
           conversationId: conversation,
           senderId: user.id,
@@ -221,17 +223,43 @@ export default {
           id: id,
           tempId: `${id}`,
           isSending: true,
-          reference: this.currentToReply,
+          reference: this.reply?this.currentToReply:null,
           createTime: Date.now()
         };
-        messages.push(message);
+        let key = this.$store.getters.getSecretKey(conversation);
+        if (!key){
+          let publicKey = this.$store.getters.getSecretKey(receiver.id);
+          if (!publicKey){
+            // 将fetchPublicKey的结果包装成一个Promise，并推入数组
+            promises.push(getPublicKeys([receiver.id]).then(res => {
+              if (res.code===200){
+                publicKey=res.data.record[receiver.id];
+                this.$store.commit('addKey',{id:receiver.id,key:publicKey})
+                key=getShareKey(publicKey,getPrivateKey(user.id),this.$store.getters.getEncrypt.prime).toString();
+                this.$store.commit('addKey',{id:conversation,key:key});
+              }
+              message.content=doEncrypt(key,content);
+              return message; // 返回message作为Promise的结果
+            }));
+          }else {
+            key=getShareKey(publicKey,getPrivateKey(user.id),this.$store.getters.getEncrypt.prime).toString();
+            this.$store.commit('addKey',{id:conversation,key:key});
+          }
+        }else {
+          message.content=doEncrypt(key,content);
+          // 将message包装成一个已完成的Promise，并推入数组
+          promises.push(Promise.resolve(message));
+        }
       });
-      return messages;
-    },
-    send() {
+      // 返回Promise.all的结果，它是一个包含所有message的数组
+      return Promise.all(promises);
+    }
+
+    ,
+    async send() {
       if (this.message.content.length > 0) {
-        let messages = this.generateMessage();
-        this.$store.commit('addPrivateMessage', {
+        let messages =await this.generateMessage();
+     await   this.$store.dispatch('pushMessage', {
           payload: messages,
           top: true
         });

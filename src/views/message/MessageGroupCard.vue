@@ -1,9 +1,9 @@
 <template>
-  <div>
-    <el-card v-for="(item, index) in messages" :key="item.date"
-             :style="item.conversation===$route.query.conversation?focusConversation:''" shadow="hover"
+  <div style="display:flex;overflow-y: auto;flex-direction: column;">
+    <el-card v-for="(item, index) in messages" :key="item.messages.length>0?item.messages[item.messages.length-1].id:item.date"
+             :style="item.conversation===$route.params.id?focusConversation:'border'" shadow="hover"
              style="border: none;border-radius: 0;cursor: pointer"
-             @click.native="$router.push('/message?conversation='+item.conversation)">
+             @click.native="$router.push('/message/chat/'+item.conversation)">
       <el-row style="text-align: left">
         <el-col :span="3">
           <el-avatar :src="item.user.smallAvatarUrl"/>
@@ -18,7 +18,7 @@
         </el-col>
         <el-col :span="4" style="text-align: right;font-size: 12px">
           <el-row style="color:#909399;margin-bottom: 2px">
-            {{ msgDate(item.date) }}
+            {{ msgDate(item.messages.length>0?item.messages[item.messages.length-1].createTime:item.date) }}
           </el-row>
           <el-row v-if="item.unreadCount>0">
             <el-badge :value="item.unreadCount" :max="99" class="item"/>
@@ -52,25 +52,6 @@ export default {
   methods: {
     msgDate, getDate,
     init() {
-      let messages;
-      let unreadMap;
-      getChatIndexPage().then(res => {
-        messages = res.data.record;
-        this.$store.commit('addPrivateMessage', {
-          payload: messages,
-          top: false
-        });
-      }).then(() => {
-        getChatUnread(messages.map(msg => msg.conversationId)).then(res => {
-          unreadMap = res.data.record;
-          Object.keys(unreadMap).forEach(key=>{
-            this.$store.commit('setConversationUnread',{
-              conversation:key,
-              count:unreadMap[key]
-            })
-          })
-        });
-      })
     },
     getPlaceholder(message) {
       let placeholder = "";
@@ -88,9 +69,9 @@ export default {
     }
   },
   watch: {
-    '$store.state.message.count': {
+    '$store.state.chat.count': {
       handler() {
-        let messages = this.$store.getters.getPrivateMessage.record;
+        let messages = this.$store.getters.getChat.record;
         let arr = Object.values(messages).sort((a, b) => {
           return new Date(b.date) - new Date(a.date)
         });
@@ -100,9 +81,7 @@ export default {
     }
   },
   created() {
-    if (Object.keys(this.$store.getters.getPrivateMessage.record).length === 0) {
       this.init();
-    }
   }
 }
 </script>

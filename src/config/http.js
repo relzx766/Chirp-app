@@ -1,5 +1,6 @@
 import axios from "axios";
 import {Message} from "element-ui";
+import {getToken} from "@/util/auth";
 
 const service = axios.create({
     timeout: 30000,  // 请求 30s 超时
@@ -71,12 +72,10 @@ service.interceptors.request.use(
     (config) => {
         // 每次发送请求之前判断是否存在token
         // 如果存在，则统一在http请求的header都加上token，这样后台根据token判断你的登录情况，此处token一般是用户完成登录后储存到localstorage里的
-        let token = localStorage.getItem("token");
-        console.log(token)
+        let token = getToken()
         if (token) {
             config.headers.setAuthorization(token)
         }
-        console.log(config)
         return config
     },
     (error) => {

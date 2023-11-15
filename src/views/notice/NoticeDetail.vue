@@ -54,7 +54,7 @@ export default {
   },
   props: {
     type: '',
-    urls: [],
+    urls: Array,
     name: '',
     entity: {},
     sonEntity: {},

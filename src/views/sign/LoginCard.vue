@@ -65,6 +65,7 @@
 import SignUpCard from "@/views/sign/SignUpCard.vue";
 import EmailVerifyCard from "@/views/sign/EmailVerifyCard.vue";
 import {signIn} from "@/api/sign";
+import {setToken} from "@/util/auth";
 
 export default {
   name: "LoginCard",
@@ -94,7 +95,7 @@ export default {
     doLogin() {
       signIn(this.user.account, this.user.password).then((res) => {
         if (res.code === 200) {
-          localStorage.setItem("token", res.data.record.token);
+         setToken( res.data.record.token);
           localStorage.setItem("id", res.data.record.user.id);
           this.$router.go(0);
         } else {

@@ -156,7 +156,7 @@ export default {
     toChat(){
       let user=this.$store.getters.getUser;
       let conversation=`${Math.min(this.user.id,user.id)}_${Math.max(this.user.id,user.id)}`;
-      this.$store.commit('addConversation',{
+      this.$store.commit('setConvOption',{
         conversation:conversation,
         user:this.user
       });

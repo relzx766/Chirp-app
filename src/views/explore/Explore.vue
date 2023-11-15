@@ -1,10 +1,12 @@
 <template>
   <el-container>
     <el-main>
-      <el-row>
-        <el-col :span="14" style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;">
+      <div class="row">
+        <div class="col-7"
+             style="border-left:2px solid #EBEEF5;height: 100vh;
+             border-right:2px solid #EBEEF5;">
           <el-container>
-            <el-main>
+            <el-main style="padding: 0;">
               <input-card/>
               <el-tabs :stretch="true" value="recommend">
                 <el-tab-pane name="recommend">
@@ -32,9 +34,8 @@
               </el-tabs>
             </el-main>
           </el-container>
-
-        </el-col>
-        <el-col :span="10">
+        </div>
+        <div class="col-5">
           <el-container>
             <el-main>
               <div style="text-align: left;background-color:#EBEEF5;border-radius: 10px">
@@ -43,8 +44,8 @@
               </div>
             </el-main>
           </el-container>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -91,7 +92,7 @@ export default {
   background-color: transparent !important;
   background-image: linear-gradient(
       90deg, transparent 0, transparent 32%,
-      #4d72f6 0, #4d72f6 68%,
+      #409EFF  0,  #409EFF  68%,
       transparent 0, transparent
   );
 }

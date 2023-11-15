@@ -4,10 +4,11 @@
   </div>
 </template>
 <script>
+
+
 // 解决ERROR ResizeObserver loop completed with undelivered notifications.
 
 //问题的
-
 const debounce = (fn, delay) => {
 
   let timer = null;

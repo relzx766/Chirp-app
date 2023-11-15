@@ -9,6 +9,9 @@ import Message from "@/views/message/Message.vue";
 import Notice from "@/views/notice/Notice.vue";
 import Search from "@/views/search/Search.vue";
 import Explore from "@/views/explore/Explore.vue";
+import {Loading} from "element-ui";
+import ChatSetting from "@/views/message/ChatSetting.vue";
+import ChatCard from "@/views/message/ChatCard.vue";
 
 Vue.use(VueRouter)
 
@@ -39,7 +42,17 @@ const routes = [
             },
             {
                 path: '/message',
-                component: Message
+                component: Message,
+                children: [
+                    {
+                        path: 'setting',
+                        component: ChatSetting
+                    },
+                    {
+                        path:'chat/:id',
+                        component: ChatCard
+                    }
+                ]
             },
             {
                 path: '/notice',

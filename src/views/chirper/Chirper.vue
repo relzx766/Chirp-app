@@ -1,35 +1,42 @@
 <template>
   <el-container>
     <el-main>
-      <ul>
-        <li
-            style="width: calc(60% - 4px);border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;min-height: 100vh">
-          <el-row class="back-bar">
-            <el-button circle icon="el-icon-back" style="border: none;font-size: 24px;font-weight: bold"
-                       @click="$router.back()"></el-button>
-            <span>帖子</span>
-          </el-row>
-          <el-row style="padding: 10px">
+      <div class="row">
+        <div class="col-7"
+             style="border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;">
+          <el-container>
+            <el-main class="overflow-y-auto" style="display: flex;flex-direction: column;height: 100vh;padding: 0">
+              <el-row class="fw-bold fs-4 text-start" style="align-self: flex-start;height: 70px">
+                <el-button circle icon="el-icon-back" style="border: none;font-size: 24px;font-weight: bold"
+                           @click="$router.back()"></el-button>
+                <span>帖子</span>
+              </el-row>
+              <div class="overflow-y-auto" style="height: 100vh">
+                <el-row  style="margin-bottom: 40px">
 
-            <chirper-card v-if="refer.visible" id="refer" ref="refer" :chirper="refer.record" style="margin-top: 40px"/>
+                  <chirper-card v-if="refer.visible" id="refer" ref="refer" :chirper="refer.record"/>
 
-            <chirper-card v-if="currentChirper.type!=='QUOTE'" id="current" ref="current" :chirper="currentChirper"
-                          :clickEvent="false"
-                          :mediaVisible="true"
-                          :straight="false" shadow="never" style="margin-top: 40px"/>
-            <refer-card v-if="currentChirper.type==='QUOTE'" id="current" ref="current" :value="currentChirper"
-                        style="margin-top: 40px"/>
-            <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
-                       @sent="doPost"/>
+                  <chirper-card v-if="currentChirper.type!=='QUOTE'" id="current" ref="current" :chirper="currentChirper"
+                                :clickEvent="false"
+                                :mediaVisible="true"
+                                :straight="false" shadow="never"/>
+                  <refer-card v-if="currentChirper.type==='QUOTE'" id="current" ref="current" :value="currentChirper"
+                            />
+                  <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
+                             @sent="doPost"/>
 
-          </el-row>
-          <el-row v-for="item in reply">
-            <chirper-card :chirper="item" shadow="hover"
-                          style="padding: 10px;border-bottom: 1px solid #E4E7ED;z-index: 1"
-            />
-          </el-row>
-        </li>
-        <li style="width: 40%">
+                </el-row>
+                <el-row v-for="item in reply">
+                  <chirper-card :chirper="item" shadow="hover"
+                                style="padding: 10px;border-bottom: 1px solid #E4E7ED;z-index: 1"
+                  />
+                </el-row>
+              </div>
+
+            </el-main>
+          </el-container>
+        </div>
+        <div class="col-5">
           <el-container>
             <el-main>
               <el-row>
@@ -45,8 +52,8 @@
 
             </el-main>
           </el-container>
-        </li>
-      </ul>
+        </div>
+      </div>
     </el-main>
   </el-container>
 
@@ -57,7 +64,7 @@ import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import TrendListCard from "@/views/explore/TrendListCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
-import {getToken} from "@/util/tools";
+import {getToken} from "@/util/auth";
 import {getDetail, getReply} from "@/api/chirper";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
 import ReferCard from "./ReferCard.vue";
@@ -190,5 +197,8 @@ li {
   height: 60px;
   width: calc(43% - 5px);
   top: 0;
+}
+.overflow-y-auto ::-webkit-scrollbar{
+  display: none;
 }
 </style>

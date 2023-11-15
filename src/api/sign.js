@@ -1,4 +1,4 @@
-import {FormPost, JsonPost} from "@/config/http";
+import {FormPost, Get, JsonPost} from "@/config/http";
 
 export const signIn = (account, password) => {
     return FormPost({
@@ -18,5 +18,10 @@ export const signUp = (username, password, email, birthday) => {
             email,
             birthday
         }
+    })
+}
+export function signOut() {
+    return Get({
+        url: '/chirp/auth-service/auth/signOut'
     })
 }

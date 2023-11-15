@@ -1,8 +1,8 @@
 <template>
 
-  <div>
-    <div  style="height: 100vh">
-      <div class="row ">
+  <div class="container">
+    <div  style="height: 100%;display: flex;flex-direction: column;" v-if="getChat">
+      <div class="row " style="height: 70px;">
         <div class="col d-flex align-items-center justify-content-start p-3 ps-4">
           <el-avatar :size="36" :src="getChat.user.smallAvatarUrl"/>
           <span style="font-weight: bold;font-size: 16px;margin-left: 12px">
@@ -10,7 +10,7 @@
           </span>
         </div>
         <div class="col-1 p-3 pe-5">
-          <el-button icon="el-icon-setting" class="border border-0 p-1  fs-5" circle @click="infoDrawer=true"/>
+          <el-button icon="el-icon-more" class="border border-0 p-1  fs-5" circle @click="infoDrawer=true"/>
         </div>
         <el-drawer
             :visible.sync="infoDrawer"
@@ -27,9 +27,16 @@
         </el-drawer>
       </div>
       <div ref="content" class="overflow-y-scroll content"
-           style="height: 90%;  padding-bottom: 24px;padding-top: 24px"
-           @scroll="loadMore">
-        <div  style="height: 104%;">
+           style="flex: 1">
+        <div>
+          <infinite-loading
+              direction="top"
+              :distance="10"
+              @infinite="loadMore">
+            <div slot="no-more"></div>
+            <div slot="no-results"></div>
+
+          </infinite-loading>
           <el-row v-for="(item,index) in getChat.messages" :key="item.id" >
             <!--          如果消息间隔相差2分组同时不是第一条-->
             <el-row
@@ -52,38 +59,42 @@
         </div>
 
       </div>
-    </div>
-    <div class="position-fixed bottom-0 end-1"
-         style="width: 44%;min-height: 50px;
-         background-color: white;border-right:  1px solid #DCDFE6;
+      <div  style="min-height: 50px;align-self: flex-end;width: 100%;overflow: hidden;
+         background-color: white;
          border-top: 1px solid #DCDFE6;
+
 ">
-      <send-card :receiver="[getChat.user]" :reply="true" style="border-radius: 12px;margin: 0px 8px 4px 0px;"/>
+      <send-card :receiver="[getChat.user]" :reply="true" style="border-radius: 12px;"/>
     </div>
+    </div>
+
 
   </div>
 </template>
 <script>
 import MessageCard from "@/views/message/MessageCard.vue";
 import SendCard from "@/views/message/SendCard.vue";
-import {getChatHistory, markConversationRead} from "@/api/advice";
+import {getChatHistory, getKeyPair, markConversationRead} from "@/api/advice";
 import {subtractDates} from "@/util/tools";
 import {chatDate, msgDate} from "@/util/formatter";
 import ConversationInfo from "@/views/message/ConversationInfo.vue";
-
+import InfiniteLoading from "vue-infinite-loading";
+import bigInt from "big-integer";
+import {doDecrypt, doEncrypt, mathPublicKey, getShareKey} from "@/util/encrypt";
 export default {
   name: "ChatCard",
 
   props: {
-    conversation: String
   },
   components: {
     ConversationInfo,
     SendCard,
-    MessageCard
+    MessageCard,
+    InfiniteLoading
   },
   data() {
     return {
+      conversation:'',
       isBottom: false,
       isLoading: false,
       infoDrawer:false
@@ -91,55 +102,42 @@ export default {
   },
   computed: {
     getChat() {
-      if (this.$store.getters.getChatHistory(this.conversation)) {
-        console.log(this.$store.getters.getChatHistory(this.conversation))
-        return this.$store.getters.getChatHistory(this.conversation);
-      } else {
-        return {
-          conversation: "",
-          messages: [],
-          unreadCount: 0,
-          user: {}
-        };
-      }
+        return this.$store.getters.getConv(this.conversation);
     }
   },
   methods: {
     chatDate, msgDate, subtractDates,
-    loadMore() {
-      const scrollTop = this.$refs.content.scrollTop
-      if (scrollTop <=0 && !this.isBottom && !this.isLoading) {
-        this.isLoading = true;
+    loadMore($state) {
+      if(Object.values(this.getChat.user).length>0) {
         let page = this.getChat.page;
         getChatHistory(this.getChat.user.id, page).then(res => {
           if (res.data.record.length <= 0) {
-            this.isBottom = true;
+            $state.complete();
           } else {
-            this.$store.commit('addPrivateMessage', {
+            this.$store.dispatch('pushMessage', {
               payload: res.data.record,
               top: false
             });
-            this.$store.commit('setConvPage', {
+            this.$store.commit('setConvOption', {
               conversation: this.getChat.conversation,
               page: page + 1
             });
-            this.isLoading = false;
+            $state.loaded();
           }
         });
       }
     }
   },
   created() {
+    this.conversation=this.$route.params.id;
     markConversationRead([this.conversation]);
-    this.$store.commit('setConversationUnread', {conversation: this.conversation, count: 0});
-    this.$store.commit('setConvReadStatus', {conversation: this.conversation, status: true});
+    this.$store.commit('setConvOption', {conversation: this.conversation, unread:0,status:true});
   },
   mounted() {
-    if (this.getChat.messages.length>0)
-    document.getElementById(this.getChat.messages[this.getChat.messages.length - 1].id).scrollIntoView({behavior: 'smooth'})
-  },
+    },
   destroyed() {
-    this.$store.commit('setConvReadStatus', {conversation: this.conversation, status: false})
+    markConversationRead([this.conversation])
+    this.$store.commit('setConvOption', {conversation: this.conversation, status: false,unread:0});
   }
 
 }
@@ -148,27 +146,10 @@ export default {
 
 /* 滚动条整体 */
 .content::-webkit-scrollbar {
-  width: 4px;
+  display: none;
 }
 
-/* 滚动条滑块 */
-.content::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  background: #909399;
-}
 
-/* 滚动条轨道 */
-.content::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  background: #ededed;
-  margin-bottom: 10px;
-}
-
-/* 滚动条两端按钮 */
-.content::-webkit-scrollbar-button {
-}
 
 .chat-date {
   font-size: 14px;

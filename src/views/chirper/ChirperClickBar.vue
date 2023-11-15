@@ -72,17 +72,19 @@
         <span class="num"> {{ getCount(chirper.viewCount) }}</span></li>
       <li>
         <el-button circle class="btn-interact" icon="el-icon-share" size="medium"
-                   @click="doShare"></el-button>
+                   @click="copy('http://localhost:7878/chirper/detail?id='+chirper.id)"></el-button>
       </li>
     </ul>
   </el-row>
 </template>
 
 <script>
-import {getCount, getToken} from "../../util/tools";
+import {getCount} from "@/util/tools";
+import {getToken} from "@/util/auth";
 import {cancelForward, cancelLike, doLike, forwardChirper} from "@/api/chirper";
 import QuoteCard from "@/views/edit/QuoteCard.vue";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
+import {copy} from "@/util/clipboard";
 
 export default {
   name: "ChirperClickBar",
@@ -111,6 +113,7 @@ export default {
     }
   },
   methods: {
+    copy,
     getToken,
     getCount,
     doLike() {
@@ -140,11 +143,6 @@ export default {
           this.chirper.forwardCount--;
         })
       }
-    },
-    doShare() {
-      let url = "http://localhost:7878/chirper/detail?id=" + this.chirper.id;
-      navigator.clipboard.writeText(url);
-      this.$message("已复制该推文链接:" + url)
     }
   },
   watch: {

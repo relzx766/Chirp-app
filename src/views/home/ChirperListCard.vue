@@ -1,21 +1,17 @@
 <template>
-  <el-container>
-    <el-main>
+  <el-container >
+    <el-main class="content" style="padding: 0">
       <el-row>
         <el-row>
           <span style="float: left;font-weight: bold;font-size: 20px">主页</span>
         </el-row>
         <el-row>
-          <el-tabs v-model="active" :stretch="true">
-            <el-tab-pane name="recommend">
+          <el-tabs v-model="active" :stretch="true" @tab-click="doTapClick">
+            <el-tab-pane name="recommend" >
               <span slot="label" style="font-size: 16px;font-weight: bold;">为你推荐</span>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
-              <el-row v-if="recommend.isLoading" style="text-align: center">
-                <div class="loading-box">
-                  <div class="loading"/>
-                </div>
-              </el-row>
+
               <el-row v-for="item in recommend.chirper" style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                             :value="item" style="margin-top: 8px;"/>
@@ -23,11 +19,13 @@
                     v-else :chirper="item"
                     style="margin-top: 8px;"/>
               </el-row>
-              <el-row>
-                <span v-if="recommend.isBottom" style="color:#909399;">到底了</span>
-              </el-row>
+              <infinite-loading
+                  direction="bottom"
+                  ref="inf-recommend"
+                  @infinite="loadRecommend">
+              </infinite-loading>
             </el-tab-pane>
-            <el-tab-pane :disabled="!isLogin" name="following">
+            <el-tab-pane :disabled="!isLogin" name="following" >
               <span slot="label" style="font-size: 16px;font-weight: bold;">正在关注</span>
               <el-button v-if="updateAdvice.visible" class="btn-advice-update" icon="el-icon-top" round type="primary"
                          @click="toFollowingTop">
@@ -35,11 +33,6 @@
               </el-button>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
-              <el-row v-if="following.isLoading" style="text-align: center">
-                <div class="loading-box">
-                  <div class="loading"/>
-                </div>
-              </el-row>
               <el-row v-for="item in following.chirper" :key="item.createTime"
                       style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
@@ -48,13 +41,16 @@
                     v-else :chirper="item"
                     style="margin-top: 8px;"/>
               </el-row>
-              <el-row>
-                <span v-if="following.isBottom" style="color:#909399;">已没有更多</span>
-              </el-row>
+              <infinite-loading
+                  direction="bottom"
+                  ref="inf-following"
+                  @infinite="loadFollowingChirper">
+              </infinite-loading>
             </el-tab-pane>
           </el-tabs>
         </el-row>
       </el-row>
+      <el-backtop :right="480" target=".content"></el-backtop>
     </el-main>
   </el-container>
 </template>
@@ -67,7 +63,7 @@ import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
 import {bigNumberToString, getToken} from "@/util/tools";
 import {getPage} from "@/api/feed";
-
+import InfiniteLoading, {StateChanger} from "vue-infinite-loading";
 export default {
   name: "ChirperListCard",
   props: {
@@ -105,67 +101,39 @@ export default {
   methods: {
     bigNumberToString,
     getToken,
-    refreshPage() {
-      if (getToken() != null) {
-        this.following.page = 1;
-        this.following.isBottom = false;
-        this.following.isLoading = true;
-        this.following.chirper = [];
-        getPage(this.following.page).then(res => {
-          this.following.isBottom = res.data.record.length <= 0;
-          let ids = res.data.record.map(feed => feed.contentId);
-          if (ids.length > 0) {
-            getByIds(ids).then(r => {
-              this.following.chirper.push(...r.data.record);
-              this.following.isLoading = false;
-            })
-          }
-        });
+    doTapClick(){
+      if (this.active === "recommend"){
+        //主动触发infinite-loading的加载方法
+        this.loadRecommend(null);
+      }else if (this.active === "following"){
+        this.loadFollowingChirper(null);
       }
-      this.recommend.page = 1;
-      this.recommend.isBottom = false
-      this.recommend.isLoading = true;
-      this.recommend.chirper = [];
+    },
+    loadRecommend($state){
       getChirperPage(this.recommend.page).then(res => {
-        this.recommend.chirper.push(...res.data.record);
-        this.recommend.isBottom = res.data.record.length <= 0;
-        this.recommend.isLoading = false;
-      }).catch(e=>{
-        this.recommend.isBottom=true;
-        this.recommend.isLoading = false;
+        this.recommend.page++;
+        if (res.data.record.length > 0){
+          this.recommend.chirper.push(...res.data.record);
+         $state&& $state.loaded();
+        }else {
+          $state&& $state.complete();
+        }
       })
     },
-    loadPage() {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-      const clientHeight = document.documentElement.clientHeight
-      const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight + 10 >= scrollHeight) {
-        if (this.active === 'following' && !this.following.isBottom && !this.following.isLoading) {
-          this.following.page++;
-          this.following.isLoading = true;
+    loadFollowingChirper($state) {
           //当feed流更新后，这种方式获取会导致重复
           getPage(this.following.page).then(res => {
-            this.following.isBottom = res.data.record.length <= 0;
+            this.following.page++;
             let ids = res.data.record.map(feed => feed.contentId)
             if (ids.length > 0) {
               getByIds(ids).then(r => {
                 this.following.chirper.push(...r.data.record);
-                this.following.isLoading = false
-              })
+                $state&& $state.loaded();
+              });
             } else {
-              this.following.isLoading = false;
+              $state&&  $state.complete();
             }
           })
-        } else if (this.active === 'recommend' && !this.recommend.isLoading && !this.recommend.isBottom) {
-          this.recommend.page++;
-          this.recommend.isLoading = true;
-          getChirperPage(this.recommend.page).then(res => {
-            this.recommend.chirper.push(...res.data.record);
-            this.recommend.isBottom = res.data.record.length <= 0;
-            this.recommend.isLoading = false;
-          })
-        }
-      }
     },
     toFollowingTop() {
       this.updateAdvice.visible = false;
@@ -180,6 +148,7 @@ export default {
     }
   },
   components: {
+    InfiniteLoading,
     'edit-card': OriginCard,
     'chirper-card': ChirperCard,
     'refer-card': ReferCard
@@ -200,11 +169,10 @@ export default {
     }
   },
   created() {
-    this.refreshPage();
-    window.addEventListener("scroll", this.loadPage, true);
+//    window.addEventListener("scroll", this.loadPage, true);
   },
   destroyed() {
-    window.removeEventListener("scroll", this.loadPage);
+  //  window.removeEventListener("scroll", this.loadPage);
   }
 }
 </script>
@@ -258,7 +226,7 @@ export default {
   background-color: transparent !important;
   background-image: linear-gradient(
       90deg, transparent 0, transparent 36%,
-      #4d72f6 0, #4d72f6 64%,
+      #409EFF 0, #409EFF 64%,
       transparent 0, transparent
   );
 }
