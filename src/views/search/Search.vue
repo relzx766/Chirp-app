@@ -1,33 +1,35 @@
 <template>
-  <el-container>
-    <el-main>
-      <el-row>
-        <el-col :span="15"
+  <div class="container">
+      <div class="row">
+        <div class="col-8"
                 style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;padding: 8px">
           <input-card style="margin-bottom: 8px"/>
-          <el-tabs :stretch="true" value="all">
-            <el-tab-pane name="all">
+          <el-tabs :stretch="true" value="all" class="d-flex flex-column" style="width: 100%">
+            <el-tab-pane name="all" >
               <span slot="label" style="font-size: 16px;font-weight: bold" @click="init();searchChirper();">全部</span>
-              <el-row>
-                <el-row v-if="isLoading" style="text-align: center">
-                  <div class="loading-box">
-                    <div class="loading"/>
-                  </div>
-                </el-row>
-                <search-user-card :keyword="keyword"/>
-                <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
-                  <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                              :value="item" style="margin-top: 8px;"/>
-                  <chirper-card
-                      v-else :chirper="item"
-                      style="margin-top: 8px;"/>
-                </el-row>
-              </el-row>
+              <div class="overflow-y-auto" style="flex: 1;height: 84vh">
+                <div>
+                  <el-row v-if="isLoading" style="text-align: center">
+                    <div class="loading-box">
+                      <div class="loading"/>
+                    </div>
+                  </el-row>
+                  <search-user-card :keyword="keyword"/>
+                  <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
+                    <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                                :value="item" style="margin-top: 8px;"/>
+                    <chirper-card
+                        v-else :chirper="item"
+                        style="margin-top: 8px;"/>
+                  </el-row>
+                </div>
+
+              </div>
             </el-tab-pane>
             <el-tab-pane name="media">
               <span slot="label" style="font-size: 16px;font-weight: bold"
                     @click="init();isMedia=true;searchChirper();">媒体</span>
-              <el-row>
+              <div class="overflow-y-auto" style="flex: 1;height: 84vh">
                 <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
                   <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                               :value="item" style="margin-top: 8px;"/>
@@ -35,20 +37,19 @@
                       v-else :chirper="item"
                       style="margin-top: 8px;"/>
                 </el-row>
-              </el-row>
+              </div>
             </el-tab-pane>
             <el-tab-pane name="user">
               <span slot="label" style="font-size: 16px;font-weight: bold">用户</span>
-              <search-user-card :keyword="keyword" :page="page"/>
+              <search-user-card class="overflow-y-auto" style="flex: 1;height: 84vh" :keyword="keyword" :page="page"/>
             </el-tab-pane>
           </el-tabs>
-        </el-col>
-        <el-col :span="9" style="text-align: center;padding: 20px">
+        </div>
+        <div class="col text-center pt-2">
           <trend-list-card style="background-color:#EBEEF5;border-radius: 10px"/>
-        </el-col>
-      </el-row>
-    </el-main>
-  </el-container>
+        </div>
+      </div>
+  </div>
 </template>
 
 <script>

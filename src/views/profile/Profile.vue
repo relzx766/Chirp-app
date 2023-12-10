@@ -14,7 +14,7 @@
     <div class="overflow-y-auto"  style="max-height: 100vh">
       <div style="margin-bottom: 40px">
         <el-row>
-          <profile-card :is-self="$store.getters.getUser.id===this.user.id" :value="user"/>
+          <profile-card :is-self="$store.getters.getUser.id===user.id" :value="user"/>
         </el-row>
         <el-row >
           <el-tabs v-model="activeName" :stretch="true" @tab-click="getPage">
@@ -240,8 +240,9 @@ li {
 
 ::v-deep .el-tabs__active-bar {
   background-color: transparent !important;
-  background-image: linear-gradient(
-      90deg, transparent 0, transparent 30%,
+  background-image: radial-gradient(
+  circle at 0% 50%,
+  transparent 0, transparent 30%,
       #409EFF 0, #409EFF 70%,
       transparent 0, transparent
   );

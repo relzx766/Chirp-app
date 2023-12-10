@@ -1,6 +1,6 @@
 <template>
-  <div style="">
-    <div v-if="reply&&currentToReply" class="text-start p-2 row mb-2 "
+  <div>
+    <div v-if="reply&&currentToReply" class="text-start  row mb-2 "
          style="font-size: 12px;margin-left: 0;font-weight: 600;border-left: 4px solid;background-color: #f0f0f0">
       <div class="col-11">
         <div class="row">
@@ -162,7 +162,7 @@ export default {
       }
     },
     doCancelReply() {
-      this.$store.commit('setChatToReply', null)
+      this.$store.commit('setChatToReply', null);
     },
     selectEmoji(emoji) {
       let input = document.getElementById("input-chat")
@@ -179,24 +179,24 @@ export default {
       this.fileUrl = URL.createObjectURL(this.file);
       this.message.type = file.type.split('/').shift().toUpperCase();
     },
-    doUpload() {
+   doUpload() {
       let id = Date.now();
       let messages = this.generateMessage(id);
       this.$store.dispatch('pushMessage', {
         payload: messages,
         top: true
       });
+    let that=this;
       let upload = new ChunkUpload(this.file, {
-        onSuccess: (res) => {
-          upload.stop();
-          this.fileUrl = res.data.record.url;
-          this.message.type = res.data.record.category.toUpperCase();
-          messages = this.generateMessage(id);
+       async onSuccess(res){
+          that.fileUrl = res.data.record.url;
+          that.message.type = res.data.record.category.toUpperCase();
+          messages =await that.generateMessage(id);
           messages.forEach(msg => {
-            this.$store.commit('wsSend', JSON.stringify(msg));
+            that.$store.commit('wsSend', JSON.stringify(msg));
           });
-          this.doCancelReply();
-          this.init();
+          that.doCancelReply();
+          that.init();
         },
         onError: (res) => {
           this.$message.error("文件上传失败\n" + res.message);
@@ -239,6 +239,9 @@ export default {
                 this.$store.commit('addKey',{id:conversation,key:key});
               }
               message.content=doEncrypt(key,content);
+              if (message.reference){
+                message.reference.content=doEncrypt(key,message.reference.content);
+              }
               return message; // 返回message作为Promise的结果
             }));
           }else {
@@ -247,6 +250,9 @@ export default {
           }
         }else {
           message.content=doEncrypt(key,content);
+          if (message.reference){
+            message.reference.content=doEncrypt(key,message.reference.content);
+          }
           // 将message包装成一个已完成的Promise，并推入数组
           promises.push(Promise.resolve(message));
         }

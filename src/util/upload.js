@@ -1,5 +1,5 @@
 import SparkMD5 from 'spark-md5'
-import {merge, uploadSlice} from "@/api/media";
+import {fastUpload, merge, uploadSlice} from "@/api/media";
 
 const CHUNK_SIZE = 3 * 1024 * 1024;
 const MAX_RETRY = 3;
@@ -36,14 +36,29 @@ class ChunkUpload {
     }
 
     start() {
+        let isExists=false;
         this.getFileMd5().then(md5 => {
             this.md5 = md5;
-            for (let i = 0; i < this.chunkTotal; i++) {
-                if (this.status) {
-                    break;
+            fastUpload(md5).then(r => {
+                if (r.code===200){
+                    isExists=true;
+                    this.status = true;
+                    this.msg = "上传成功";
+                    this.options.onSuccess && this.options.onSuccess(r);
+                }else {
+                    isExists=false;
                 }
-                this.uploadChunk(this.chunkList[i]);
-            }
+            }).then(()=>{
+                if (!isExists) {
+                    for (let i = 0; i < this.chunkTotal; i++) {
+                        if (this.status) {
+                            break;
+                        }
+                        this.uploadChunk(this.chunkList[i]);
+                    }
+                }
+            })
+
         });
     }
 

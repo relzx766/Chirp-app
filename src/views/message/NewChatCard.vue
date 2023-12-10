@@ -38,9 +38,9 @@
           </el-row>
         </el-row>
 
-        <div v-show="loading" aria-valuemax="100" aria-valuemin="0" aria-valuenow="100" class="progress"
+        <div v-show="loading" aria-valuemax="100" aria-valuemin="0" aria-valuenow="75" class="progress"
              role="progressbar" style="height: 4px">
-          <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+          <div class="progress-bar progress-bar-striped progress-bar-animated " style="width: 100%;height: 4px"></div>
         </div>
       </el-main>
     </el-container>

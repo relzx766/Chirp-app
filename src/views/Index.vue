@@ -131,7 +131,7 @@ import {getToken, removeToken} from "@/util/auth";
 import {load} from "@/api/user";
 import OriginCard from "@/views/edit/OriginCard.vue";
 import {getChatIndexPage, getChatUnread, getKeyPair, getPage, savePublicKey} from "@/api/advice";
-import {getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
+import {generateKey, getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
 import {copy} from "@/util/clipboard";
 
 export default {
@@ -166,9 +166,7 @@ export default {
       }
     },
     signOut() {
-      this.$store.commit("websocketClose")
       removeToken();
-      this.$store.commit("setUser", {});
       window.location.href = "/home";
     },
     async loadUser() {
@@ -210,7 +208,7 @@ export default {
     },
     async initSecretKey() {
       if (!getPrivateKey(this.$store.getters.getUser.id)) {
-        this.secretKey = Math.ceil(Math.random() * 1000000).toString();
+        this.secretKey = generateKey();
         this.secretKeyDialog = true;
       } else {
         this.secretKey = getPrivateKey(this.$store.getters.getUser.id);
@@ -286,6 +284,9 @@ export default {
       background: '#ffffff',
       fullscreen: true
     });
+    setTimeout(() =>{
+      loading.close();
+    },3000)
     this.init().then(() => {
       loading.close();
     })

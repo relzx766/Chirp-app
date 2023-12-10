@@ -1,7 +1,7 @@
 <template>
 
-  <div class="container">
-    <div  style="height: 100%;display: flex;flex-direction: column;" v-if="getChat">
+  <div class="container p-0">
+    <div style="height: 100%;display: flex;flex-direction: column;" v-if="getChat">
       <div class="row " style="height: 70px;">
         <div class="col d-flex align-items-center justify-content-start p-3 ps-4">
           <el-avatar :size="36" :src="getChat.user.smallAvatarUrl"/>
@@ -15,7 +15,7 @@
         <el-drawer
             :visible.sync="infoDrawer"
             :with-header="false"
-        :append-to-body="true">
+            :append-to-body="true">
           <el-row class="fs-5 m-2" style="text-align: left;color: #303133">
             <el-button class="p-1 fs-5 fw-bold border-0 " circle icon="el-icon-back" @click="infoDrawer=false"/>
             <span class="ms-3 fw-bold">对话信息</span>
@@ -23,11 +23,11 @@
           <conversation-info
               class="overflow-x-hidden"
               :user-id="getChat.user.id"
-          :conversation="getChat.conversation"/>
+              :conversation="getChat.conversation"/>
         </el-drawer>
       </div>
       <div ref="content" class="overflow-y-scroll content"
-           style="flex: 1">
+           style="flex: 1" @scroll="scrollE">
         <div>
           <infinite-loading
               direction="top"
@@ -37,7 +37,14 @@
             <div slot="no-results"></div>
 
           </infinite-loading>
-          <el-row v-for="(item,index) in getChat.messages" :key="item.id" >
+          <el-button v-show="backToBottom"
+                     size="small"
+                     style="position:fixed;right: 5%;bottom: 10%;z-index: 999;color:#409EFF;"
+                     icon="el-icon-bottom"
+                     round
+                     @click="backBottom"
+                     class="fs-6 shadow-lg  border-0"></el-button>
+          <el-row v-for="(item,index) in getChat.messages" :key="item.id">
             <!--          如果消息间隔相差2分组同时不是第一条-->
             <el-row
                 v-if="index>0&&subtractDates(getChat.messages[index].createTime,getChat.messages[index-1].createTime)>2*60*1000"
@@ -56,16 +63,15 @@
                           class="mt-2 mb-2"/>
 
           </el-row>
+
         </div>
 
       </div>
-      <div  style="min-height: 50px;align-self: flex-end;width: 100%;overflow: hidden;
+      <div style="min-height: 50px;align-self: flex-end;width: 100%;overflow: hidden;
          background-color: white;
-         border-top: 1px solid #DCDFE6;
-
-">
-      <send-card :receiver="[getChat.user]" :reply="true" style="border-radius: 12px;"/>
-    </div>
+         border-top: 1px solid #DCDFE6;">
+        <send-card :receiver="[getChat.user]" :reply="true" style="border-radius: 12px;"/>
+      </div>
     </div>
 
 
@@ -74,18 +80,16 @@
 <script>
 import MessageCard from "@/views/message/MessageCard.vue";
 import SendCard from "@/views/message/SendCard.vue";
-import {getChatHistory, getKeyPair, markConversationRead} from "@/api/advice";
+import {getChatHistory, markConversationRead} from "@/api/advice";
 import {subtractDates} from "@/util/tools";
 import {chatDate, msgDate} from "@/util/formatter";
 import ConversationInfo from "@/views/message/ConversationInfo.vue";
 import InfiniteLoading from "vue-infinite-loading";
-import bigInt from "big-integer";
-import {doDecrypt, doEncrypt, mathPublicKey, getShareKey} from "@/util/encrypt";
+
 export default {
   name: "ChatCard",
 
-  props: {
-  },
+  props: {},
   components: {
     ConversationInfo,
     SendCard,
@@ -94,21 +98,22 @@ export default {
   },
   data() {
     return {
-      conversation:'',
+      conversation: '',
       isBottom: false,
       isLoading: false,
-      infoDrawer:false
+      infoDrawer: false,
+      backToBottom: false,
     }
   },
   computed: {
     getChat() {
-        return this.$store.getters.getConv(this.conversation);
+      return this.$store.getters.getConv(this.conversation);
     }
   },
   methods: {
     chatDate, msgDate, subtractDates,
     loadMore($state) {
-      if(Object.values(this.getChat.user).length>0) {
+      if (Object.values(this.getChat.user).length > 0) {
         let page = this.getChat.page;
         getChatHistory(this.getChat.user.id, page).then(res => {
           if (res.data.record.length <= 0) {
@@ -126,18 +131,24 @@ export default {
           }
         });
       }
+    },
+    scrollE(e) {
+      this.backToBottom = e.target.scrollTop - e.target.clientHeight < -200;
+    },
+    backBottom() {
+      this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
     }
   },
   created() {
-    this.conversation=this.$route.params.id;
+    this.conversation = this.$route.params.id;
     markConversationRead([this.conversation]);
-    this.$store.commit('setConvOption', {conversation: this.conversation, unread:0,status:true});
+    this.$store.commit('setConvOption', {conversation: this.conversation, unread: 0, status: true});
   },
   mounted() {
-    },
+  },
   destroyed() {
     markConversationRead([this.conversation])
-    this.$store.commit('setConvOption', {conversation: this.conversation, status: false,unread:0});
+    this.$store.commit('setConvOption', {conversation: this.conversation, status: false, unread: 0});
   }
 
 }
@@ -148,7 +159,6 @@ export default {
 .content::-webkit-scrollbar {
   display: none;
 }
-
 
 
 .chat-date {

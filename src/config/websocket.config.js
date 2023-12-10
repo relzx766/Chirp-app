@@ -8,6 +8,7 @@ class websocketLink {
         this.reconnectLock = false;
         this.reconnectLimit = options.reconnectLimit ? options.reconnectLimit : 5;
         this.socket = null;
+        this.status=false;
     }
 
     start() {
@@ -16,6 +17,7 @@ class websocketLink {
             this.options.onopen && this.options.onopen();
             this.reconnectTimes = 0;
             this.doHeartBeat();
+            this.status=true;
         }
         this.socket.onmessage = e => {
             if (heartBeat.toLowerCase() !== e.data.toLowerCase()) {
@@ -23,10 +25,12 @@ class websocketLink {
             }
         }
         this.socket.onerror = err => {
+            this.status=false;
             this.doReconnect();
             this.options.onerror && this.options.onerror(err);
         }
         this.socket.onclose = () => {
+            this.status=false;
             this.doReconnect();
             this.options.onclose && this.options.onclose();
         }

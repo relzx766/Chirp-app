@@ -61,9 +61,10 @@ import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import {getByIds, getChirperPage} from "@/api/chirper";
 import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
-import {bigNumberToString, getToken} from "@/util/tools";
+import {bigNumberToString} from "@/util/tools";
 import {getPage} from "@/api/feed";
 import InfiniteLoading, {StateChanger} from "vue-infinite-loading";
+import {getToken} from "@/util/auth";
 export default {
   name: "ChirperListCard",
   props: {

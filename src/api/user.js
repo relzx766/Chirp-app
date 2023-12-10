@@ -61,3 +61,13 @@ export const getFollowing = (id, page) => {
     })
 
 }
+export const checkUsername=(username)=>{
+    return Get({
+        url:`${sever}/user/username/check/${username}`
+    })
+}
+export const checkEmail=(email)=>{
+    return Get({
+        url:`${sever}/user/email/check/${email}`
+    })
+}

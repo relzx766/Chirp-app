@@ -30,7 +30,7 @@
         </el-col>
         <el-col  :span="14" style="border-right:2px solid #EBEEF5;">
           <router-view style="height: 96vh;" :key="$route.fullPath" class="container"/>
-          <div  style="text-align: left;padding-left: 20%;padding-top: 30%" class="">
+          <div v-show="$route.path==='/message'" style="text-align: left;padding-left: 20%;padding-top: 30%" class="">
             <el-row class="fs-2 fw-bold" style="color: #303133">选择一条私信</el-row>
             <el-row class="fs-6" style="color: #606266">从现有的对话中选择，开始新的对话，或者只是继续浏览。</el-row>
             <el-row>

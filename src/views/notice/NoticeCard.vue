@@ -114,14 +114,18 @@ export default {
     this.loadMore(this.$store.getters.getNoticePage)
     this.getUnreadCount().then(res => {
       this.$store.commit('setNoticeOption', {unread:res.data.record.count});
-    })
-    window.addEventListener("scroll", this.scrollPage, true);
-  },
-  destroyed() {
-    this.$store.commit('setNoticeOption', {unread:0});
+    });
     if (this.$store.getters.getNoticeUnread > 0) {
       markAsRead();
     }
+    window.addEventListener("scroll", this.scrollPage, true);
+  },
+  destroyed() {
+    if (this.$store.getters.getNoticeUnread > 0) {
+    markAsRead();
+  }
+    this.$store.commit('setNoticeOption', {unread:0});
+
     window.removeEventListener("scroll", this.scrollPage);
   }
 }

@@ -9,7 +9,7 @@
             :show-close="false"
             :visible.sync="replyDialog"
             width="50%" @click.native.self>
-          <el-row>
+          <el-row class="p-1">
             <reply-card :chirper="chirper" :is-dia-log="true"
                         @sent="replyDialog=false;chirper.replyCount++;chirper.viewCount++"/>
           </el-row>

@@ -130,24 +130,6 @@ export default {
       this.$emit('doClose')
     },
     doUpload({data, file}) {
-      if (file.size < 2 * 1024 * 1024) {
-        getMd5(file).then(md5 => {
-          let form = new FormData();
-          form.append("file", file);
-          form.append("hash", md5);
-          upload(form).then(res => {
-            if (res.code === 200 || res.code === 409) {
-              if (data.index === 0) {
-                this.user.profileBackUrl = res.data.record.url;
-              } else {
-                this.user.largeAvatarUrl = res.data.record.url;
-              }
-            } else {
-              this.$message.error("文件上传失败");
-            }
-          })
-        })
-      } else {
         let chunkUpload = new ChunkUpload(file, {
           onSuccess: (res) => {
             if (data.index === 0) {
@@ -162,7 +144,6 @@ export default {
         });
         chunkUpload.start();
       }
-    }
   },
   watch: {
     value(val) {

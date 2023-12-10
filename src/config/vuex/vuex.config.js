@@ -123,7 +123,7 @@ const store = new Vuex.Store({
             state.ws.start();
         },
         websocketClose(state) {
-            state.ws.close();
+                state.ws.close();
         },
         wsSend(state, payload) {
             state.ws.send(payload);

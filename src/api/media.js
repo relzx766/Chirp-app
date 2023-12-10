@@ -21,3 +21,11 @@ export const merge = (extension, md5) => {
         }
     })
 }
+export const fastUpload=(hash)=>{
+    let data=new FormData();
+    data.append("hash",hash);
+    return FormPost({
+        url:`${server}/media/fast`,
+        data:data
+    })
+}

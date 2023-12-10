@@ -97,10 +97,7 @@ export default {
     getToken,
     getReply() {
       getReply(this.currentChirper.id, this.page).then((res) => {
-        Array.from(res.data.record).forEach(reply => {
-          reply.mediaKeys = JSON.parse(reply.mediaKeys);
-          this.reply.push(reply);
-        })
+        this.reply.push(...res.data.record)
 
       })
     },
@@ -112,11 +109,8 @@ export default {
         this.page++;
         this.isLoading = true;
         getReply(this.currentChirper.id, this.page).then((res) => {
-          if (res.data.record.length > 0) {
-            Array.from(res.data.record).forEach(reply => {
-              reply.mediaKeys = JSON.parse(reply.mediaKeys);
-              this.reply.push(reply);
-            })
+          if (res.code===200&&res.data.record.length > 0) {
+            this.reply.push(...res.data.record);
           } else {
             this.isBottom = true;
           }
@@ -152,6 +146,7 @@ export default {
 
     },
     doPost(chirper) {
+      this.currentChirper.replyCount++;
       getDetail(chirper.id).then((res) => {
         let chirper = res.data.record;
         let user = this.$store.getters.getUser;

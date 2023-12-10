@@ -45,7 +45,7 @@
               :visible.sync="editDialog"
               class="edit-dialog"
               width="40%">
-            <el-row style="margin-top: -60px;width: 106%;margin-left: -3%;min-height: 70vh">
+            <el-row class="p-2" style="min-height: 70vh">
               <edit-card :value="user" @doClose="editDialog=false"/>
             </el-row>
           </el-dialog>
@@ -96,11 +96,12 @@
 </template>
 
 <script>
-import {getCount, getToken} from "@/util/tools";
+import {getCount} from "@/util/tools";
 import {follow, unFollow} from "@/api/user";
 import ProfileEditCard from "@/views/profile/ProfileEditCard.vue";
 import FollowerCard from "@/views/profile/FollowerCard.vue";
 import SendCard from "@/views/message/SendCard.vue";
+import {getToken} from "@/util/auth";
 
 export default {
   name: "ProfileCard",
@@ -164,8 +165,8 @@ export default {
     }
   },
   created() {
-    this.user = this.value
-    this.changeFollowBtnText(this.user.relation)
+    this.user = this.value;
+    this.changeFollowBtnText(this.user.relation);
   },
   watch: {
     value(val) {

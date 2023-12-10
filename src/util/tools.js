@@ -78,12 +78,7 @@ export const doPercent = (num1, num2) => {
         return 0
     }
 }
-export const getToken = () => {
-    return localStorage.getItem("token");
-}
-export const getFromStorage = (key) => {
-    return localStorage.getItem(key);
-}
+
 export const getNewMsgCount = (num) => {
     return num > 99 ? 99 : num;
 }
@@ -98,7 +93,7 @@ export const bigNumberToString = (num) => {
 export const formatText = (text) => {
 // 查找@username
     const regex = /@(\w+)(?=\s|$)/g;
-    return text.replace(regex, "<a href='/profile?id=$1&type=username' @click.stop style='color:#409EFF;text-decoration: none;'>@$1</a>").replace("\u200B", "</br>");
+    return text.replace(regex,"<a href='/profile?id=$1&type=username' @click.stop style='color:#409EFF;text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
 
 }
 /**
@@ -111,4 +106,11 @@ export const subtractDates = (date1, date2) => {
     date1 = new Date(date1);
     date2 = new Date(date2);
     return date1.getTime() - date2.getTime();
+}
+export const getCharCode=(str)=>{
+    let code='';
+    for (let i=0;i<str.length;i++){
+        code+=str.charCodeAt(i);
+    }
+    return parseInt(code,10);
 }

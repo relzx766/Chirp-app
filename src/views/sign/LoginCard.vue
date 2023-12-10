@@ -53,7 +53,7 @@
         :show-close="false"
         :visible.sync="signUpDialog"
         width="30%">
-      <el-row style="margin-top: -50px;width: 106%;margin-left: -3%;min-height: 50vh">
+      <el-row class="p-1">
         <sign-up-card/>
       </el-row>
     </el-dialog>
@@ -101,7 +101,7 @@ export default {
         } else {
           this.$message.error(res.data.message);
         }
-      })
+      });
 
     }
   },
