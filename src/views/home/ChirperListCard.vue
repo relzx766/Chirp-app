@@ -12,7 +12,7 @@
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
 
-              <el-row v-for="item in recommend.chirper" style="border-bottom: 1px solid #E4E7ED;">
+              <el-row v-for="item in recommend.chirper" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                             :value="item" style="margin-top: 8px;"/>
                 <chirper-card
@@ -33,7 +33,7 @@
               </el-button>
               <edit-card v-if="isLogin"
                          style="border-bottom: 2px solid #EBEEF5;"/>
-              <el-row v-for="item in following.chirper" :key="item.createTime"
+              <el-row v-for="item in following.chirper" :key="item.id"
                       style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                             :value="item" style="margin-top: 8px;"/>
@@ -62,7 +62,7 @@ import {getByIds, getChirperPage} from "@/api/chirper";
 import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
 import {bigNumberToString} from "@/util/tools";
-import {getPage} from "@/api/feed";
+import {getPage, getPageByScore, getRange} from "@/api/feed";
 import InfiniteLoading, {StateChanger} from "vue-infinite-loading";
 import {getToken} from "@/util/auth";
 export default {
@@ -112,40 +112,65 @@ export default {
     },
     loadRecommend($state){
       getChirperPage(this.recommend.page).then(res => {
-        this.recommend.page++;
-        if (res.data.record.length > 0){
-          this.recommend.chirper.push(...res.data.record);
-         $state&& $state.loaded();
-        }else {
-          $state&& $state.complete();
+        if (res.code===200) {
+          this.recommend.page++;
+          if (res.data.record.length > 0) {
+            this.recommend.chirper.push(...res.data.record);
+            $state && $state.loaded();
+          } else {
+            $state && $state.complete();
+          }
+        }
+      })
+    },
+    init(){
+      getPage(1).then(res => {
+        let ids = res.data.record.map(feed => feed.contentId)
+        if (ids.length > 0) {
+          getByIds(ids).then(r => {
+            if (r.code===200) {
+              this.following.chirper.push(...r.data.record);
+            }
+          });
         }
       })
     },
     loadFollowingChirper($state) {
-          //当feed流更新后，这种方式获取会导致重复
-          getPage(this.following.page).then(res => {
-            this.following.page++;
-            let ids = res.data.record.map(feed => feed.contentId)
-            if (ids.length > 0) {
-              getByIds(ids).then(r => {
+      if (this.following.chirper.length>0) {
+        let start = this.following.chirper[this.following.chirper.length - 1].createTime;
+        start = Date.parse(start);
+        getPageByScore(start).then(res => {
+          let ids = res.data.record.map(feed => feed.contentId);
+          if (ids.length > 0) {
+            getByIds(ids).then(r => {
+              if (r.code===200) {
                 this.following.chirper.push(...r.data.record);
-                $state&& $state.loaded();
-              });
-            } else {
-              $state&&  $state.complete();
-            }
-          })
+              }
+              $state && $state.loaded();
+            });
+          } else {
+            $state && $state.complete();
+          }
+        });
+      }else {
+        this.init();
+      }
     },
     toFollowingTop() {
       this.updateAdvice.visible = false;
       this.updateAdvice.record = [];
       document.documentElement.scrollTop = 0;
-      getPage(1).then(res => {
+      let start =this.following.chirper.length>0?this.following.chirper[0].createTime:0;
+      start=Date.parse(start)+1;
+      let end=Date.now();
+      getRange(start,end).then(res=>{
         let ids = res.data.record.map(feed => feed.contentId)
         getByIds(ids).then(r => {
-          this.following.chirper.unshift(...r.data.record)
+          if (r.code===200) {
+            this.following.chirper.unshift(...r.data.record);
+          }
         })
-      })
+      });
     }
   },
   components: {

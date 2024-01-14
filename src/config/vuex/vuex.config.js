@@ -4,7 +4,9 @@ import websocketLink from '../websocket.config';
 import {getToken} from "@/util/auth";
 import {getAdviceAudio} from "@/util/adviceUtil";
 import {doDecrypt, doEncrypt, getPrivateKey, getPublicKey, getShareKey} from "@/util/encrypt";
-import {fetchPublicKey, getPublicKeys} from "@/api/advice";
+import {fetchPublicKey, getChatSetting, getMyChatSetting, getPublicKeys} from "@/api/advice";
+import {chatAllowEnum, messageStatusEnums} from "@/enums/enums";
+import {Message} from "element-ui";
 Vue.use(Vuex);
 const store = new Vuex.Store({
     state: {
@@ -46,6 +48,12 @@ const store = new Vuex.Store({
             prime:'',
             generator:'',
             init:false
+        },
+        setting:{
+            chat:{
+                pinned:"",
+                allow:chatAllowEnum.ANYONE
+            }
         }
     },
     getters: {
@@ -90,6 +98,9 @@ const store = new Vuex.Store({
         },
         getSecretKey: state => (key)=>{
             return state.chat.keys[key]
+        },
+        getSetting:state => {
+            return state.setting;
         }
     },
     mutations: {
@@ -98,6 +109,7 @@ const store = new Vuex.Store({
             state.ws = new websocketLink(url, {
                 onopen: () => {
                     console.log("已与服务器建立websocket连接");
+                    Message.success("已连接消息服务");
                 },
                 onmessage: e => {
                     let messages = JSON.parse(e.data);
@@ -118,6 +130,10 @@ const store = new Vuex.Store({
                 },
                 onerror: err => {
                     console.log("websocket连接出错\n", err);
+                    Message.error("与服务器断开连接")
+                },
+                onretry:()=>{
+                    Message.warning("尝试重新连接服务器");
                 }
             });
             state.ws.start();
@@ -176,7 +192,8 @@ const store = new Vuex.Store({
                         } else if (item.event === 'FOLLOW') {
                             let key = `${item.event}${item.receiverId}`;
                             if (!state.notice.record[key]) {
-                                state.notice.record[key] = []
+                                state.notice.record[key] = [];
+
                             }
                             if (messages.length > 1) {
                                 state.notice.record[key].push(item);
@@ -255,13 +272,19 @@ const store = new Vuex.Store({
                 if (item.reference&&item.reference.content){
                     item.reference.content=doDecrypt(state.chat.keys[key],item.reference.content);
                 }
+                if (messageStatusEnums.FAILED===item.status){
+                    Message.error(item.failedMsg);
+                }
                 if (top) {
                     state.chat.record[key].messages.push(item);
                     if (!state.chat.record[key].reading && item.status === 'UNREAD' && state.user.id !== item.senderId) {
                         state.chat.record[key].unreadCount++;
                         state.chat.unRead++;
                         state.chat.newChatQueue.push(key);
-                        getAdviceAudio().play();
+                        getAdviceAudio().play()
+                            .catch(e=>{
+                                console.log(e)
+                            });
                     }
 
                 } else {
@@ -313,6 +336,14 @@ const store = new Vuex.Store({
             state.encrypt.generator=g;
             state.encrypt.init=true;
         },
+        setChatSetting(state,setting){
+            if (setting.allow!==undefined){
+                state.setting.chat.allow=setting.allow;
+            }
+            if (setting.pinned!==undefined){
+                state.setting.chat.pinned=setting.pinned;
+            }
+        }
     },
     actions: {
         wsInit({commit}) {
@@ -327,7 +358,6 @@ const store = new Vuex.Store({
                     ids.push(item.senderId);
                     ids.push(item.receiverId);
                 });
-
         getPublicKeys(ids).then(res=>{
                 if (res.code===200){
                     let record = res.data.record;
@@ -338,6 +368,15 @@ const store = new Vuex.Store({
             }).then(()=>{
             commit('addChatRecord', {payload,top});
         })
+        },
+        initSetting({commit}){
+            getMyChatSetting().then(r =>{
+                commit('setChatSetting',r.data.record);
+            }).catch(e=>{
+                let setting={}
+                commit('setChatSetting',setting);
+                throw new Error(e);
+            })
         },
     }
 })

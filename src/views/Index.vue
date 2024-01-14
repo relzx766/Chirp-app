@@ -86,7 +86,7 @@
             <div class="col-7">
               <el-input v-if="editable" v-model="secretKey" show-password
                         @keyup.enter.native="saveKeys"
-                        @input="secretKey=secretKey.replace(/\D/g,'')"/>
+                       />
               <div v-else style="width:100%"
                    class="row bg-body-secondary ms-1 p-1 text-center float-start rounded-pill d-flex align-items-center ">
                 <div class="col-7">
@@ -157,12 +157,18 @@ export default {
     },
     async init() {
       if (getToken() != null && getToken().length > 0) {
-        await this.loadUser();
-        await this.initSecretKey();
-        await this.$store.dispatch('wsInit').then(() => {
-          this.loadNotice();
-          this.loadChat();
-        })
+        try {
+          await this.loadUser();
+          await this.initSecretKey();
+          await this.$store.dispatch('wsInit').then(() => {
+            this.loadNotice();
+            this.loadChat();
+          });
+          await this.$store.dispatch('initSetting');
+        }catch (e) {
+          this.$message.error(e);
+        }
+
       }
     },
     signOut() {
@@ -267,7 +273,7 @@ export default {
               }
             }, [
               h('el-avatar', {props: {src: message.senderAvatar}}, {}),
-              h('span', {style: {marginLeft: "12px"}}, message.content),
+              h('span', {style: {marginLeft: "12px",width:'150px'},class:['text-truncate','d-inline-block']}, message.content),
               h('span', {style: {fontSize: '12px', color: '#909399'}}, `[${record.unreadCount}条未读]`)
             ])
           })

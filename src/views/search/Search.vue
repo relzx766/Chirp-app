@@ -4,9 +4,9 @@
         <div class="col-8"
                 style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;padding: 8px">
           <input-card style="margin-bottom: 8px"/>
-          <el-tabs :stretch="true" value="all" class="d-flex flex-column" style="width: 100%">
+          <el-tabs :stretch="true" value="all" class="d-flex flex-column" style="width: 100%" @tab-click="handleTabClick">
             <el-tab-pane name="all" >
-              <span slot="label" style="font-size: 16px;font-weight: bold" @click="init();searchChirper();">全部</span>
+              <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
               <div class="overflow-y-auto" style="flex: 1;height: 84vh">
                 <div>
                   <el-row v-if="isLoading" style="text-align: center">
@@ -27,8 +27,7 @@
               </div>
             </el-tab-pane>
             <el-tab-pane name="media">
-              <span slot="label" style="font-size: 16px;font-weight: bold"
-                    @click="init();isMedia=true;searchChirper();">媒体</span>
+              <span slot="label" style="font-size: 16px;font-weight: bold">媒体</span>
               <div class="overflow-y-auto" style="flex: 1;height: 84vh">
                 <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
                   <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
@@ -85,15 +84,27 @@ export default {
       this.isMedia = false;
       this.isLoading = false;
       this.isBottom = false;
-      this.chirpers = [];
+      this.chirpers.splice(0,this.chirpers.length);
       this.users = [];
+    },
+    handleTabClick(tab){
+      if (tab.name==='all'){
+        this.init();
+        this.searchChirper();
+      }else if (tab.name==='media'){
+        this.init();
+        this.isMedia=true;
+        this.searchChirper();
+      }
     },
     searchChirper() {
       this.isLoading = true;
       search(this.keyword, this.page, this.isMedia).then(res => {
-        this.chirpers.push(...res.data.record);
-        this.isBottom = res.data.record.length <= 0;
-        this.isLoading = false;
+        if (res.code===200) {
+          this.chirpers.push(...res.data.record);
+          this.isBottom = res.data.record.length <= 0;
+          this.isLoading = false;
+        }
       })
     },
     loadMore() {
@@ -115,7 +126,6 @@ export default {
   },
   created() {
     this.keyword = this.$route.query.keyword;
-    console.log(this.keyword)
     this.searchChirper();
     window.addEventListener("scroll", this.loadMore, true);
   },

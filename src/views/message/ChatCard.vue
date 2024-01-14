@@ -145,6 +145,7 @@ export default {
     this.$store.commit('setConvOption', {conversation: this.conversation, unread: 0, status: true});
   },
   mounted() {
+    this.backBottom();
   },
   destroyed() {
     markConversationRead([this.conversation])

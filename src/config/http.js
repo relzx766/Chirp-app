@@ -4,7 +4,7 @@ import {getToken} from "@/util/auth";
 
 const service = axios.create({
     timeout: 30000,  // 请求 30s 超时
-    baseURL: "http://localhost:8888",
+    baseURL: "http://192.168.169.129:443",
     headers: {
         get: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'

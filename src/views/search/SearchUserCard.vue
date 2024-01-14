@@ -5,7 +5,7 @@
         <div class="loading"/>
       </div>
     </el-row>
-    <el-card v-for="(item,index) in users" shadow="hover" style="border: none;border-radius: 12px;margin-bottom: 4px"
+    <el-card v-for="(item,index) in users" :key="item.id" shadow="hover" style="border: none;border-radius: 12px;margin-bottom: 4px"
              @click.native="$router.push('/profile?id='+item.id)">
       <el-row style="text-align: left">
         <el-col :span="2">

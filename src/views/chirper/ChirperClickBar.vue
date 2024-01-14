@@ -9,7 +9,7 @@
             :show-close="false"
             :visible.sync="replyDialog"
             width="50%" @click.native.self>
-          <el-row class="p-1">
+          <el-row class="p-2">
             <reply-card :chirper="chirper" :is-dia-log="true"
                         @sent="replyDialog=false;chirper.replyCount++;chirper.viewCount++"/>
           </el-row>
@@ -36,7 +36,6 @@
               <el-button :style="{ color: chirper.isQuote ? '#409EFF' : '#606266' }" class="btn-interact"
                          icon="el-icon-edit"
                          size="medium"
-                         style="font-size: 16px"
                          @click="quoteDialog=true"><span  style="font-size: 16px"
               >引用</span></el-button>
             </el-row>

@@ -25,7 +25,9 @@
                        @click="init();doSearch()"></el-button>
           </el-input>
           <el-row style="text-align: left">
-            <div v-for="item in Object.values(receivers)" :key="item.id" style="display: inline-block">
+            <div v-for="item in Object.values(receivers)"
+                 :key="item.id"
+                 style="display: inline-block">
               <button class="btn btn-light rounded-pill" style="display: flex;align-items: center;padding: 2px"
                       type="button"
                       @click="$delete(receivers,item.id)">
@@ -46,14 +48,20 @@
     </el-container>
 
     <div v-if="!step2||Object.keys(receivers).length<=0" style="height: 60vh;border: none;overflow-x: hidden">
-      <div v-for="item in users" :key="item.id" class="row user-item" @click="$set(receivers,item.id,item)">
+      <div v-for="item in users" :key="item.id"
+           class="row user-item"
+           @click="$set(receivers,item.id,item)"
+           :class="!canBeChat(item)?['pe-none','bg-light']:[]"
+           >
+<!--        //style="pointer-events: none;"-->
         <div class="col-1" style="text-align: left;">
           <el-avatar :src="item.smallAvatarUrl"/>
         </div>
         <div class="col-11" style="text-align: left;">
           <div style="margin-left: 12px">
             <el-row style="font-weight: bold;color: #303133">{{ item.nickname }}</el-row>
-            <el-row>@{{ item.username }}</el-row>
+            <el-row v-if="!canBeChat(item)">不可以向 @{{ item.username }} 发私信</el-row>
+            <el-row v-else>@{{ item.username }}</el-row>
           </div>
 
         </div>
@@ -65,11 +73,18 @@
   </div>
 </template>
 <script>
-import {search} from "@/api/user";
+import {getRelations, search} from "@/api/user";
 import SendCard from "@/views/message/SendCard.vue";
+import {getChatSettings} from "@/api/advice";
+import {chatAllowEnum, relationEnums} from "@/enums/enums";
 
 export default {
   name: "NewChatCard",
+  computed: {
+    chatAllowEnum() {
+      return chatAllowEnum
+    }
+  },
   components: {SendCard},
 
   data() {
@@ -90,13 +105,46 @@ export default {
       this.isBottom = false;
       this.loading = false;
     },
+    canBeChat(user){
+     return ((user.chatSetting.allow===chatAllowEnum.ANYONE&&relationEnums.BLOCK!==user.relation)
+          ||user.id===this.$store.getters.getUser.id
+          ||user.relation===relationEnums.FOLLOW)
+      &&user.chatSetting.chatReady;
+    },
     doSearch() {
       this.loading = true;
+      let users=[];
       search(this.keyword, this.page).then(res => {
-        this.loading = false;
-        this.page++;
-        this.isBottom = res.data.record.length <= 0;
-        this.users.push(...res.data.record);
+        if (res.code===200) {
+          users = res.data.record;
+          this.isBottom = users.length <= 0;
+        }
+        return users.map(r=>r.id);
+      }).then(userIds=>{
+        return Promise.all([
+            getChatSettings(userIds),
+            getRelations(userIds)
+        ])
+      }).then(([chatRes,relaRes])=>{
+        if (chatRes.code===200&&relaRes.code===200){
+          let settings = chatRes.data.record;
+          settings=settings.reduce((setting,item)=>{
+            setting[item.userId]=item;
+            return setting;
+          },{});
+          let relations=relaRes.data.record.reduce((relation,item)=>{
+            relation[item.fromId]=item;
+            return relation;
+          },{});
+          users.forEach(user=>{
+            user.chatSetting=settings[user.id];
+            user.relation=relations[user.id]?relations[user.id].status:relationEnums.UNFOLLOW;
+            this.users.push(user);
+          });
+          this.loading = false;
+          this.page++;
+        }
+
       })
     },
     loadMore() {

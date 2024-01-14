@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card v-for="item in record" shadow="hover" style="border: none;border-radius: 12px;margin-top: 4px">
+    <el-card v-for="(item,index) in record" shadow="hover" style="border: none;border-radius: 12px;margin-top: 4px">
       <el-col :span="3">
         <el-avatar :src="item.smallAvatarUrl"/>
       </el-col>
@@ -14,10 +14,10 @@
             <el-button v-if="item.id===$store.getters.getUser.id" disabled round>自己</el-button>
             <el-button v-else-if="item.relation===2" round
                        style="background-color: #212121;color: white;font-weight:bold"
-                       @click="follow(item.id);item.relation=1">关注
+                       @click="follow(index);">关注
             </el-button>
             <el-button v-else-if="item.relation===1" round style="font-weight: bold" type="primary"
-                       @click="unFollow(item.id);item.relation=2">已关
+                       @click="unfollow(index);">已关
             </el-button>
           </el-col>
         </el-row>
@@ -47,22 +47,34 @@ export default {
     }
   },
   methods: {
-    unFollow,
-    follow,
+    unfollow(index){
+      this.record[index].relation=2;
+      this.$emit('unfollow');
+      unFollow(this.record[index].id);
+    },
+    follow(index){
+      this.record[index].relation=1;
+      this.$emit('follow');
+      follow(this.record[index].id);
+    },
     getFollower(page) {
       this.isLoading = true;
       getFollower(this.id, page).then(res => {
-        this.record.push(...res.data.record);
-        this.isLoading = false;
-        this.isBottom = res.data.record.length <= 0;
+        if (res.code===200) {
+          this.record.push(...res.data.record);
+          this.isLoading = false;
+          this.isBottom = res.data.record.length <= 0;
+        }
       })
     },
     getFollowing(page) {
       this.isLoading = true;
       getFollowing(this.id, page).then(res => {
-        this.record.push(...res.data.record);
-        this.isLoading = false;
-        this.isBottom = res.data.record.length <= 0;
+        if (res.code===200) {
+          this.record.push(...res.data.record);
+          this.isLoading = false;
+          this.isBottom = res.data.record.length <= 0;
+        }
       })
     },
     init() {

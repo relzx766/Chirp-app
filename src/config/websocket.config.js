@@ -54,6 +54,7 @@ class websocketLink {
 
     doReconnect() {
         if (!this.reconnectLock && this.reconnectTimes <= this.reconnectLimit) {
+            this.options.onretry&&this.options.onretry();
             setTimeout(() => {
                 this.reconnectLock = true;
                 this.start();

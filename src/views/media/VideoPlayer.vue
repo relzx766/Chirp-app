@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="player">
-      <video ref="videoPlayer" class="video-js"></video>
+      <video ref="videoPlayer" :style="videoStyle" class="video-js"></video>
     </div>
   </div>
 </template>
@@ -12,7 +12,14 @@ import DPlayer from 'dplayer'
 export default {
   name: "VideoPlayer",
   props: {
-    url: ""
+    url: "",
+    videoStyle:{
+      type:Object,
+      default:()=>({
+        'borderRadius':'12px',
+
+      })
+    }
   },
   data() {
     return {
@@ -79,7 +86,6 @@ export default {
 
 .video-js {
   width: 100%;
-  border-radius: 12px;
   overflow: hidden;
   min-height: 200px;
   max-height: 500px;

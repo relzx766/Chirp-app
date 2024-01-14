@@ -8,19 +8,24 @@
                        @click.native="$router.push('/profile?id='+user.id)"/>
           </div>
           <div class="col-11">
-            <div class="d-flex align-items-center justify-content-start">
-              <div style="max-width: 80%;text-align: left;">
-               <span v-if="message.type==='TEXT'" class="text_chat_msg bg-body-tertiary shadow-sm p-2 rounded-end rounded-bottom"
-                     v-html="formatText( message.content)"></span>
-                <el-image v-else-if="message.type==='IMAGE'"
-                          :preview-src-list="mediaList"
-                          :src="message.content"
-                          fit="container"
-                          style="max-width: 60%;max-height: 500px;border-radius: 12px"
-                />
+            <div class="d-flex align-items-center justify-content-start flex-row">
+              <div style="max-width: 80%;text-align: left;overflow-wrap: break-word;" class="row row-cols-1">
+               <span v-if="message.type==='TEXT'"
+                     class="bg-body-tertiary
+                      shadow-sm p-2 rounded-end rounded-bottom"
+                     v-html="formatText(message.content)"></span>
+                <div v-else-if="message.type==='IMAGE'" class="d-inline-flex align-items-start">
+                  <el-image
+                      :preview-src-list="mediaList"
+                      :src="message.content"
+                      fit="container"
+
+                      style="max-width: 60%;max-height: 500px;border-radius: 12px;"
+                  />
+                </div>
                 <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
               </div>
-              <div class="ms-md-2">
+              <div class="ms-sm-4">
                 <el-popover
                     trigger="click"
                     width="auto"
@@ -50,8 +55,8 @@
              ||message.reference.status===$store.getters.getUser.id
              ||message.reference.conversationId!==message.conversationId
 "
-                   class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
-                   style="font-size: 12px">
+                   class="  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
+                   style="font-size: 12px;overflow-wrap: break-word">
                 消息已删除或不可用
               </div>
               <div v-else style="max-width: 80%;text-align: left;">
@@ -66,6 +71,7 @@
                           fit="container"
                           style="max-height: 60px;border-radius: 8px"
                 />
+
                 <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
                  </span>
               </div>
@@ -80,9 +86,12 @@
       <div class="container text-center">
         <div class="row row-cols-2 ">
           <div class="col-11">
-            <div class="d-flex align-items-center justify-content-end ">
-              <div class="me-md-2">
+            <div class="d-flex align-items-center justify-content-end">
+              <div class="me-sm-4">
                 <div v-if="message.isSending" class="loading"/>
+                <div v-else-if="message.status===messageStatusEnums.FAILED">
+                  <i class="el-icon-warning text-danger"/>
+                </div>
                 <el-popover v-else
                             trigger="click"
                             width="auto"
@@ -107,16 +116,19 @@
                 </el-popover>
 
               </div>
-              <div style="max-width: 80%;text-align: right;">
-                      <span v-if="message.type==='TEXT'" class="text_chat_msg shadow-sm p-2 rounded-start rounded-bottom"
+              <div style="max-width: 80%;text-align: left;overflow-wrap: break-word" class="row row-cols-1">
+                      <span v-if="message.type==='TEXT'" class="shadow-sm p-2 rounded-start rounded-bottom"
                             style="background-color: #409EFF;color: white;text-align: left"
                             v-html="formatText( message.content)"></span>
-                <el-image v-else-if="message.type==='IMAGE'"
-                          :preview-src-list="mediaList"
-                          :src="message.content"
-                          fit="container"
-                          style="max-width: 60%;max-height: 500px;border-radius: 12px"
-                />
+                <div v-else-if="message.type==='IMAGE'" style="display: flex;justify-content: flex-end">
+                  <el-image
+                            :preview-src-list="mediaList"
+                            :src="message.content"
+                            fit="container"
+                            style="max-height: 500px;border-radius: 12px;max-width: 60%"
+                  />
+                </div>
+
                 <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
               </div>
             </div>
@@ -125,8 +137,8 @@
              ||message.reference.status===$store.getters.getUser.id
              ||message.reference.conversationId!==message.conversationId
 "
-                  class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
-                  style="font-size: 12px">
+                  class=" bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary row"
+                  style="font-size: 12px;overflow-wrap: break-word">
                消息已删除或不可用
              </div>
               <div v-else style="max-width: 80%;text-align: left;">
@@ -165,9 +177,17 @@ import {msgDate} from "@/util/formatter";
 import VClamp from "vue-clamp";
 import {markAsDel} from "@/api/advice";
 import {copy} from "@/util/clipboard";
+import VideoPlayer from "@/views/media/VideoPlayer.vue";
+import {messageStatusEnums} from "@/enums/enums";
 export default {
   name: "MessageCard",
+  computed: {
+    messageStatusEnums() {
+      return messageStatusEnums
+    }
+  },
   components:{
+    VideoPlayer,
     VClamp
   },
   props: {

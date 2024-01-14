@@ -230,32 +230,23 @@ export default {
         if (!key){
           let publicKey = this.$store.getters.getSecretKey(receiver.id);
           if (!publicKey){
-            // 将fetchPublicKey的结果包装成一个Promise，并推入数组
-            promises.push(getPublicKeys([receiver.id]).then(res => {
+            getPublicKeys([receiver.id]).then(res => {
               if (res.code===200){
                 publicKey=res.data.record[receiver.id];
-                this.$store.commit('addKey',{id:receiver.id,key:publicKey})
-                key=getShareKey(publicKey,getPrivateKey(user.id),this.$store.getters.getEncrypt.prime).toString();
-                this.$store.commit('addKey',{id:conversation,key:key});
+              }else {
+                this.$message.error("无法获取公钥信息，请稍后重试");
               }
-              message.content=doEncrypt(key,content);
-              if (message.reference){
-                message.reference.content=doEncrypt(key,message.reference.content);
-              }
-              return message; // 返回message作为Promise的结果
-            }));
-          }else {
+            });
+          }
             key=getShareKey(publicKey,getPrivateKey(user.id),this.$store.getters.getEncrypt.prime).toString();
             this.$store.commit('addKey',{id:conversation,key:key});
-          }
-        }else {
-          message.content=doEncrypt(key,content);
-          if (message.reference){
-            message.reference.content=doEncrypt(key,message.reference.content);
-          }
-          // 将message包装成一个已完成的Promise，并推入数组
-          promises.push(Promise.resolve(message));
         }
+        message.content=doEncrypt(key,content);
+        if (message.reference){
+          message.reference.content=doEncrypt(key,message.reference.content);
+        }
+        // 将message包装成一个已完成的Promise，并推入数组
+        promises.push(Promise.resolve(message));
       });
       // 返回Promise.all的结果，它是一个包含所有message的数组
       return Promise.all(promises);

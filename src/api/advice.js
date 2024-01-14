@@ -83,3 +83,35 @@ export const getPublicKeys = (ids) => {
       data:ids
   })
 }
+export const getChatSetting = (id) => {
+  return Get({
+      url:`${base}chat/setting/${id}`
+  })
+}
+export const getChatSettings = (id) => {
+  return JsonPost({
+      url:`${base}/chat/setting/multi`,
+      data:id
+  })
+}
+export const updateAllow = (allow) => {
+    let data=new FormData();
+    data.append("allow",allow)
+  return FormPost({
+      url:`${base}/chat/setting/allow`,
+      data:data
+  })
+}
+export const updatePinned = (conversation) => {
+    let data=new FormData();
+    data.append("conversation",conversation);
+    return FormPost({
+        url:`${base}/chat/setting/pinned`,
+        data:data
+    })
+}
+export const getMyChatSetting = () => {
+  return Get({
+      url:`${base}/chat/setting`
+  })
+}

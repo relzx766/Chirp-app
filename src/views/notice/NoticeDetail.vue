@@ -113,9 +113,7 @@ export default {
     }
   },
   created() {
-    if (this.type === 'FOLLOW') {
-      console.log(this.urls)
-    }
+
   }
 }
 </script>

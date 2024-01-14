@@ -7,6 +7,11 @@ export const getPage = (page) => {
         params: {page}
     })
 }
+export const getPageByScore = (score) => {
+  return Get({
+      url:`${base}/feed/score/${score}`
+  })
+}
 export const getRange = (start, end) => {
     return Get({
         url: `${base}/feed`,

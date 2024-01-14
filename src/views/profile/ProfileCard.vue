@@ -34,10 +34,8 @@
                      style="border: 1px solid #DCDFE6;font-weight: bold;color:#000;" @click="editDialog=true">编辑个人资料
           </el-button>
           <el-row v-if="!isSelf">
-            <el-button circle icon="el-icon-more"></el-button>
-            <el-button circle icon="el-icon-message" @click="toChat" style="margin-right: 12px"></el-button>
-
-
+            <el-button   circle icon="el-icon-more" ></el-button>
+            <el-button   circle icon="el-icon-message" @click="toChat" style="margin-right: 12px"></el-button>
             <el-button :class="followBtnClass" round @click="doFollow">{{ followBtnText }}</el-button>
           </el-row>
           <el-dialog
@@ -72,10 +70,12 @@
         <el-dialog
             :show-close="false"
             :visible.sync="followingDialog"
-            title="Ta的关注"
             width="40%">
-          <div style="margin-top: -40px">
-            <follower-card :id="user.id" type="following"/>
+          <div class="p-2">
+            <h4>Ta的关注</h4>
+            <follower-card :id="user.id" type="following"
+            @follow="follow"
+            @unfollow="unfollow"/>
           </div>
         </el-dialog>
         <el-link style="margin-left: 20px;color:#000;" type="info" @click.native="followerDialog=true">
@@ -84,9 +84,9 @@
         <el-dialog
             :show-close="false"
             :visible.sync="followerDialog"
-            title="Ta的关注者"
             width="40%">
-          <div style="margin-top: -40px">
+          <div class="p-2">
+            <h4>Ta的关注者</h4>
             <follower-card :id="user.id" type="follower"/>
           </div>
         </el-dialog>
@@ -128,6 +128,18 @@ export default {
   methods: {
     getToken,
     getCount,
+    /**
+     * 子组件follow事件
+     */
+    follow(){
+      this.user.followingNum++;
+    },
+    /**
+     * 子组件unfollow事件
+     */
+    unfollow(){
+      this.user.followingNum--;
+    },
     doFollow() {
       let type = this.user.relation;
       if (type === 1) {

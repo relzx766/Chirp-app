@@ -2,8 +2,8 @@
   <div>
     <el-row v-if="value.type==='FORWARD'"
             style="text-align: left;font-size: 14px;font-weight: bold;color: #909399;margin-bottom: 8px;">
-      <el-col :offset=2 :span="21">
-        <i class="el-icon-connection" style="font-weight: bold;"/><span>{{ value.nickname }}已转发</span>
+      <el-col :offset=2 :span="21" class="text-dark-emphasis">
+        <i class="el-icon-connection fw-bold" style="margin-left: -14px"/><span style="margin-left: 14px">{{ value.nickname }}&nbsp;已转发</span>
       </el-col>
     </el-row>
     <chirper-card v-if="value.type==='FORWARD'" :chirper="value.referenced"/>

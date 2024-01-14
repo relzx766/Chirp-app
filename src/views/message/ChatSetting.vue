@@ -30,7 +30,6 @@
         </div>
         <div v-else style="width: 50%" class="float-end">
           <el-input v-model="key" show-password
-                    @input="key=key.replace(/\D/g,'')"
           @keyup.enter.native="saveKeys"/>
         </div>
       </div>
@@ -49,8 +48,8 @@
       每个人
     </div>
   <div class="col text-end">
-    <el-button v-if="chatPermission!=='all'" class="border-2 border-dark-subtle " circle size="medium" @click="chatPermission='all';doChatPmChange"></el-button>
-    <el-button v-if="chatPermission==='all'" class="border-2  p-1" icon="el-icon-check" circle size="small"
+    <el-button v-show="setting.allow!==chatAllowEnum.ANYONE" class="border-2 border-dark-subtle " circle size="medium" @click="doChatPmChange"></el-button>
+    <el-button v-show="setting.allow===chatAllowEnum.ANYONE" class="border-2  p-1" icon="el-icon-check" circle size="small"
     style="border-color: #409EFF;color: white;background-color: #409EFF"></el-button>
   </div>
   </div>
@@ -59,9 +58,9 @@
       没有人
     </div>
     <div class="col text-end">
-      <el-button v-if="chatPermission!=='none'" class="border-2 border-dark-subtle " circle size="medium"
-                 @click="chatPermission='none';doChatPmChange"></el-button>
-      <el-button v-if="chatPermission==='none'" class="border-2  p-1" circle size="small" icon="el-icon-check"
+      <el-button v-show="setting.allow!==chatAllowEnum.NOBODY" class="border-2 border-dark-subtle " circle size="medium"
+                 @click="doChatPmChange"></el-button>
+      <el-button v-show="setting.allow===chatAllowEnum.NOBODY" class="border-2  p-1" circle size="small" icon="el-icon-check"
                  style="border-color: #409EFF;color: white;background-color: #409EFF"></el-button>
 
     </div>
@@ -73,10 +72,19 @@
 <script>
 import {getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
 import {copy} from "@/util/clipboard";
-import {savePublicKey} from "@/api/advice";
+import {savePublicKey, updateAllow} from "@/api/advice";
+import {chatAllowEnum} from "@/enums/enums";
 
 export default {
   name: "Setting",
+  computed: {
+    chatAllowEnum() {
+      return chatAllowEnum
+    },
+    setting(){
+      return this.$store.getters.getSetting.chat;
+    }
+  },
   data(){
     return{
     editable:false,
@@ -91,19 +99,27 @@ export default {
       let keyPair = this.$store.getters.getEncrypt;
       let publicKey = mathPublicKey(keyPair.generator, getPrivateKey(this.$store.getters.getUser.id), keyPair.prime);
       setPublicKey(this.$store.getters.getUser.id, publicKey);
-      console.log(publicKey)
       await savePublicKey(publicKey);
       this.$message.success("已更新密钥")
     },
     doChatPmChange(){
-    if (this.chatPermission==='none'){
-      //TODO
-    }
-    if (this.chatPermission==='all'){
-      //TODO
+    switch (this.setting.allow) {
+      case chatAllowEnum.ANYONE:
+        this.$store.commit('setChatSetting',{allow:chatAllowEnum.NOBODY});
+        updateAllow(chatAllowEnum.NOBODY);
+        break;
+      case chatAllowEnum.NOBODY:
+        this.$store.commit('setChatSetting',{allow:chatAllowEnum.ANYONE});
+        updateAllow(chatAllowEnum.ANYONE);
+        break;
+      default:
+        this.$store.commit('setChatSetting',{allow:chatAllowEnum.ANYONE});
+        updateAllow(chatAllowEnum.ANYONE);
     }
     }
   },
+  created() {
+  }
 }
 </script>
 <style scoped>

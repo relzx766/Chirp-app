@@ -44,6 +44,12 @@ export const unFollow = (id) => {
         }
     })
 }
+export const getRelations = (ids) => {
+    return JsonPost({
+        url:`${sever}/rela/people/me`,
+        data:ids
+    })
+}
 export const search = (keyword, page) => {
     return Get({
         url: `${sever}/user/search/${page}`,
@@ -61,6 +67,7 @@ export const getFollowing = (id, page) => {
     })
 
 }
+
 export const checkUsername=(username)=>{
     return Get({
         url:`${sever}/user/username/check/${username}`
