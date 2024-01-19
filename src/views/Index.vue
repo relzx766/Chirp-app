@@ -1,75 +1,113 @@
 <template>
   <div class="row">
-    <div class="col-3">
-      <el-container>
-        <el-main>
+    <div class="col-3 ">
+      <el-container class="h-100">
+        <el-main class="d-flex flex-column justify-content-center  h-100 ">
           <img src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;"/>
           <el-menu
               :default-active="$route.matched[1].path"
               :router="true"
               active-text-color="#409EFF"
               background-color="#ffffff"
-              class="nav-menu"
+              class="nav-menu flex-grow-1"
           >
             <el-menu-item class="nav-item" index="/home">
-              <img class="nav-icon" src="../assets/homepage.svg"/>
-              <span>主页</span>
+              <span slot="title" class="user-select-none">
+                <i v-show="$route.matched[1].path!=='/home'" class="bi bi-house fw-bold fs-3 text-dark me-2"/>
+              <i v-show="$route.matched[1].path==='/home'" class="bi bi-house-fill fw-bold fs-3 text-dark me-2"/>主页</span>
             </el-menu-item>
             <el-menu-item class="nav-item" index="/explore">
-              <img class="nav-icon" src="../assets/explore.svg"/>
-              <span slot="title">探索</span>
+              <span slot="title" class="user-select-none">
+                <i v-show="$route.matched[1].path!=='/explore'" class="bi bi-compass fw-bold fs-3 text-dark me-2"/>
+                <i v-show="$route.matched[1].path==='/explore'" class="bi bi-compass-fill fw-bold fs-3 text-dark me-2"/>
+                探索</span>
             </el-menu-item>
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/notice">
-              <img class="nav-icon" src="../assets/notice.svg"/>
               <div v-show="$store.getters.getNoticeUnread>0&&$route.path!=='/notice'" class="read-point"/>
-              <span slot="title">通知</span>
+              <span slot="title" class="user-select-none">
+                <i v-show="$route.matched[1].path!=='/notice'" class="bi bi-bell fw-bold fs-3 text-dark me-2"/>
+                <i v-show="$route.matched[1].path==='/notice'" class="bi bi-bell-fill fw-bold fs-3 text-dark me-2"/>
+                通知</span>
             </el-menu-item>
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/message">
-
-              <img class="nav-icon" src="../assets/mail.svg"/>
               <div v-show="$store.getters.getChatUnread>0" class="read-point"/>
-              <span slot="title">私信</span>
+              <span slot="title" class="user-select-none">
+                 <i v-show="$route.matched[1].path!=='/message'" class="bi bi-envelope fw-bold fs-3 text-dark me-2"/>
+                 <i v-show="$route.matched[1].path==='/message'" class="bi bi-envelope-fill fw-bold fs-3 text-dark me-2"/>
+                私信</span>
             </el-menu-item>
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/community">
-              <img class="nav-icon" src="../assets/user-group.svg"/>
-              <span slot="title">社群</span>
+              <span slot="title" class="user-select-none">
+                   <i v-show="$route.matched[1].path!=='/community'" class="bi bi-people fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="$route.matched[1].path==='/community'" class="bi bi-people-fill fw-bold fs-3 text-dark me-2"/>
+                社群</span>
             </el-menu-item>
             <el-menu-item :disabled="getToken()===null" class="nav-item"
-                          index="/profile"
+                          :index="`/profile?id=${$store.getters.getUser.id}`"
             >
-              <img class="nav-icon" src="../assets/profile.svg"/>
-              <span slot="title">个人资料</span>
+              <span slot="title" class="user-select-none">
+                   <i v-show="$route.matched[1].path!=='/profile'" class="bi bi-person fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="$route.matched[1].path==='/profile'" class="bi bi-person-fill fw-bold fs-3 text-dark me-2"/>
+                个人资料</span>
             </el-menu-item>
           </el-menu>
-          <el-row v-if="getToken()"
-                  style="margin-left: 30%;margin-top: 70%;font-size: 14px">
-            <el-col :span="5" style="text-align: left">
-              <el-avatar :src="$store.getters.getUser.smallAvatarUrl" fit="cover" size="large"/>
-            </el-col>
-            <el-col :span="12" style="text-align: left">
-              <el-row>
-                <el-row>
-                  <el-link :href="'/profile?id='+$store.getters.getUser.id" class="d-inline-block text-truncate"
-                           style="font-size: 16px;font-weight: bold;max-width: 96%">
-                    {{ $store.getters.getUser.nickname }}
-                  </el-link>
-                </el-row>
-                <el-row class="d-inline-block text-truncate" style="color:#909399;max-width: 96%">
-                  @{{ $store.getters.getUser.username }}
-                </el-row>
-              </el-row>
-            </el-col>
-            <el-col :span="5" style="text-align: left">
-              <el-button circle icon="el-icon-switch-button" style="border: none;font-size: 20px"
-                         @click="signOut"></el-button>
-            </el-col>
-          </el-row>
+          <div v-if="getToken()"
+                  class="rounded-pill w-75  btn btn-outline-light mb-lg-5 align-self-center border-0">
+            <el-popover
+                placement="top-start"
+                width="auto"
+                :visible-arrow="false"
+                popper-class="shadow rounded"
+                trigger="click">
+              <div>
+                <div class="row">
+                  <el-button  class="border-0 d-flex justify-content-start text-dark fw-bold"
+                              @click="$router.push('/sign')">
+                    <i class="bi bi-toggles"/>
+                    切换账号
+                  </el-button>
+                </div>
+                <div class="row">
+                  <el-button    class="border-0 d-flex justify-content-start text-dark fw-bold"
+                                @click="signOut">
+                    <i class="bi bi-box-arrow-right"/>
+                    登出 @{{$store.getters.getUser.username}}
+                  </el-button>
+                </div></div>
+                <el-row slot="reference" class="d-flex justify-content-center align-items-center ">
+                  <el-col :span="5" style="text-align: left">
+                    <el-avatar :src="$store.getters.getUser.smallAvatarUrl" fit="cover" size="large"/>
+                  </el-col>
+                  <el-col :span="14" style="text-align: left">
+                    <el-row>
+                      <el-row class="d-flex flex-column">
+                        <span
+                            class="d-inline-block text-truncate fw-bold text-dark fs-6 "
+                            style="max-width: 96%">
+                          {{ $store.getters.getUser.nickname }}
+                        </span>
+                        <span class="d-inline-block text-truncate text-secondary " style="max-width: 96%">
+                        @{{ $store.getters.getUser.username }}
+                      </span>
+                      </el-row>
+
+                    </el-row>
+                  </el-col>
+                  <el-col :span="5"  style="text-align: center">
+
+                    <i class="el-icon-more text-dark"/>
+
+                  </el-col>   </el-row>
+
+            </el-popover>
+
+          </div>
         </el-main>
       </el-container>
       <el-dialog
@@ -239,9 +277,9 @@ export default {
   watch: {
     '$route': {
       handler(to, from) {
-        if (to.path === '/notice') {
+        if (to.matched[1].path === '/notice') {
           this.$store.commit('setNoticeOption', {unread: 0});
-        } else if ((to.path === '/message' || (from && from.path === '/message')) && this.newChatNotice) {
+        } else if ((to.matched[1].path === '/message' || (from && from.matched[1].path === '/message')) && this.newChatNotice) {
           this.newChatNotice.close()
         }
       },
@@ -263,7 +301,7 @@ export default {
             position: 'bottom-right',
             onClick: () => {
               this.newChatNotice.close();
-              this.$router.push('/message?conversation=' + conversation)
+              this.$router.push(`/message/chat/${conversation}`);
             },
             duration: 0,
             dangerouslyUseHTMLString: true,
@@ -282,6 +320,7 @@ export default {
     }
   },
   created() {
+
     document.documentElement.scrollTop = 0;
     const loading = this.$loading({
       lock: true,
@@ -307,7 +346,7 @@ export default {
   border-radius: 50%;
   background-color: #F56C6C;
   position: absolute;
-  left: 36%;
+  left: 40%;
   top: 10%;
 }
 

@@ -50,7 +50,9 @@ export default {
           .sort((a, b) => {
             return new Date(b.date) - new Date(a.date)
           });
-      arr.unshift(temp);
+      if (temp) {
+        arr.unshift(temp);
+      }
       this.$set(this, 'messages', arr);
     }
   },

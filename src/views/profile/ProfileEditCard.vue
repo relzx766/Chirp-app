@@ -20,7 +20,7 @@
         action="#"
         class="container-cover-edit">
       <el-image
-          :src="user.profileBackUrl"
+          :src="editUser.profileBackUrl"
           class="cover-edit"
           fit="cover"
           style="width: 100%; height: 160px;">
@@ -40,7 +40,7 @@
         class="avatar-container"
         style="margin-top: 110px">
       <el-image
-          :src="user.largeAvatarUrl"
+          :src="editUser.largeAvatarUrl"
           class="profile-avatar"
           fit="cover">
         <div slot="error" class="image-slot">
@@ -52,12 +52,12 @@
       </div>
     </el-upload>
     <el-row style="margin-top: 260px">
-      <el-input v-model="user.nickname" maxlength="40" placeholder="昵称" show-word-limit>
+      <el-input v-model="editUser.nickname" maxlength="40" placeholder="昵称" show-word-limit>
       </el-input>
     </el-row>
     <el-row style="margin-top: 20px">
       <el-input
-          v-model="user.description"
+          v-model="editUser.description"
           :autosize="{ minRows: 2}"
           maxlength="255"
           placeholder="简介"
@@ -69,7 +69,7 @@
     <el-row style="margin-top: 20px;">
       <el-col :span="12" style="text-align: left">
         <el-date-picker
-            v-model="user.birthday"
+            v-model="editUser.birthday"
             :picker-options="pickerOptions"
             format="yyyy 年 MM 月 dd 日"
             placeholder="生日"
@@ -77,14 +77,14 @@
         </el-date-picker>
       </el-col>
       <el-col :span="12">
-        <el-radio-group v-model="user.gender" fill="#e3f2fd">
+        <el-radio-group v-model="editUser.gender" fill="#e3f2fd">
           <el-radio-button label="男"><i class="el-icon-male" style="color:#409EFF "/></el-radio-button>
           <el-radio-button label="女"><i class="el-icon-female" style="color: #ff80ab"/></el-radio-button>
         </el-radio-group>
       </el-col>
     </el-row>
     <el-row style="margin-top: 20px">
-      <el-input v-model="user.gender"
+      <el-input v-model="editUser.gender"
                 maxlength="30"
                 placeholder="我认为我是啥🅱我就是啥🅱😅"
                 show-word-limit/>
@@ -99,12 +99,10 @@ import ChunkUpload, {getMd5} from "@/util/upload";
 
 export default {
   name: "ProfileEditCard",
-  props: {
-    value: {},
-  },
+
   data() {
     return {
-      user: {},
+      editUser: {},
       pickerOptions: {
         disabledDate: time => {
           return time.getTime() > Date.now()
@@ -114,28 +112,32 @@ export default {
       uploadOption: []
     }
   },
+  computed:{
+    user(){
+      return this.$store.getters.getUser;
+    }
+  },
   methods: {
     doPost() {
-      putProfile(JSON.stringify(this.user)).then((res) => {
+      putProfile(JSON.stringify(this.editUser)).then((res) => {
         this.$message({
           message: '已修改个人资料🥳🥳🥳',
           type: 'success'
         });
-        this.$store.commit("setUser", this.user);
-        this.user = {};
-        this.$router.go(0);
+        this.$store.commit("setUser", this.editUser);
+        this.$emit('doEditComplete');
       })
     },
     doClose() {
-      this.$emit('doClose')
+      this.$emit('doClose');
     },
     doUpload({data, file}) {
         let chunkUpload = new ChunkUpload(file, {
           onSuccess: (res) => {
             if (data.index === 0) {
-              this.user.profileBackUrl = res.data.record.url;
+              this.editUser.profileBackUrl = res.data.record.url;
             } else {
-              this.user.largeAvatarUrl = res.data.record.url;
+              this.editUser.largeAvatarUrl = res.data.record.url;
             }
           },
           onError: (res) => {
@@ -145,13 +147,8 @@ export default {
         chunkUpload.start();
       }
   },
-  watch: {
-    value(val) {
-      this.user = JSON.parse(JSON.stringify(this.value));
-    }
-  },
   created() {
-    this.user = JSON.parse(JSON.stringify(this.value))
+    this.editUser = JSON.parse(JSON.stringify(this.user))
   }
 }
 </script>

@@ -1,13 +1,13 @@
 <template>
 
   <div class="d-flex flex-column position-relative" >
-    <el-image v-if="type==='image'"
+    <el-image v-if="type===supportMediaTypeEnums.IMAGE"
               :preview-src-list="[fileUrl]"
               :src="fileUrl"
               fit="cover"
               class="rounded-4"
               style="flex: 1"/>
-    <div v-else-if="type==='video'||type==='application'" class="m-0 " style="flex: 1">
+    <div v-else-if="type===supportMediaTypeEnums.VIDEO" class="m-0 " style="flex: 1">
       <video-player class="rounded-4" :url="fileUrl"/>
     </div>
     <el-button circle class="btn-remove position-absolute top-0 end-0 p-0"
@@ -25,9 +25,15 @@
 import ChunkUpload, {getMd5} from "@/util/upload";
 import {upload} from "@/api/media";
 import VideoUploadCard from "@/views/media/VideoUploadCard.vue";
+import {supportMediaTypeEnums} from "@/enums/enums";
 
 export default {
   name: "UploadingFile",
+  computed: {
+    supportMediaTypeEnums() {
+      return supportMediaTypeEnums
+    }
+  },
   components: {
     'video-player': VideoUploadCard
   },
@@ -87,7 +93,7 @@ export default {
   },
   created() {
     this.fileUrl = URL.createObjectURL(this.file);
-    this.type = this.file.type.split("/").shift();
+    this.type = this.file.type.split("/").shift().toUpperCase();
     this.doUpload();
   }
 }

@@ -12,23 +12,19 @@
           </chirper-card>
         </div>
        <div class="col-5">
-         <el-container>
-           <el-main>
-             <el-row>
+             <el-row class="h-100 w-100">
                <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
                  <input-card/>
                  <trend-card style="margin-top: 8%;background-color:#EBEEF5;border-radius: 10px"/>
                </el-col>
-               <el-col v-if="getToken()==null||!getToken().length>0" :span="20">
-
-                 <login-card/>
-
+               <el-col v-if="getToken()==null||!getToken().length>0" :span="20" class=" d-flex justify-content-center h-100 w-100">
+                 <div class="align-self-center  w-75">
+                   <login-card />
+                 </div>
                </el-col>
 
              </el-row>
 
-           </el-main>
-         </el-container>
        </div>
       </div>
     </el-main>

@@ -13,7 +13,7 @@
                          style="border-bottom: 2px solid #EBEEF5;"/>
 
               <el-row v-for="item in recommend.chirper" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
-                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
                             :value="item" style="margin-top: 8px;"/>
                 <chirper-card
                     v-else :chirper="item"
@@ -35,7 +35,7 @@
                          style="border-bottom: 2px solid #EBEEF5;"/>
               <el-row v-for="item in following.chirper" :key="item.id"
                       style="border-bottom: 1px solid #E4E7ED;">
-                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
                             :value="item" style="margin-top: 8px;"/>
                 <chirper-card
                     v-else :chirper="item"
@@ -65,8 +65,14 @@ import {bigNumberToString} from "@/util/tools";
 import {getPage, getPageByScore, getRange} from "@/api/feed";
 import InfiniteLoading, {StateChanger} from "vue-infinite-loading";
 import {getToken} from "@/util/auth";
+import {chirperTypeEnums} from "@/enums/enums";
 export default {
   name: "ChirperListCard",
+  computed: {
+    chirperTypeEnums() {
+      return chirperTypeEnums
+    }
+  },
   props: {
     isLogin: Boolean
   },

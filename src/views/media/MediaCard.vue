@@ -1,9 +1,9 @@
 <template>
   <div>
-    <video-player v-if="category==='video'" :url="media[0].url" style="width:96%;"/>
+    <video-player v-if="category===supportMediaTypeEnums.VIDEO" :url="media[0].url" style="width:96%;"/>
 
 
-    <waterfall v-else-if="category==='image'" :col="media.length>2?2:media.length" :data="media" :isTransition="false"
+    <waterfall v-else-if="category===supportMediaTypeEnums.IMAGE" :col="media.length>2?2:media.length" :data="media" :isTransition="false"
                style="width: 96%;overflow: hidden">
       <el-image v-for="(item,index) in media" :key="item.name"
                 :preview-src-list="getUrls"
@@ -23,6 +23,7 @@
 
 <script>
 import VideoPlayer from "@/views/media/VideoPlayer.vue";
+import {supportMediaTypeEnums} from "@/enums/enums";
 
 export default {
   name: "MediaCard",
@@ -40,6 +41,9 @@ export default {
     }
   },
   computed: {
+    supportMediaTypeEnums() {
+      return supportMediaTypeEnums
+    },
     getUrls() {
       let urls = [];
       for (let index = 0; index < this.media.length; index++) {
@@ -69,7 +73,7 @@ export default {
   },
   methods: {
     init() {
-      this.category = this.media[0].category;
+      this.category = this.media[0].category.toUpperCase();
     },
     getMargin(index) {
       index++;

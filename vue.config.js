@@ -14,7 +14,8 @@ module.exports = defineConfig({
             filename: '[name].js',
         }
     },
-    chainWebpack: config => {
+    //引入xss会导致部分样式发生变化
+/*    chainWebpack: config => {
         config.module
             .rule('vue')
             .use('vue-loader')
@@ -30,5 +31,5 @@ module.exports = defineConfig({
                 };
                 return options;
             });
-    }
+    }*/
 });

@@ -36,14 +36,20 @@
           </el-container>
         </div>
         <div class="col-5">
-          <el-container>
-            <el-main>
+          <el-row class="h-100 w-100">
+            <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
               <div style="text-align: left;background-color:#EBEEF5;border-radius: 10px">
                 <el-row style="font-weight: bold;font-size: 18px">你可能感兴趣的用户</el-row>
 
               </div>
-            </el-main>
-          </el-container>
+            </el-col>
+            <el-col v-if="getToken()==null||!getToken().length>0" :span="20" class=" d-flex justify-content-center h-100 w-100">
+              <div class="align-self-center  w-75">
+                <login-card />
+              </div>
+            </el-col>
+
+          </el-row>
         </div>
       </div>
     </el-main>
@@ -54,10 +60,13 @@ import InputCard from "@/views/search/InputCard.vue";
 import TrendListCard from "@/views/explore/TrendListCard.vue";
 import {getTrend} from "@/api/chirper";
 import {getCount} from "@/util/tools";
+import {getToken} from "@/util/auth";
+import LoginCard from "@/views/sign/LoginCard.vue";
 
 export default {
   name: "Explore",
   components: {
+    LoginCard,
     'input-card': InputCard,
     'trend-list': TrendListCard
   },
@@ -68,6 +77,7 @@ export default {
     }
   },
   methods: {
+    getToken,
     getCount,
     loadTimeTrend() {
       for (let i = 1; i < 4; i++) {

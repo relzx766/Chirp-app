@@ -1,9 +1,16 @@
 <template>
   <el-row>
     <ul>
-      <li style="margin-left: -10%;">
-        <el-button :disabled="getToken()===null" circle class="btn-interact" icon="el-icon-chat-square"
-                   size="medium" @click.stop="replyDialog=true"></el-button>
+      <li style="margin-left: -10%;" :class="getToken()===null||!chirper.replyable?['text-secondary']:['text-dark']">
+        <el-button :disabled="getToken()===null||!chirper.replyable"
+                   circle class="btn-interact"
+
+                   size="medium" @click.stop="replyDialog=true">
+          <i class="bi bi-chat fs-6 fw-bolder position-relative ">
+            <i v-if="getToken()===null||!chirper.replyable"
+               class="bi bi-x position-absolute start-50 top-50 translate-middle"/>
+          </i>
+        </el-button>
         <el-dialog
             :modal="false"
             :show-close="false"
@@ -28,15 +35,17 @@
           <el-row>
             <el-row>
               <el-button :style="{ color: chirper.isForward ? '#67C23A' : '#606266' }" class="btn-interact"
-                         icon="el-icon-connection"
-                         size="medium"><span
-                  style="font-size: 16px" @click="doForward()">转发</span></el-button>
+                         size="medium" style="font-size: 16px" @click="doForward()">
+                <i class="bi bi-repeat text-dark fw-bolder me-2"/>
+                <span
+                  >转发</span></el-button>
             </el-row>
             <el-row>
               <el-button :style="{ color: chirper.isQuote ? '#409EFF' : '#606266' }" class="btn-interact"
-                         icon="el-icon-edit"
-                         size="medium"
-                         @click="quoteDialog=true"><span  style="font-size: 16px"
+                         size="medium" style="font-size: 16px"
+                         @click="quoteDialog=true">
+                <i class="bi bi-pencil-square text-dark fw-bolder me-2"/>
+                <span
               >引用</span></el-button>
             </el-row>
             <el-dialog
@@ -53,25 +62,34 @@
           <el-button slot="reference" :disabled="getToken()===null"
                      :style="{ color: chirper.isQuote||chirper.isForward ? '#67C23A' : '#606266' }" circle
                      class="btn-interact"
-                     icon="el-icon-connection"
-                     size="medium"></el-button>
+                     size="medium">
+            <i class="bi bi-repeat fs-6 fw-bolder text-dark"/>
+          </el-button>
         </el-popover>
         <span class="num">{{ getCount(chirper.forwardCount + chirper.quoteCount) }}</span>
 
       </li>
       <li :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }">
         <el-button :disabled="getToken()===null"
-                   :icon="chirper.isLike?'el-icon-star-on':'el-icon-star-off'"
                    :style="{ color: chirper.isLike ? '#F56C6C' : '#606266' }" circle class="btn-interact"
                    size="medium"
-                   @click.stop="doLike()"></el-button>
+                   @click.stop="doLike()">
+          <i v-if="chirper.isLike" class="bi bi-heart-fill fs-6 fw-bolder "/>
+          <i v-else class="bi bi-heart fs-6 fw-bolder " />
+        </el-button>
         <span class="num"> {{ getCount(chirper.likeCount) }} </span></li>
       <li>
-        <el-button circle class="btn-interact" icon="el-icon-s-data" size="medium"></el-button>
-        <span class="num"> {{ getCount(chirper.viewCount) }}</span></li>
+        <el-button circle class="btn-interact"  size="medium">
+          <i class="bi bi-bar-chart fs-6 fw-bolder text-dark"></i>
+        </el-button>
+
+        <span class="num"> {{ getCount(chirper.viewCount) }}</span>
+      </li>
       <li>
-        <el-button circle class="btn-interact" icon="el-icon-share" size="medium"
-                   @click="copy('http://localhost:7878/chirper/detail?id='+chirper.id)"></el-button>
+        <el-button circle class="btn-interact"  size="medium"
+                   @click="copy('http://localhost:7878/chirper/detail?id='+chirper.id)">
+          <i class="bi bi-share fs-6 fw-bolder text-dark"/>
+        </el-button>
       </li>
     </ul>
   </el-row>
@@ -150,7 +168,7 @@ export default {
     }
   },
   created() {
-    this.chirper = this.value
+    this.chirper = this.value;
   }
 }
 </script>

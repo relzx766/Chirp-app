@@ -9,9 +9,10 @@ import Message from "@/views/message/Message.vue";
 import Notice from "@/views/notice/Notice.vue";
 import Search from "@/views/search/Search.vue";
 import Explore from "@/views/explore/Explore.vue";
-import {Loading} from "element-ui";
+
 import ChatSetting from "@/views/message/ChatSetting.vue";
 import ChatCard from "@/views/message/ChatCard.vue";
+import Sign from "@/views/sign/Sign.vue";
 
 Vue.use(VueRouter)
 
@@ -22,6 +23,10 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const routes = [
+    {
+        path: '/sign',
+        component: Sign
+    },
     {
         path: '/',
         name: 'index',

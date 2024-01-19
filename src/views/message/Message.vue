@@ -11,12 +11,13 @@
             :visible-arrow="false">
               <el-button circle
                          icon="el-icon-chat-dot-square" style="float:right;border: none;font-size: 20px;padding: 4px"
-                         @click="newChatDialog=true"></el-button>
+                         @click="newChatDialog=true"
+              class="me-1"></el-button>
             </el-tooltip>
             <el-tooltip content="设置"  :visible-arrow="false">
             <el-button circle
                        @click="$router.push('/message/setting')"
-                       icon="el-icon-setting" style="float:right;border: none;font-size: 20px;padding: 4px"
+                       icon="el-icon-setting" class="me-1" style="float:right;border: none;font-size: 20px;padding: 4px"
             ></el-button>
           </el-tooltip>
             <el-dialog

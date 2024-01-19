@@ -28,7 +28,7 @@
       </el-tab-pane>
       <el-tab-pane name="mentions">
         <span slot="label" style="font-size: 16px;font-weight: bold">提及</span>
-        <el-row v-for="item in notifications" v-if="item[0].event==='MENTIONED'"
+        <el-row v-for="item in notifications" v-if="item[0].event===noticeEventEnums.MENTIONED"
                 style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
           <notice-detail v-if="item[0].entity==='null'" :date="item[0].createTime"
                          :name="item[0].senderName"
@@ -51,9 +51,15 @@ import {getMessageDate, getNewMsgCount} from "../../util/tools";
 import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
 import {getPage, getUnreadCount, markAsRead} from "@/api/advice";
+import {noticeEventEnums} from "@/enums/enums";
 
 export default {
   name: "NoticeCard",
+  computed: {
+    noticeEventEnums() {
+      return noticeEventEnums
+    }
+  },
   components: {
     'chirper-card': ChirperCard,
     'notice-detail': NoticeDetail
@@ -102,7 +108,7 @@ export default {
         if (messages && Object.entries(messages).length > 0) {
           this.notifications = [];
           Object.values(messages).forEach(classify => {
-            this.mentionEmpty = !this.mentionEmpty ? false : classify[0].event !== 'MENTIONED';
+            this.mentionEmpty = !this.mentionEmpty ? false : classify[0].event !== noticeEventEnums.MENTIONED;
             this.notifications.push(classify);
           });
         }

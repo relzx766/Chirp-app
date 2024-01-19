@@ -27,15 +27,6 @@ export default {
     }
   },
   methods: {
-    init() {
-      this.player = new DPlayer({
-        container: document.getElementById("player"),
-        hotkey: true,
-        video: {
-          url: this.url
-        }
-      })
-    }
   },
   mounted() {
     // 播放参数

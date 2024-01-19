@@ -1,96 +1,120 @@
 <template>
   <div>
-    <div v-if="!reverse" style="text-align: left;padding: 6px">
+    <div style="text-align: left;padding: 6px">
       <div class="container text-center">
-        <div class="row row-cols-2">
-          <div class="col-1" style="text-align: left">
-            <el-avatar :src="user.smallAvatarUrl" fit="cover" style="cursor: pointer"
+        <div class="justify-content-start d-flex w-100" :class="reverse?['flex-row-reverse']:['flex-row']">
+            <el-avatar
+                :src="user.smallAvatarUrl" fit="cover" style="cursor: pointer"
                        @click.native="$router.push('/profile?id='+user.id)"/>
-          </div>
-          <div class="col-11">
-            <div class="d-flex align-items-center justify-content-start flex-row">
-              <div style="max-width: 80%;text-align: left;overflow-wrap: break-word;" class="row row-cols-1">
-               <span v-if="message.type==='TEXT'"
-                     class="bg-body-tertiary
-                      shadow-sm p-2 rounded-end rounded-bottom"
+            <div style="overflow-wrap: break-word;"
+                 class="d-flex align-items-center ms-2 me-2 text-start  w-75 justify-content-start"
+                 :class="reverse?['flex-row-reverse']:[]">
+               <span v-if="message.type===chatTypeEnums.TEXT"
+                     style="max-width: 80%"
+                     class="shadow-sm p-2 text-wrap  rounded-bottom"
+                     :class="reverse?['bg-primary-blue','text-white',' rounded-start']
+                     :['bg-body-tertiary','rounded-end',]"
                      v-html="formatText(message.content)"></span>
-                <div v-else-if="message.type==='IMAGE'" class="d-inline-flex align-items-start">
-                  <el-image
-                      :preview-src-list="mediaList"
-                      :src="message.content"
-                      fit="container"
+              <div v-else-if="message.type===chatTypeEnums.IMAGE">
+                <el-image
+                    :preview-src-list="mediaList"
+                    :src="message.content"
+                    fit="container"
+                    style="border-radius: 12px;max-width: 300px;"
+                />
 
-                      style="max-width: 60%;max-height: 500px;border-radius: 12px;"
-                  />
-                </div>
-                <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
               </div>
-              <div class="ms-sm-4">
+              <div v-else-if="message.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
+                <file-card :url="message.content"/>
+              </div>
+              <file-card v-else :url="message.content"/>
+              <div  v-if="message.isSending" class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div v-else-if="message.status===messageStatusEnums.FAILED">
+                <i class="bi bi-exclamation-circle-fill text-danger"/>
+              </div>
+              <div v-else class="ms-2 me-2 align-self-center">
                 <el-popover
                     trigger="click"
                     width="auto"
                     :visible-arrow="false"
                 >
                   <el-row>
-                    <el-button icon="el-icon-paperclip" class="border border-0 fw-bold text-black"
-                               @click="doReply">回复
+                    <el-button  class="border border-0 fw-bold text-black"
+                                @click="doReply">
+                      <i class="bi bi-reply"/>
+                      回复
                     </el-button>
                   </el-row>
                   <el-row>
-                    <el-button icon="el-icon-document-copy" class="border border-0 fw-bold text-black"
-                               @click="copy(message.content)">复制
+                    <el-button  class="border border-0 fw-bold text-black"
+                                @click="copy(message.content)">
+                      <i class="bi bi-copy"/> 复制
                     </el-button>
                   </el-row>
                   <el-row>
-                    <el-button icon="el-icon-delete" class="border border-0 fw-bold text-black"
-                               @click="doDelete">删除
+                    <el-button  class="border border-0 fw-bold text-black"
+                                @click="doDelete">
+                      <i class="bi bi-trash3"/>
+                      删除
                     </el-button>
                   </el-row>
                   <el-button slot="reference" icon="el-icon-more" circle style="border: none"></el-button>
                 </el-popover>
               </div>
             </div>
-            <div v-if="message.reference&&message.reference.id" class="d-flex align-items-center justify-content-start">
-              <div v-if="message.reference.status==='DELETE'
+
+
+
+          </div>
+        <div v-if="message.reference&&message.reference.id"
+                           class="d-flex align-items-center"
+                           :class="reverse?['justify-content-end','me-5']:['justify-content-start','ms-5']">
+        <div v-if="message.reference.status===messageStatusEnums.DELETE
              ||message.reference.status===$store.getters.getUser.id
              ||message.reference.conversationId!==message.conversationId
 "
-                   class="  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
-                   style="font-size: 12px;overflow-wrap: break-word">
-                消息已删除或不可用
-              </div>
-              <div v-else style="max-width: 80%;text-align: left;">
-              <span class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
-                    style="font-size: 12px">
-                 <span>{{ message.reference.senderName }}:</span>
-                 <v-clamp  autoresize :max-lines="2" v-if="message.reference.type==='TEXT'"
-                          style="cursor: pointer" @click.native="showRefer(message.reference.content)">{{message.reference.content}} </v-clamp>
-                <el-image v-else-if=" message.reference.type==='IMAGE'"
-                          :preview-src-list="[message.reference.content]"
-                          :src=" message.reference.content"
-                          fit="container"
-                          style="max-height: 60px;border-radius: 8px"
-                />
-
-                <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
-                 </span>
-              </div>
-
-
+             class="  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
+             style="font-size: 12px;overflow-wrap: break-word">
+          消息已删除或不可用
+        </div>
+        <div v-else style="max-width: 80%;text-align: left;">
+          <div class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
+               style="font-size: 12px">
+            <span>{{ message.reference.senderName }}:</span>
+            <v-clamp  autoresize :max-lines="2" v-if="message.reference.type===chatTypeEnums.TEXT"
+                      style="cursor: pointer" @click.native="showRefer(message.reference.content)">{{message.reference.content}} </v-clamp>
+            <el-image v-else-if=" message.reference.type===chatTypeEnums.IMAGE"
+                      :preview-src-list="[message.reference.content]"
+                      :src=" message.reference.content"
+                      fit="container"
+                      style="max-height: 60px;border-radius: 8px"
+            />
+            <div v-else-if="message.reference.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
+              <file-card :url="message.reference.content"/>
             </div>
+            <file-card v-else :url="message.reference.content"/>
           </div>
+        </div>
+
+
+      </div>
+
         </div>
       </div>
     </div>
-    <div v-if="reverse" style="padding: 6px;text-align: right">
+<!--    <div v-if="reverse" style="padding: 6px;text-align: right">
       <div class="container text-center">
         <div class="row row-cols-2 ">
           <div class="col-11">
             <div class="d-flex align-items-center justify-content-end">
               <div class="me-sm-4">
-                <div v-if="message.isSending" class="loading"/>
+                <div  v-if="message.isSending" class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
                 <div v-else-if="message.status===messageStatusEnums.FAILED">
-                  <i class="el-icon-warning text-danger"/>
+                  <i class="bi bi-exclamation-circle-fill text-danger"/>
                 </div>
                 <el-popover v-else
                             trigger="click"
@@ -98,18 +122,23 @@
                             :visible-arrow="false"
                 >
                   <el-row>
-                    <el-button icon="el-icon-paperclip" class="border border-0 fw-bold text-black"
-                               @click="doReply">回复
+                    <el-button  class="border border-0 fw-bold text-black"
+                                @click="doReply">
+                      <i class="bi bi-reply"/>
+                      回复
                     </el-button>
                   </el-row>
                   <el-row>
-                    <el-button icon="el-icon-document-copy" class="border border-0 fw-bold text-black"
-                               @click="copy(message.content)">复制
+                    <el-button  class="border border-0 fw-bold text-black"
+                               @click="copy(message.content)">
+                      <i class="bi bi-copy"/> 复制
                     </el-button>
                   </el-row>
                   <el-row>
-                    <el-button icon="el-icon-delete" class="border border-0 fw-bold text-black"
-                               @click="doDelete">删除
+                    <el-button  class="border border-0 fw-bold text-black"
+                               @click="doDelete">
+                      <i class="bi bi-trash3"/>
+                      删除
                     </el-button>
                   </el-row>
                   <el-button slot="reference" icon="el-icon-more" circle style="border: none"></el-button>
@@ -117,10 +146,10 @@
 
               </div>
               <div style="max-width: 80%;text-align: left;overflow-wrap: break-word" class="row row-cols-1">
-                      <span v-if="message.type==='TEXT'" class="shadow-sm p-2 rounded-start rounded-bottom"
+                      <span v-if="message.type===chatTypeEnums.TEXT" class="shadow-sm p-2 rounded-start rounded-bottom"
                             style="background-color: #409EFF;color: white;text-align: left"
                             v-html="formatText( message.content)"></span>
-                <div v-else-if="message.type==='IMAGE'" style="display: flex;justify-content: flex-end">
+                <div v-else-if="message.type===chatTypeEnums.IMAGE" style="display: flex;justify-content: flex-end">
                   <el-image
                             :preview-src-list="mediaList"
                             :src="message.content"
@@ -128,12 +157,15 @@
                             style="max-height: 500px;border-radius: 12px;max-width: 60%"
                   />
                 </div>
+                <div v-else-if="message.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
+                  <file-card :url="message.content"/>
+                </div>
+                <file-card v-else :url="message.content"/>
 
-                <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
               </div>
             </div>
             <div v-if="message.reference&&message.reference.id" class="d-flex align-items-center justify-content-end">
-             <div v-if="message.reference.status==='DELETE'
+             <div v-if="message.reference.status===messageStatusEnums.DELETE
              ||message.reference.status===$store.getters.getUser.id
              ||message.reference.conversationId!==message.conversationId
 "
@@ -142,20 +174,23 @@
                消息已删除或不可用
              </div>
               <div v-else style="max-width: 80%;text-align: left;">
-              <span class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
+              <div class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
                     style="font-size: 12px">
                  <span>{{ message.reference.senderName }}:</span>
-               <v-clamp autoresize :max-lines="2" v-if="message.reference.type==='TEXT'"
+               <v-clamp autoresize :max-lines="2" v-if="message.reference.type===chatTypeEnums.TEXT"
                         style="cursor: pointer"   @click.native="showRefer(message.reference.content)" >
                  {{message.reference.content}} </v-clamp>
-                <el-image v-else-if=" message.reference.type==='IMAGE'"
+                <el-image v-else-if=" message.reference.type===chatTypeEnums.IMAGE"
                           :preview-src-list="[message.reference.content]"
                           :src=" message.reference.content"
                           fit="container"
                           style="max-height: 60px;border-radius: 8px"
                 />
-                <span v-else class="text_chat_msg shadow-sm p-3 rounded-end rounded-bottom">&nbsp;</span>
-                 </span>
+                <div v-else-if="message.reference.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
+                  <file-card :url="message.reference.content"/>
+                </div>
+                <file-card v-else :url="message.reference.content" />
+                 </div>
               </div>
 
 
@@ -167,8 +202,7 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </div>-->
 </template>
 
 <script>
@@ -178,15 +212,20 @@ import VClamp from "vue-clamp";
 import {markAsDel} from "@/api/advice";
 import {copy} from "@/util/clipboard";
 import VideoPlayer from "@/views/media/VideoPlayer.vue";
-import {messageStatusEnums} from "@/enums/enums";
+import {chatTypeEnums, messageStatusEnums} from "@/enums/enums";
+import FileCard from "@/views/media/FileCard.vue";
 export default {
   name: "MessageCard",
   computed: {
+    chatTypeEnums() {
+      return chatTypeEnums
+    },
     messageStatusEnums() {
       return messageStatusEnums
     }
   },
   components:{
+    FileCard,
     VideoPlayer,
     VClamp
   },
@@ -198,6 +237,9 @@ export default {
       default: false
     },
     mediaList: Array,
+    showAvatar:true,
+    showNickname:false,
+    showPopover:true
   },
   methods: {
     copy,

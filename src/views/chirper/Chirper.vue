@@ -12,19 +12,48 @@
                 <span>帖子</span>
               </el-row>
               <div class="overflow-y-auto" style="height: 100vh">
-                <el-row  style="margin-bottom: 40px">
+                <el-row class="border-bottom">
 
                   <chirper-card v-if="refer.visible" id="refer" ref="refer" :chirper="refer.record"/>
 
-                  <chirper-card v-if="currentChirper.type!=='QUOTE'" id="current" ref="current" :chirper="currentChirper"
+                  <chirper-card v-if="currentChirper.type!==chirperTypeEnums.QUOTE" id="current" ref="current" :chirper="currentChirper"
                                 :clickEvent="false"
                                 :mediaVisible="true"
                                 :straight="false" shadow="never"/>
-                  <refer-card v-if="currentChirper.type==='QUOTE'" id="current" ref="current" :value="currentChirper"
+                  <refer-card v-if="currentChirper.type===chirperTypeEnums.QUOTE" id="current" ref="current" :value="currentChirper"
                             />
-                  <edit-card :chirper="currentChirper" style="border-bottom: 2px solid #EBEEF5;margin-top: 10px"
-                             @sent="doPost"/>
 
+
+                </el-row>
+                <edit-card :chirper="currentChirper"
+                                    class="border-bottom  mt-2"
+                                    @sent="doPost"/>
+                <el-row class="text-start mt-2 mb-2" >
+                  <div class="btn-group bg-light rounded-pill"
+                       role="group"
+                       aria-label="Basic radio toggle button group">
+                    <input type="radio"
+                           class="btn-check "
+                           name="btn-radio" id="btn-radio1" autocomplete="off"
+                           @click="doOrderTypeChange(replyOrderEnums.HOT)">
+                    <label class="btn btn-light rounded-pill"
+                           style="font-size: 14px"
+                           for="btn-radio1">热门</label>
+
+                    <input type="radio" class="btn-check" name="btn-radio" id="btn-radio2" autocomplete="off"
+                           @click="doOrderTypeChange(replyOrderEnums.ASC)"
+                    checked>
+                    <label class="btn btn-light rounded-pill"
+                           style="font-size: 14px"
+                           for="btn-radio2">正序</label>
+
+                    <input type="radio" class="btn-check" name="btn-radio" id="btn-radio3" autocomplete="off"
+                           @click="doOrderTypeChange(replyOrderEnums.DESC)">
+                    <label class="btn btn-light rounded-pill"
+                           style="font-size: 14px"
+                           for="btn-radio3"
+                           >逆序</label>
+                  </div>
                 </el-row>
                 <el-row v-for="item in reply">
                   <chirper-card :chirper="item" shadow="hover"
@@ -68,9 +97,18 @@ import {getToken} from "@/util/auth";
 import {getDetail, getReply} from "@/api/chirper";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
 import ReferCard from "./ReferCard.vue";
+import {chirperTypeEnums, replyOrderEnums} from "@/enums/enums";
 
 export default {
   name: "Chirper",
+  computed: {
+    chirperTypeEnums() {
+      return chirperTypeEnums
+    },
+    replyOrderEnums() {
+      return replyOrderEnums
+    }
+  },
   components: {
     'chirper-card': ChirperCard,
     'trend-card': TrendListCard,
@@ -89,14 +127,27 @@ export default {
       refer: {
         record: {},
         visible: false
-      }
+      },
+      orderType:replyOrderEnums.ASC
     }
   },
 
   methods: {
     getToken,
+    refreshReplyOptions(){
+      this.reply.splice(0,this.reply.length);
+      this.page=1;
+      this.isLoading=true;
+      this.isBottom=false;
+
+    },
+    doOrderTypeChange(orderBy){
+      this.orderType=orderBy;
+      this.refreshReplyOptions();
+      this.getReply();
+    },
     getReply() {
-      getReply(this.currentChirper.id, this.page).then((res) => {
+      getReply(this.currentChirper.id, this.page,this.orderType).then((res) => {
         this.reply.push(...res.data.record)
 
       })
@@ -108,7 +159,7 @@ export default {
       if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
         this.page++;
         this.isLoading = true;
-        getReply(this.currentChirper.id, this.page).then((res) => {
+        getReply(this.currentChirper.id, this.page,this.orderType).then((res) => {
           if (res.code===200&&res.data.record.length > 0) {
             this.reply.push(...res.data.record);
           } else {
@@ -121,8 +172,7 @@ export default {
     init() {
       let id = this.$route.query.id;
       this.currentChirper = {};
-      this.reply = [];
-      this.page = 1;
+      this.refreshReplyOptions();
       getDetail(id).then((res) => {
         this.currentChirper = res.data.record;
         //进入这个界面既是浏览了该推文，因为加载在统计前，所以手动+1

@@ -34,8 +34,20 @@
                      style="border: 1px solid #DCDFE6;font-weight: bold;color:#000;" @click="editDialog=true">编辑个人资料
           </el-button>
           <el-row v-if="!isSelf">
-            <el-button   circle icon="el-icon-more" ></el-button>
-            <el-button   circle icon="el-icon-message" @click="toChat" style="margin-right: 12px"></el-button>
+            <el-popover
+                placement="bottom"
+                width="auto"
+                :visible-arrow="false"
+                trigger="click"
+            >
+              <div>
+                <el-button class="d-flex text-dark fw-bold">
+                  <i class="bi bi-ban"/> 屏蔽@{{user.username}}</el-button>
+              </div>
+              <el-button slot="reference"   circle icon="el-icon-more" ></el-button>
+            </el-popover>
+
+            <el-button   circle icon="el-icon-message" @click="toChat" class="ms-2 me-1"></el-button>
             <el-button :class="followBtnClass" round @click="doFollow">{{ followBtnText }}</el-button>
           </el-row>
           <el-dialog
@@ -44,7 +56,7 @@
               class="edit-dialog"
               width="40%">
             <el-row class="p-2" style="min-height: 70vh">
-              <edit-card :value="user" @doClose="editDialog=false"/>
+              <edit-card @doEditComplete="doEditComplete"  @doClose="editDialog=false"/>
             </el-row>
           </el-dialog>
         </el-row>
@@ -75,7 +87,9 @@
             <h4>Ta的关注</h4>
             <follower-card :id="user.id" type="following"
             @follow="follow"
-            @unfollow="unfollow"/>
+            @unfollow="unfollow"
+                           @user-change="userChange"
+            />
           </div>
         </el-dialog>
         <el-link style="margin-left: 20px;color:#000;" type="info" @click.native="followerDialog=true">
@@ -87,7 +101,10 @@
             width="40%">
           <div class="p-2">
             <h4>Ta的关注者</h4>
-            <follower-card :id="user.id" type="follower"/>
+            <follower-card :id="user.id"
+                           @follow="follow"
+                           @unfollow="unfollow"
+                           @user-change="userChange" type="follower"/>
           </div>
         </el-dialog>
       </el-row>
@@ -128,6 +145,10 @@ export default {
   methods: {
     getToken,
     getCount,
+    userChange(){
+      this.followerDialog=false;
+      this.followingDialog=false;
+    },
     /**
      * 子组件follow事件
      */
@@ -155,6 +176,11 @@ export default {
           this.changeFollowBtnText(1);
         })
       }
+    },
+    doEditComplete(){
+      this.editDialog=false;
+      this.user=this.user.id===this.$store.getters.getUser.id?this.$store.getters.getUser:this.user;
+      console.log(this.user)
     },
     changeFollowBtnText(type) {
       if (type === 1) {
@@ -252,9 +278,5 @@ export default {
 
 </style>
 <style>
-.el-dialog__wrapper {
-  .el-dialog {
-    border-radius: 10px;
-  }
-}
+
 </style>

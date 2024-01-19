@@ -65,23 +65,20 @@
 
         </div>
         <div class="col-5">
-          <el-container>
-            <el-main>
-              <el-row>
+
+              <el-row class="h-100 w-100">
                 <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
                   <input-card/>
                   <trend-card style="margin-top: 8%;background-color:#EBEEF5;border-radius: 10px"/>
                 </el-col>
-                <el-col v-if="getToken()==null||!getToken().length>0" :span="20">
-
-                  <login-card/>
-
+                <el-col v-if="getToken()==null||!getToken().length>0" :span="20" class=" d-flex justify-content-center h-100 w-100">
+                  <div class="align-self-center  w-75">
+                    <login-card />
+                  </div>
                 </el-col>
 
               </el-row>
 
-            </el-main>
-          </el-container>
         </div>
       </div>
     </el-main>
@@ -98,6 +95,7 @@ import InputCard from "@/views/search/InputCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
 import TrendListCard from "@/views/explore/TrendListCard.vue";
 import ReferCard from "@/views/chirper/ReferCard.vue";
+import {mapState} from "vuex";
 
 export default {
   name: "Profile",
@@ -141,22 +139,45 @@ export default {
   methods: {
     getToken,
     init() {
-      let id;
-      id = this.$route.query.id ? this.$route.query.id : this.$store.getters.getUser.id;
-      let type;
-      if (!id) {
-        this.init();
-      }
-      type = this.$route.query.type ? this.$route.query.type : null;
-      if (id === this.$store.getters.getUser.id) {
+      this.user={};
+      this.activeName='all';
+      this.isLoading=false;
+      this.chirpers= {
+        all: {
+          chirper: [],
+          page: 1,
+          isBottom: false
+        },
+        reply: {
+          chirper: [],
+          page: 1,
+          isBottom: false
+        },
+        media: {
+          chirper: [],
+          page: 1,
+          isBottom: false
+        },
+        like: {
+          chirper: [],
+          page: 1,
+          isBottom: false
+        }
+      };
+      let id=this.$route.query.id;
+      let type = this.$route.query.type ? this.$route.query.type : null;
+      if (!id||id===this.$store.getters.getUser.id) {
         this.user = this.$store.getters.getUser;
-      }
-      getDetailProfile(id, type).then((res) => {
-        this.user = res.data.record;
         this.getPage();
-      }).catch(e => {
-        console.log(e)
-      })
+      }else {
+        getDetailProfile(id, type).then((res) => {
+          this.user = res.data.record;
+          this.getPage();
+        }).catch(e => {
+          console.log(e);
+        })
+      }
+
     },
     getPage() {
       if (this.activeName === 'all' && !this.chirpers.all.isBottom) {
@@ -216,11 +237,13 @@ export default {
   watch: {
     $route() {
       this.init();
-    }
+    },
   },
   created() {
-    this.init();
-    window.addEventListener("scroll", this.loadMoreChirper, true)
+      this.init();
+      window.addEventListener("scroll", this.loadMoreChirper, true)
+
+
   },
   destroyed() {
     window.removeEventListener("scroll", this.loadMoreChirper)

@@ -1,4 +1,5 @@
 import moment from "moment";
+import {fileCategoryEnums} from "@/enums/enums";
 
 export const getCount = (num) => {
     if (num > 1000) {
@@ -41,43 +42,6 @@ export const getMessageDate = (date) => {
         }
     }
 }
-export const getMonthAndDay = (timestamp) => {
-    let date = new Date(timestamp);
-    let month = date.getMonth() + 1;
-    let day = date.getDate();
-    month = month.toString().padStart(2, '0');
-    day = day.toString().padStart(2, '0');
-    return month + '/' + day;
-}
-export const descArray = (arr) => {
-    return arr.sort((a, b) => {
-        return b - a;
-    })
-}
-export const ascArray = (arr) => {
-    return arr.sort((a, b) => {
-        return a - b;
-    })
-}
-export const descDate = (dates) => {
-    return dates.sort((a, b) => {
-        return new Date(b).getTime() - new Date(a).getTime();
-    })
-}
-export const getDaysBetween = (dateString1, dateString2) => {
-    let startDate = Date.parse(dateString1);
-    let endDate = Date.parse(dateString2);
-    let days = (endDate - startDate) / (1 * 24 * 60 * 60 * 1000);
-    return days;
-}
-export const doPercent = (num1, num2) => {
-    let percent = Math.ceil(num1 / num2 * 100);
-    if (Number.isFinite(percent)) {
-        return percent
-    } else {
-        return 0
-    }
-}
 
 export const getNewMsgCount = (num) => {
     return num > 99 ? 99 : num;
@@ -93,7 +57,7 @@ export const bigNumberToString = (num) => {
 export const formatText = (text) => {
 // 查找@username
     const regex = /@(\w+)(?=\s|$)/g;
-    return text.replace(regex,"<a href='/profile?id=$1&type=username' @click.stop style='color:#409EFF;text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
+    return text.replace(regex,"<a href='/profile?id=$1&type=username' class='text-primary' @click.stop style='text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
 
 }
 /**
@@ -113,4 +77,15 @@ export const getCharCode=(str)=>{
         code+=str.charCodeAt(i);
     }
     return parseInt(code,10);
+}
+export const getCategory=(extension)=>{
+        const imageSuffixes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+        const videoSuffixes = ['mp4', 'avi', 'flv', 'mov', 'wmv', 'rmvb', 'mkv'];
+        if (imageSuffixes.includes(extension)) {
+            return fileCategoryEnums.IMAGE;
+        }else if (videoSuffixes.includes(extension)){
+            return fileCategoryEnums.VIDEO;
+        }else {
+            return fileCategoryEnums.FILE;
+        }
 }

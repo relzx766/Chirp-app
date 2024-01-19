@@ -5,20 +5,36 @@
     </el-col>
     <el-col :span="22" style="text-align: left">
       <div class="input-area">
+          <textarea
+              id="input-origin"
+              class="el-textarea__inner fw-bold fs-6"
+              v-model="text"
+              placeholder="发表你的看法!"
+              @input="fetchUser=true"
+              @keyup.enter="()=>{text=text+'\u200B'}"
+          ></textarea>
+        <!--
+        用这个会非常的卡，cpu会被占满，不停的重新绘制dom
         <el-input
-            id="input-quote"
-            v-model="text"
-            autosize
-            placeholder="发表你的看法!"
-            style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-            type="textarea"
-            @keyup.enter.native="()=>{text=text+'\u200B'}">
-        </el-input>
+
+                      v-model="text"
+                      autosize
+                      placeholder="有什么新鲜事?!"
+                      style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
+                      type="textarea"
+                      @input="fetchUser=true"
+                      @keyup.enter.native="()=>{text=text+'\u200B'}">
+                  </el-input>-->
       </div>
       <el-row style="margin-top: 20px;">
-        <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0" @addMedia="addMedia"
+        <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
+                  :show-range="true"
+                  :text="text"
+                  :fetch="fetchUser"
+                  @doMention="doMention"
+                  @addMedia="addMedia"
                   @emoji="setEmoji"
-                  @post="doPost()"
+                  @post="doPost"
                   @removeMedia="removeMedia"/>
       </el-row>
       <el-row style="margin-top: 20px;border: 1px solid #EBEEF5;border-radius: 12px;padding: 8px;zoom: 0.92;">
@@ -45,12 +61,13 @@ export default {
   data() {
     return {
       text: '',
-      media: []
+      media: [],
+      fetchUser:true
     }
   },
   methods: {
-    doPost() {
-      quoteChirper(this.text, this.chirper.id, this.media).then((res) => {
+    doPost(replyRange) {
+      quoteChirper(this.text, this.chirper.id, this.media,replyRange.code).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -78,6 +95,15 @@ export default {
       input.selectionStart = startPos + emoji.data.length
       input.selectionEnd = startPos + emoji.data.length
       this.text = resultText
+    },
+    doMention(username){
+      this.fetchUser=false;
+      if (username.trim().length>0) {
+        const lastIndex = this.text.lastIndexOf('@');
+        if (lastIndex !== -1) {
+          this.text = this.text.substring(0, lastIndex) + '@' + username;
+        }
+      }
     }
   },
 }

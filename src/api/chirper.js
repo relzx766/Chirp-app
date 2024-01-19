@@ -52,12 +52,13 @@ export const cancelLike = (id) => {
         }
     })
 }
-export const postChirper = (text, mediaKeys) => {
+export const postChirper = (text, mediaKeys,replyRange) => {
     return JsonPost({
         url: sever + '/chirper/add',
         data: {
             text,
-            mediaKeys
+            mediaKeys,
+            replyRange
         }
     })
 }
@@ -77,13 +78,14 @@ export const cancelForward = (id) => {
         data: data
     })
 }
-export const quoteChirper = (text, referencedChirperId, mediaKeys) => {
+export const quoteChirper = (text, referencedChirperId, mediaKeys,replyRange) => {
     return JsonPost({
         url: sever + "/chirper/quote",
         data: {
             text,
             referencedChirperId,
-            mediaKeys
+            mediaKeys,
+            replyRange
         }
     })
 }
@@ -97,10 +99,10 @@ export const postReply = (text, inReplyToChirperId, mediaKeys) => {
         }
     })
 }
-export const getReply = (id, page) => {
+export const getReply = (id, page,order) => {
     return Get({
-        url: sever + "/chirper/child",
-        params: {id, page}
+        url: `${sever}/chirper/child/${id}/${page}`,
+        data:{order}
     })
 }
 export const getByAuthor = (id, page) => {

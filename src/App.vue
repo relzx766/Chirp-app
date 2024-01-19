@@ -77,4 +77,15 @@ nav a {
 nav a.router-link-exact-active {
   color: #42b983;
 }
+.el-dialog__wrapper {
+  .el-dialog {
+    border-radius: 10px;
+  }
+}
+.el-dialog .el-dialog__body {
+  padding: 0;
+}
+.no-header-dialog .el-dialog__header {
+  display: none;
+}
 </style>

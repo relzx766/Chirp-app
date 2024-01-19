@@ -7,10 +7,11 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "axios": "^1.5.0",
     "big-integer": "^1.6.51",
     "bootstrap": "^5.3.2",
-    "bootstrap-vue": "^2.23.1",
+    "bootstrap-icons": "^1.11.3",
     "core-js": "^3.8.3",
     "crypto-js": "^4.2.0",
     "dplayer": "^1.27.1",

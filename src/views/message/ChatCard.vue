@@ -43,7 +43,7 @@
                      icon="el-icon-bottom"
                      round
                      @click="backBottom"
-                     class="fs-6 shadow-lg  border-0"></el-button>
+                     class="fs-6 shadow-lg  border-0 mb-4"></el-button>
           <el-row v-for="(item,index) in getChat.messages" :key="item.id">
             <!--          如果消息间隔相差2分组同时不是第一条-->
             <el-row
@@ -133,7 +133,7 @@ export default {
       }
     },
     scrollE(e) {
-      this.backToBottom = e.target.scrollTop - e.target.clientHeight < -200;
+      this.backToBottom = e.target.clientHeight-e.target.scrollTop   < 0;
     },
     backBottom() {
       this.$refs.content.scrollTop = this.$refs.content.scrollHeight;

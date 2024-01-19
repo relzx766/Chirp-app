@@ -7,7 +7,7 @@
       <el-col :span="21">
         <el-row>
           <el-col :span="16">
-            <el-link :href="'/profile?id='+item.id" style="color: #212121">{{ item.nickname }}</el-link>
+            <el-link @click="doToProfile(item.id)"  style="color: #212121">{{ item.nickname }}</el-link>
             <el-row style="color: #606266">@{{ item.username }}</el-row>
           </el-col>
           <el-col :offset="4" :span="2">
@@ -47,6 +47,10 @@ export default {
     }
   },
   methods: {
+    doToProfile(id){
+      this.$emit('user-change')
+      this.$router.push(`/profile?id=${id}`);
+    },
     unfollow(index){
       this.record[index].relation=2;
       this.$emit('unfollow');

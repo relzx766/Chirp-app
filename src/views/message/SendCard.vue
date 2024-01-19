@@ -7,16 +7,23 @@
           <div class="col-auto d-grid align-items-center" >
             <div>
               <el-row>{{ currentToReply.senderName }}</el-row>
-              <el-row v-if="currentToReply.type==='TEXT'">
+              <el-row v-if="currentToReply.type===chatTypeEnums.TEXT">
                 <i class="el-icon-document fw-bold"/><span>文本</span>
               </el-row>
-              <el-row v-else-if="currentToReply.type==='IMAGE'">
+              <el-row v-else-if="currentToReply.type===chatTypeEnums.IMAGE">
                 <i class="el-icon-camera fw-bold"/><span>图像</span>
+              </el-row>
+              <el-row v-else-if="currentToReply.type===chatTypeEnums.VIDEO">
+                <i class="bi bi-play-circle"/><span>视频</span>
+              </el-row>
+
+              <el-row v-else-if="currentToReply.type===chatTypeEnums.FILE">
+                <i class="bi bi-file-earmark"/><span>文件</span>
               </el-row>
             </div>
           </div>
 
-          <el-row v-if="currentToReply.type==='TEXT'"
+          <el-row v-if="currentToReply.type===chatTypeEnums.TEXT"
                   style="width: 100%">
               <v-clamp autoresize :max-lines="2"
              style="cursor: pointer"  @click.native="showRefer(currentToReply.content)">
@@ -24,13 +31,23 @@
               </v-clamp>
           </el-row>
 
-          <div class="col">
-            <el-row v-if="currentToReply.type==='IMAGE'" class="text-end">
+          <div class="col" v-else-if="currentToReply.type===chatTypeEnums.IMAGE">
+            <el-row  class="text-end">
               <el-image :src="currentToReply.content" fit="cover"
                         :preview-src-list="[currentToReply.content]"
                         style="height: 60px;border-radius: 8px"
               />
             </el-row>
+          </div>
+          <div class="col d-flex justify-content-end" v-else-if="currentToReply.type===chatTypeEnums.VIDEO">
+            <div class="" style="height: 60px;width: 60px">
+              <file-card :url="currentToReply.content" />
+            </div>
+          </div>
+          <div class="col d-flex justify-content-end" v-else-if="currentToReply.type===chatTypeEnums.FILE">
+            <v-clamp autoresize :max-lines="2">
+              {{ currentToReply.content }}
+            </v-clamp>
           </div>
         </div>
       </div>
@@ -111,7 +128,8 @@ import {VEmojiPicker} from "v-emoji-picker";
 import VClamp from "vue-clamp";
 import {doEncrypt, getPrivateKey, getShareKey} from "@/util/encrypt";
 import {fetchPublicKey, getPublicKeys} from "@/api/advice";
-import async from "async";
+import {messageStatusEnums, chatTypeEnums} from "@/enums/enums";
+import FileCard from "@/views/media/FileCard.vue";
 
 export default {
   name: "SendCard",
@@ -128,19 +146,26 @@ export default {
   },
   components: {
     VClamp,
-    VEmojiPicker
+    VEmojiPicker,
+    FileCard
   },
   data() {
     return {
       message: {
         content: "",
-        type: "TEXT"
+        type: chatTypeEnums.TEXT
       },
       file: null,
       fileUrl: ""
     }
   },
   computed: {
+    chatTypeEnums() {
+      return chatTypeEnums
+    },
+    messageStatusEnums() {
+      return messageStatusEnums
+    },
     currentToReply() {
       return this.$store.getters.getChatReply;
     }
@@ -149,7 +174,7 @@ export default {
     init() {
       this.message = {
         content: "",
-        type: "TEXT"
+        type: chatTypeEnums.TEXT
       };
       this.file = null;
       this.fileUrl = "";
@@ -177,7 +202,10 @@ export default {
     beforeUpload(file) {
       this.file = file;
       this.fileUrl = URL.createObjectURL(this.file);
-      this.message.type = file.type.split('/').shift().toUpperCase();
+      let fileType = file.type.split('/').shift().toUpperCase();
+      fileType = chatTypeEnums[fileType];
+      fileType=fileType?fileType:chatTypeEnums.FILE;
+      this.message.type=fileType;
     },
    doUpload() {
       let id = Date.now();
@@ -206,7 +234,7 @@ export default {
     },
     generateMessage(tempId) {
       let user = this.$store.getters.getUser;
-      let content = this.message.type === 'TEXT' ? this.message.content : this.fileUrl;
+      let content = this.message.type === chatTypeEnums.TEXT ? this.message.content : this.fileUrl;
       let promises = []; // 创建一个空数组，用来存放每个receiver对应的Promise
       this.receiver.forEach(receiver => {
         let id = tempId ? tempId : Math.round(Date.now());

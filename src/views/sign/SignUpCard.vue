@@ -2,16 +2,16 @@
   <el-row style="width: 100%;">
     <el-container>
       <el-header class="p-2">
-        <div class="row">
-          <div class="col text-start">
+        <div class="row ">
+          <div class="col d-flex justify-content-start">
             <el-button v-show="active>0" round size="small" type="info"
                        @click="active>0?active--:active">back
             </el-button>
           </div>
-          <div class="col">
-            <img src="../../assets/logo.svg" width="40px">
+          <div class="col d-flex justify-content-center">
+            <img src="../../assets/logo.svg" width="40px" alt="logo">
           </div>
-          <div class="col text-end">
+          <div class="col d-flex justify-content-end">
             <el-button v-show="active<1" round size="small" type="primary" @click="doNext()"
             :disabled="isUnExists||isEmailExists||user.password.trim().length<6||user.password.trim().length>30
 ||!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(user.email)||!/^[a-zA-Z0-9]{4,30}$/.test(user.username)">next

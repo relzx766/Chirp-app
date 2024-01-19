@@ -5,7 +5,14 @@ import {getToken} from "@/util/auth";
 import {getAdviceAudio} from "@/util/adviceUtil";
 import {doDecrypt, doEncrypt, getPrivateKey, getPublicKey, getShareKey} from "@/util/encrypt";
 import {fetchPublicKey, getChatSetting, getMyChatSetting, getPublicKeys} from "@/api/advice";
-import {chatAllowEnum, messageStatusEnums} from "@/enums/enums";
+import {
+    chatAllowEnum, chatTypeEnums,
+    messageStatusEnums,
+    messageTypeEnums,
+    noticeEntityEnums,
+    noticeEventEnums,
+    noticeTypeEnums
+} from "@/enums/enums";
 import {Message} from "element-ui";
 Vue.use(Vuex);
 const store = new Vuex.Store({
@@ -113,8 +120,8 @@ const store = new Vuex.Store({
                 },
                 onmessage: e => {
                     let messages = JSON.parse(e.data);
-                    let notice = messages.NOTICE;
-                    let chat = messages.CHAT;
+                    let notice = messages[messageTypeEnums.NOTICE]
+                    let chat = messages[messageTypeEnums.CHAT];
                     if (notice && notice.length > 0) {
                         this.dispatch('pushNotice', {
                             payload: notice,
@@ -154,24 +161,32 @@ const store = new Vuex.Store({
             let messages = Array.from(payload);
             for (let i = 0; i < messages.length; i++) {
                 let item = messages[i];
-                if (state.notice.filterMap.has(item.id)) {
-                    continue;
-                } else {
-                    state.notice.filterMap.set(item.id, 1);
+                if (item.sonEntity!=='null') {
+                    item.sonEntity = JSON.parse(item.sonEntity);
                 }
-                if (item.event === 'TWEETED') {
+                if (item.entity !== 'null') {
+                    item.entity = JSON.parse(item.entity);
+                }
+                //当用户接收到新通知时，这时再分页获取，信息会重复
+                //对于follow和forward事件，需要单独的逻辑去过滤
+                let filterKey=item.id;
+                if (item.event===noticeEventEnums.FOLLOW){
+                    filterKey=`${item.event}:${item.senderId}`
+                }
+                if (item.event===noticeEventEnums.FORWARD){
+                    filterKey=`${item.event}:${item.senderId}:${item.sonEntity.id}`
+                }
+                if (state.notice.filterMap.has(filterKey)) {
+                    continue;
+                }
+                state.notice.filterMap.set(filterKey, 1);
+
+                if (item.event === noticeEventEnums.TWEETED) {
                     state.followingUpdate.record.unshift(item);
                     state.followingUpdate.count += 1;
                 }else {
-                    if (!item.isRead) {
-                        state.notice.unRead++;
-                    }
-                    if (item.entityType === 'CHIRPER' || item.entityType === 'USER') {
-                        if (item.entityType === 'CHIRPER') {
-                            item.sonEntity = JSON.parse(item.sonEntity);
-                            if (item.entity !== 'null') {
-                                item.entity = JSON.parse(item.entity);
-                            }
+                    if (item.noticeType === noticeTypeEnums.USER) {
+                        if (item.entityType === noticeEntityEnums.CHIRPER) {
                             let key = `${item.event}${item.sonEntity.id}${state.notice.page}`;
                             //按照[推文id][事件]分类
                             if (!top) {
@@ -189,11 +204,10 @@ const store = new Vuex.Store({
                             } else {
                                 state.notice.record[key].unshift(item);
                             }
-                        } else if (item.event === 'FOLLOW') {
+                        } else if (item.event === noticeEventEnums.FOLLOW) {
                             let key = `${item.event}${item.receiverId}`;
                             if (!state.notice.record[key]) {
                                 state.notice.record[key] = [];
-
                             }
                             if (messages.length > 1) {
                                 state.notice.record[key].push(item);
@@ -202,6 +216,9 @@ const store = new Vuex.Store({
                             }
                         }
                         state.notice.count += 1;
+                    }
+                    if (!item.isRead) {
+                        state.notice.unRead++;
                     }
                 }
             }
@@ -233,7 +250,6 @@ const store = new Vuex.Store({
                         state.chat.record[key].messages.splice(index, 1);
                     }
                 }
-
                 if (!state.chat.record[key]) {
                     state.chat.record[key] = {
                         conversation: key,
@@ -277,7 +293,7 @@ const store = new Vuex.Store({
                 }
                 if (top) {
                     state.chat.record[key].messages.push(item);
-                    if (!state.chat.record[key].reading && item.status === 'UNREAD' && state.user.id !== item.senderId) {
+                    if (!state.chat.record[key].reading && item.status === messageStatusEnums.UNREAD && state.user.id !== item.senderId) {
                         state.chat.record[key].unreadCount++;
                         state.chat.unRead++;
                         state.chat.newChatQueue.push(key);
