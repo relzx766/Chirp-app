@@ -53,7 +53,7 @@
                 :show-close="false"
                 :visible.sync="quoteDialog"
                 width="50%">
-              <el-row>
+              <el-row class="p-2">
                 <quote-card :chirper="chirper"
                             @sent="quoteDialog=false;chirper.isQuote=true;chirper.quoteCount++;chirper.viewCount++;"/>
               </el-row>

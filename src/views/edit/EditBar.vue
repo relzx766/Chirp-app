@@ -108,7 +108,7 @@
           </el-button>
         </el-upload>
         <el-popover
-
+            :visible-arrow="false"
             trigger="click"
             width="auto"
         >

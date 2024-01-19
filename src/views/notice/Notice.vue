@@ -12,7 +12,7 @@
           </span>
               </el-row>
               <el-row class="overflow-y-auto">
-                <notice-card class="overflow-y-auto" style="max-height: 90vh;margin-bottom: 40px"/>
+                <notice-card class="overflow-y-auto" style="height: 90vh;margin-bottom: 40px"/>
               </el-row>
             </el-main>
           </el-container>

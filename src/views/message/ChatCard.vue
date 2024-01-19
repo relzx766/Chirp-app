@@ -133,7 +133,7 @@ export default {
       }
     },
     scrollE(e) {
-      this.backToBottom = e.target.clientHeight-e.target.scrollTop   < 0;
+      this.backToBottom =  e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight > e.target.clientHeight;
     },
     backBottom() {
       this.$refs.content.scrollTop = this.$refs.content.scrollHeight;

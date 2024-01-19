@@ -6,7 +6,7 @@
     <el-col :span="22" style="text-align: left">
       <div class="input-area">
           <textarea
-              id="input-origin"
+              id="input-quote"
               class="el-textarea__inner fw-bold fs-6"
               v-model="text"
               placeholder="发表你的看法!"
@@ -89,12 +89,11 @@ export default {
       let input = document.getElementById("input-quote")
       let startPos = input.selectionStart;
       let endPos = input.selectionEnd;
-      let resultText = input.value.substring(0, startPos) + emoji.data + input.value.substring(endPos)
-      input.value = resultText
-      input.focus()
-      input.selectionStart = startPos + emoji.data.length
-      input.selectionEnd = startPos + emoji.data.length
-      this.text = resultText
+      let result = this.text.substring(0, startPos) + emoji.data + this.text.substring(endPos)
+      this.$set(this, 'text', result);
+      input.focus();
+      input.selectionStart = startPos + emoji.data.length;
+      input.selectionEnd = startPos + emoji.data.length;
     },
     doMention(username){
       this.fetchUser=false;

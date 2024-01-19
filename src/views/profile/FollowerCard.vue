@@ -1,12 +1,12 @@
 <template>
   <div>
     <el-card v-for="(item,index) in record" shadow="hover" style="border: none;border-radius: 12px;margin-top: 4px">
-      <el-col :span="3">
+      <el-col :span="2">
         <el-avatar :src="item.smallAvatarUrl"/>
       </el-col>
-      <el-col :span="21">
+      <el-col :span="22">
         <el-row>
-          <el-col :span="16">
+          <el-col :span="16" class="text-start">
             <el-link @click="doToProfile(item.id)"  style="color: #212121">{{ item.nickname }}</el-link>
             <el-row style="color: #606266">@{{ item.username }}</el-row>
           </el-col>
@@ -21,7 +21,7 @@
             </el-button>
           </el-col>
         </el-row>
-        <el-row style="margin-top: 12px">{{ item.description }}</el-row>
+        <el-row >{{ item.description }}</el-row>
       </el-col>
     </el-card>
   </div>

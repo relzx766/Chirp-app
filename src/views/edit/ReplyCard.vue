@@ -3,7 +3,7 @@
     <el-row>
       <el-row v-if="isDiaLog" :style="{marginBottom:isDiaLog?'30px':'0px'}">
         <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false"
-                      :mediaVisible="chirper.text&&chirper.text.trim.length>0?false:true" style="border: none;"
+                      :mediaVisible="!(chirper.text&&chirper.text.trim.length>0)" style="border: none;"
         />
         <el-row>
           <el-col :span="2">
@@ -23,7 +23,7 @@
         </el-row>
         <div class="input-area">
           <textarea
-              id="input-origin"
+              id="input-reply"
               class="el-textarea__inner fw-bold fs-6"
               v-model="text"
               placeholder="发布你的回复!"
@@ -44,13 +44,13 @@
                     </el-input>-->
         </div>
         <el-row style="margin-top: 20px;">
-          <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0" @addMedia="addMedia"
+          <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
                     :text="text"
                     :fetch="fetchUser"
+                    @addMedia="addMedia"
                     @emoji="setEmoji"
                     @post="doPost"
                     @removeMedia="removeMedia"
-
                     @doMention="doMention"/>
         </el-row>
       </el-col>
@@ -104,12 +104,11 @@ export default {
       let input = document.getElementById("input-reply")
       let startPos = input.selectionStart;
       let endPos = input.selectionEnd;
-      let resultText = input.value.substring(0, startPos) + emoji.data + input.value.substring(endPos)
-      input.value = resultText
-      input.focus()
-      input.selectionStart = startPos + emoji.data.length
-      input.selectionEnd = startPos + emoji.data.length
-      this.text = resultText
+      let result = this.text.substring(0, startPos) + emoji.data + this.text.substring(endPos)
+      this.$set(this, 'text', result);
+      input.focus();
+      input.selectionStart = startPos + emoji.data.length;
+      input.selectionEnd = startPos + emoji.data.length;
     },
     doMention(username){
       this.fetchUser=false;
