@@ -149,7 +149,8 @@ export default {
           let ids = res.data.record.map(feed => feed.contentId);
           if (ids.length > 0) {
             getByIds(ids).then(r => {
-              if (r.code===200) {
+              console.log(r)
+              if (r.code===200&&r.data.record.length>0) {
                 this.following.chirper.push(...r.data.record);
               }
               $state && $state.loaded();

@@ -1,0 +1,3 @@
+.no-header-dialog .el-dialog__header {
+    display: none;
+}

@@ -13,30 +13,33 @@
               placeholder="有什么新鲜事?!"
               @input="fetchUser=true"
               @keyup.enter="()=>{text=text+'\u200B'}"
-            ></textarea>
-<!--
-用这个会非常的卡，cpu会被占满，不停的重新绘制dom
-<el-input
+          ></textarea>
+          <!--
+          用这个会非常的卡，cpu会被占满，不停的重新绘制dom
+          <el-input
 
-              v-model="text"
-              autosize
-              placeholder="有什么新鲜事?!"
-              style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-              type="textarea"
-              @input="fetchUser=true"
-              @keyup.enter.native="()=>{text=text+'\u200B'}">
-          </el-input>-->
+                        v-model="text"
+                        autosize
+                        placeholder="有什么新鲜事?!"
+                        style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
+                        type="textarea"
+                        @input="fetchUser=true"
+                        @keyup.enter.native="()=>{text=text+'\u200B'}">
+                    </el-input>-->
         </div>
         <el-row class="mt-5">
           <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
                     :show-range="true"
+                    :text="text"
+                    :fetch="fetchUser"
+                    :active-date-time="activeTime"
                     @addMedia="addMedia"
                     @emoji="setEmoji"
                     @post="doPost"
-                    :text="text"
-                    :fetch="fetchUser"
                     @doMention="doMention"
-                    @removeMedia="removeMedia"/>
+                    @removeMedia="removeMedia"
+                    @doScheduleConfirm="doScheduleConfirm"
+                    @doScheduleClear="doScheduleClear"/>
         </el-row>
       </el-col>
     </el-row>
@@ -48,6 +51,7 @@
 import EditBar from "@/views/edit/EditBar.vue";
 import {postChirper} from "@/api/chirper";
 import {commentRangeEnums} from "@/enums/enums";
+import moment from "moment";
 
 export default {
   name: "OriginCard",
@@ -58,15 +62,18 @@ export default {
     return {
       text: '',
       media: [],
-      fetchUser:true
+      activeTime: "",
+      fetchUser: true
     }
   },
   methods: {
     doPost(replyRange) {
-      postChirper(this.text, this.media,replyRange.code).then((res) => {
+      let activeTime=this.activeTime?new Date(this.activeTime).getTime():null;
+      postChirper(this.text, this.media, replyRange.code,activeTime).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
+          this.activeTime="";
           this.$message({
             message: '发布推文成功',
             type: 'success'
@@ -90,14 +97,20 @@ export default {
       input.selectionStart = startPos + emoji.data.length;
       input.selectionEnd = startPos + emoji.data.length;
     },
-    doMention(username){
-      this.fetchUser=false;
-      if (username.trim().length>0) {
+    doMention(username) {
+      this.fetchUser = false;
+      if (username.trim().length > 0) {
         const lastIndex = this.text.lastIndexOf('@');
         if (lastIndex !== -1) {
           this.text = this.text.substring(0, lastIndex) + '@' + username;
         }
       }
+    },
+    doScheduleConfirm(dateTime) {
+      this.activeTime = dateTime;
+    },
+    doScheduleClear() {
+      this.activeTime = "";
     }
   }
 }

@@ -103,7 +103,7 @@
             action="#"
             multiple
             style="display: inline-block">
-          <el-button circle  class="border-0 text-primary">
+          <el-button circle  class="border-0 text-primary p-2">
             <i class="bi bi-image "/>
           </el-button>
         </el-upload>
@@ -113,11 +113,80 @@
             width="auto"
         >
           <VEmojiPicker @select="selectEmoji"/>
-          <el-button slot="reference" circle  class="border-0 text-primary">
+          <el-button slot="reference" circle  class="border-0 text-primary p-2">
             <i class="bi bi-emoji-smile"/>
           </el-button>
         </el-popover>
-
+        <el-button  class="border-0 text-primary p-2"
+                    :round="!!activeDateTime"
+                    :circle="!activeDateTime"
+                    @click="scheduleDialog=true">
+          <i class="bi bi-stopwatch"/>
+          {{activeDateTime}}
+        </el-button>
+        <el-dialog
+            :visible.sync="scheduleDialog"
+            width="25%"
+            append-to-body
+            custom-class="no-header-dialog"
+            :show-close="false">
+          <div class="p-2">
+            <div class="row">
+              <div class="col d-flex align-items-center">
+                <el-button circle
+                           @click="scheduleDialog=false"
+                           class="border-0  p-1 bg-white text-dark">
+                  <i class="bi bi-x fs-4"/>
+                </el-button>
+                <span class="fs-5 fw-bold text-dark ms-4">定时</span>
+              </div>
+              <div class="col text-end">
+                <button
+                    v-show="activeDateTime"
+                    class="text-dark btn btn-link"
+                    @click="doScheduleClear"
+                    type="button">清除</button>
+                <el-button round size="mini"
+                           class="border-0 btn btn-dark fs-6 ms-2"
+                           @click="doScheduleConfirm" >
+                  {{activeDateTime?'修改':'确定'}}
+                </el-button>
+              </div>
+            </div>
+            <div class="w-100 p-2" v-if="getEnableSchedule">
+              <i class="bi bi-stopwatch"/>
+              将在{{activeDate}}的{{activeTime}}发送
+            </div>
+            <form class="p-2">
+              <div class="mb-3">
+                <label for="activeData" class="form-label">日期</label>
+                <el-date-picker
+                    v-model="activeDate"
+                    type="date"
+                    format="yyyy-MM-dd"
+                    class="form-control p-0 w-100 border-0"
+                    id="activeData">
+                </el-date-picker>
+              </div>
+              <div class="mb-3">
+                <label for="activeTime" class="form-label">时间</label>
+                <el-time-picker
+                    id="activeTime"
+                    value-format="HH:mm:ss"
+                    class="form-control border-0 w-100 p-0"
+                    ia-describedby="timeHelp"
+                    v-model="activeTime">
+                </el-time-picker>
+                <div
+                    v-show="!getEnableSchedule"
+                    id="timeHelp"
+                    class="form-text text-danger">
+                  你不能定时在过去
+                </div>
+              </div>
+            </form>
+          </div>
+        </el-dialog>
       </el-col>
       <el-col :span="10" style="text-align: right">
         <el-button ref="btn-post" :disabled="postBtnDisabled||sending" icon="el-icon-s-promotion"
@@ -134,6 +203,7 @@ import UploadingFile from "@/views/media/UploadingFile.vue";
 import {VEmojiPicker} from "v-emoji-picker";
 import {commentRangeEnums, relationEnums, supportMediaTypeEnums} from "@/enums/enums";
 import {search} from "@/api/user";
+import moment from "moment";
 
 export default {
   name: "EditBar",
@@ -143,13 +213,19 @@ export default {
     },
     commentRangeEnums() {
       return commentRangeEnums
+    },
+    getEnableSchedule(){
+      this.activeDate=moment(this.activeDate).format("YYYY-MM-DD");
+      let activeDateTime = moment(this.activeDate+' '+this.activeTime,'YYYY-MM-DD HH:mm:ss').toDate();
+      return activeDateTime.getTime()>Date.now();
     }
   },
   props: {
     text:String,
     postBtnDisabled: true,
     showRange:Boolean,
-    fetch:Boolean
+    fetch:Boolean,
+    activeDateTime:String
   },
   components: {
     'uploading-card': UploadingFile,
@@ -162,10 +238,24 @@ export default {
       commentRange:commentRangeEnums.EVERYONE,
       searching:false,
       users:[],
-      keyword:""
+      keyword:"",
+      scheduleDialog:false,
+      scheduleConfirm:false,
+      activeDate:moment().add(5,'days').format('YYYY-MM-DD'),
+      activeTime:moment().format('HH:mm:ss'),
     }
   },
   methods: {
+    init(){
+      if (this.activeDateTime===undefined||this.activeDateTime===null||this.activeDateTime===''){
+        this.activeDate=moment().add(5,'days').format('YYYY-MM-DD');
+        this.activeTime=moment().format('HH:mm:ss');
+      }else {
+        let activeDateTime=moment(this.activeDateTime,"YYYY-MM-DD HH:mm:ss");
+        this.activeDate=activeDateTime.format('YYYY-MM-DD');
+        this.activeTime=activeDateTime.format('HH:mm:ss');
+      }
+    },
     doCommentRangeChange(range){
       this.commentRange=range;
     },
@@ -174,6 +264,19 @@ export default {
       this.fileList = [];
       this.$emit('post',this.commentRange);
       this.sending=false;
+    },
+    doScheduleConfirm(){
+      this.activeDate=moment(this.activeDate).format("YYYY-MM-DD");
+      let activeDateTime = moment(this.activeDate+' '+this.activeTime,'YYYY-MM-DD HH:mm:ss');
+      this.scheduleDialog=false;
+      this.scheduleConfirm=true;
+      this.$emit('doScheduleConfirm',activeDateTime.format("YYYY-MM-DD HH:mm:ss"));
+    },
+    doScheduleClear(){
+      this.scheduleDialog=false;
+      this.scheduleConfirm=false;
+      this.$emit('doScheduleClear');
+      this.init();
     },
     handlerFileChange(file, fileList) {
       let type = file.raw.type.split("/").shift().toUpperCase();
@@ -229,6 +332,9 @@ export default {
         }
       }
     }
+  },
+  created() {
+    this.init();
   }
 }
 </script>

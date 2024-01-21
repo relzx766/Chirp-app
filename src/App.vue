@@ -85,7 +85,5 @@ nav a.router-link-exact-active {
 .el-dialog .el-dialog__body {
   padding: 0;
 }
-.no-header-dialog .el-dialog__header {
-  display: none;
-}
+
 </style>

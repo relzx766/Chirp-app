@@ -47,11 +47,14 @@
           <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
                     :text="text"
                     :fetch="fetchUser"
+                    :active-date-time="activeTime"
                     @addMedia="addMedia"
                     @emoji="setEmoji"
                     @post="doPost"
+                    @doMention="doMention"
                     @removeMedia="removeMedia"
-                    @doMention="doMention"/>
+                    @doScheduleConfirm="doScheduleConfirm"
+                    @doScheduleClear="doScheduleClear"/>
         </el-row>
       </el-col>
     </el-row>
@@ -77,12 +80,14 @@ export default {
     return {
       text: '',
       media: [],
-      fetchUser:true
+      fetchUser:true,
+      activeTime: "",
     }
   },
   methods: {
     doPost() {
-      postReply(this.text, this.chirper.id, this.media).then((res) => {
+      let activeTime=this.activeTime?new Date(this.activeTime).getTime():null;
+      postReply(this.text, this.chirper.id, this.media,activeTime).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -118,6 +123,12 @@ export default {
           this.text = this.text.substring(0, lastIndex) + '@' + username;
         }
       }
+    },
+    doScheduleConfirm(dateTime) {
+      this.activeTime = dateTime;
+    },
+    doScheduleClear() {
+      this.activeTime = "";
     }
   },
   created() {

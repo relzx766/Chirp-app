@@ -148,8 +148,9 @@ export default {
     },
     getReply() {
       getReply(this.currentChirper.id, this.page,this.orderType).then((res) => {
-        this.reply.push(...res.data.record)
-
+        if (res.code===200) {
+          this.reply.push(...res.data.record)
+        }
       })
     },
     loadMoreReply() {

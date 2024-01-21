@@ -52,13 +52,14 @@ export const cancelLike = (id) => {
         }
     })
 }
-export const postChirper = (text, mediaKeys,replyRange) => {
+export const postChirper = (text, mediaKeys,replyRange,activeTime) => {
     return JsonPost({
         url: sever + '/chirper/add',
         data: {
             text,
             mediaKeys,
-            replyRange
+            replyRange,
+            activeTime
         }
     })
 }
@@ -78,24 +79,26 @@ export const cancelForward = (id) => {
         data: data
     })
 }
-export const quoteChirper = (text, referencedChirperId, mediaKeys,replyRange) => {
+export const quoteChirper = (text, referencedChirperId, mediaKeys,replyRange,activeTime) => {
     return JsonPost({
         url: sever + "/chirper/quote",
         data: {
             text,
             referencedChirperId,
             mediaKeys,
-            replyRange
+            replyRange,
+            activeTime
         }
     })
 }
-export const postReply = (text, inReplyToChirperId, mediaKeys) => {
+export const postReply = (text, inReplyToChirperId, mediaKeys,activeTime) => {
     return JsonPost({
         url: sever + "/chirper/reply",
         data: {
             text,
             inReplyToChirperId,
-            mediaKeys
+            mediaKeys,
+            activeTime
         }
     })
 }

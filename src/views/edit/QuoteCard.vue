@@ -31,11 +31,14 @@
                   :show-range="true"
                   :text="text"
                   :fetch="fetchUser"
-                  @doMention="doMention"
+                  :active-date-time="activeTime"
                   @addMedia="addMedia"
                   @emoji="setEmoji"
                   @post="doPost"
-                  @removeMedia="removeMedia"/>
+                  @doMention="doMention"
+                  @removeMedia="removeMedia"
+                  @doScheduleConfirm="doScheduleConfirm"
+                  @doScheduleClear="doScheduleClear"/>
       </el-row>
       <el-row style="margin-top: 20px;border: 1px solid #EBEEF5;border-radius: 12px;padding: 8px;zoom: 0.92;">
         <chirper-card :barVisible="false" :chirper="chirper" :dataVisible="false" shadow="hover"></chirper-card>
@@ -62,12 +65,14 @@ export default {
     return {
       text: '',
       media: [],
-      fetchUser:true
+      fetchUser:true,
+      activeTime: "",
     }
   },
   methods: {
     doPost(replyRange) {
-      quoteChirper(this.text, this.chirper.id, this.media,replyRange.code).then((res) => {
+      let activeTime=this.activeTime?new Date(this.activeTime).getTime():null;
+      quoteChirper(this.text, this.chirper.id, this.media,replyRange.code,activeTime).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -103,6 +108,12 @@ export default {
           this.text = this.text.substring(0, lastIndex) + '@' + username;
         }
       }
+    },
+    doScheduleConfirm(dateTime) {
+      this.activeTime = dateTime;
+    },
+    doScheduleClear() {
+      this.activeTime = "";
     }
   },
 }
