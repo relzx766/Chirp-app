@@ -57,6 +57,11 @@ export const noticeEventEnums={
     FOLLOW:"FOLLOW",
     MENTIONED:"MENTIONED"
 }
+export const noticeStatusEnums={
+    UNREAD:1,
+    READ:2,
+    DELETE:3
+}
 export const noticeEntityEnums={
     CHIRPER:"CHIRPER",
     USER:"USER"
@@ -75,4 +80,21 @@ export const fileCategoryEnums={
     IMAGE:"IMAGE",
     VIDEO:"VIDEO",
     FILE:"FILE"
+}
+export const chirperSearchEnums={
+    REPLY:"reply",
+    LIKE:"like",
+    MEDIA:"media"
+}
+export const accountStatusEnums={
+}
+export const accountTypeEnums={
+    USERNAME:"USERNAME",
+    EMAIL:"EMAIL"
+}
+export const wsConnectionStatus={
+    OPEN:1,
+    CLOSE:2,
+    ERROR:3,
+    RETRY:4
 }

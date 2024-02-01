@@ -1,11 +1,12 @@
 import {FormPost, Get, JsonPost} from "@/config/http";
 
-export const signIn = (account, password) => {
-    return FormPost({
+export const signIn = (account, password,accountType) => {
+    return JsonPost({
         url: '/chirp/auth-service/auth/signIn',
         data: {
             account,
-            password
+            password,
+            accountType
         }
     })
 }

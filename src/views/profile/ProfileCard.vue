@@ -31,7 +31,7 @@
       <el-col :span="18" style="text-align: right;">
         <el-row v-if="getToken()!=null" style="margin-right: 16px;margin-top: 4px;">
           <el-button v-if="isSelf" round size="medium"
-                     style="border: 1px solid #DCDFE6;font-weight: bold;color:#000;" @click="editDialog=true">编辑个人资料
+                     class="border-1 fw-bold text-dark" @click="editDialog=true">编辑个人资料
           </el-button>
           <el-row v-if="!isSelf">
             <el-popover
@@ -62,21 +62,21 @@
         </el-row>
       </el-col>
     </el-row>
-    <el-row style="text-align: left;margin-top: 50px;margin-left: 16px">
-      <el-row style="font-size: 20px;font-weight: bolder">
+    <el-row style="text-align: left;margin-left: 16px">
+      <el-row class="fs-5 fw-bolder text-dark">
         {{ user.nickname }}
       </el-row>
-      <el-row style="font-size: 14px;color:#606266;margin-top: 6px">
+      <el-row class="fs-7 text-secondary">
         @{{ user.username }}
       </el-row>
-      <el-row style="margin-top: 14px;font-size: 14px">
+      <el-row class="fs-7 mt-1">
         {{ user.description }}
       </el-row>
-      <el-row style="margin-top: 20px;color:#606266">
+      <el-row class="text-secondary mt-3">
         <i class="el-icon-date"/>
         <span>&nbsp;{{ new Date(user.createTime).toLocaleDateString() }}&nbsp;加入</span>
       </el-row>
-      <el-row style="margin-top: 16px">
+      <el-row class="mt-3">
         <el-link style="color:#000;" type="info" @click.native="followingDialog=true">{{ getCount(user.followingNum) }}
           <span style="color:#606266;"> 正在关注</span></el-link>
         <el-dialog

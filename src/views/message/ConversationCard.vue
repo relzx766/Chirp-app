@@ -2,14 +2,14 @@
   <div>
     <el-row style="text-align: left">
       <el-col :span="3">
-        <el-avatar :src="conversation.user.smallAvatarUrl"/>
+        <el-avatar :src="participant.smallAvatarUrl"/>
       </el-col>
       <el-col :span="17">
         <el-row style="font-size:14px;color: #303133;font-weight: 560">
           <el-breadcrumb separator="·">
-            <el-breadcrumb-item>{{ conversation.user.nickname }}</el-breadcrumb-item>
+            <el-breadcrumb-item>{{ participant.nickname }}</el-breadcrumb-item>
             <el-breadcrumb-item>{{ msgDate(conversation.messages.length>0?conversation.messages[conversation.messages.length-1].createTime:conversation.date) }}</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="conversation.unreadCount>0"> <span class="badge bg-danger  rounded-pill">{{conversation.unreadCount<99?conversation.unreadCount:99}}</span></el-breadcrumb-item>
+            <el-breadcrumb-item v-if="conversation.unread>0"> <span class="badge bg-danger  rounded-pill">{{conversation.unread<99?conversation.unread:99}}</span></el-breadcrumb-item>
           </el-breadcrumb>
         </el-row>
         <el-row v-if="conversation.messages.length>0">
@@ -59,9 +59,8 @@
           </div>
           <el-button slot="reference"
                      icon="el-icon-more" circle class="border-0"
-                     :class="pinned?['bg-light']:[]"
-                     @click.stop
-                     :style="conversation.conversation===$route.params.id&&!pinned?{backgroundColor:'#ecf4f4'}:{}"></el-button>
+                     :class="cardClasses"
+                     @click.stop></el-button>
         </el-popover>
       </el-col>
     </el-row>
@@ -73,12 +72,33 @@ import {msgDate} from "@/util/formatter";
 import {getDate} from "@/util/tools";
 import {leaveConv, updatePinned} from "@/api/advice";
 import {messageStatusEnums} from "@/enums/enums";
+import {mapState} from "vuex";
+import {getOtherParticipantID} from "@/util/chatUtil";
+import {settingMutations} from "@/config/vuex/mutation-types";
 
 export default {
   name: "ConversationCard",
   computed: {
     messageStatusEnums() {
       return messageStatusEnums
+    },
+    ...mapState({
+      user:state => state.user
+    }),
+    participant(){
+      let otherParticipantID = getOtherParticipantID(this.conversation.conversation,this.user.id);
+      return this.user.userList[otherParticipantID];
+    },
+    cardClasses(){
+      let c=[];
+      if (this.pinned){
+        c.push('bg-light')
+      }else {
+        if (this.conversation.conversation===this.$route.params.id){
+          c.push('bg-focus-1')
+        }
+      }
+      return c;
     }
   },
   props:{
@@ -123,9 +143,7 @@ export default {
     if (!this.pinned) {
       conversation=this.conversation.conversation;
     }
-    this.$store.commit('setChatSetting', {
-        pinned: conversation
-      });
+    this.$store.commit(`setting/${settingMutations.SET_CHAT_PINNED}`,{pinned:conversation});
     updatePinned(conversation);
     },
     doDelete() {
@@ -133,6 +151,8 @@ export default {
       leaveConv(this.conversation.conversation);
       this.$router.push('/message')
     }
+  },
+  mounted() {
   }
 }
 </script>

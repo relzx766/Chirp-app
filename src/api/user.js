@@ -14,11 +14,9 @@ export const getShortProfile = (ids) => {
         data: data
     })
 }
-export const getDetailProfile = (id, type) => {
+export const getDetailProfile = (username) => {
     return Get({
-        url: sever + "/user/profile",
-        params: {id},
-        data: {type: type}
+        url: `${sever}/user/profile/${username}`
     })
 }
 export const putProfile = (user) => {
@@ -76,5 +74,11 @@ export const checkUsername=(username)=>{
 export const checkEmail=(email)=>{
     return Get({
         url:`${sever}/user/email/check/${email}`
+    })
+}
+export const getProfile=(userIds)=>{
+    return JsonPost({
+        url:`${sever}/user/profile`,
+        data:userIds
     })
 }

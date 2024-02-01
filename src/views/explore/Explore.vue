@@ -2,11 +2,10 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7"
-             style="border-left:2px solid #EBEEF5;height: 100vh;
-             border-right:2px solid #EBEEF5;">
+        <div class="col-7 border-start border-end p-2"
+             style="height: 100vh;">
           <el-container>
-            <el-main style="padding: 0;">
+            <el-main class="p-0">
               <input-card/>
               <el-tabs :stretch="true" value="recommend">
                 <el-tab-pane name="recommend">

@@ -50,7 +50,7 @@
     <div v-if="!step2||Object.keys(receivers).length<=0" style="height: 60vh;border: none;overflow-x: hidden">
       <div v-for="item in users" :key="item.id"
            class="row user-item"
-           @click="$set(receivers,item.id,item)"
+           @click="addReceiver(item)"
            :class="!canBeChat(item)?['pe-none','bg-light']:[]"
            >
 <!--        //style="pointer-events: none;"-->
@@ -77,13 +77,17 @@ import {getRelations, search} from "@/api/user";
 import SendCard from "@/views/message/SendCard.vue";
 import {getChatSettings} from "@/api/advice";
 import {chatAllowEnum, relationEnums} from "@/enums/enums";
+import {mapState} from "vuex";
 
 export default {
   name: "NewChatCard",
   computed: {
     chatAllowEnum() {
       return chatAllowEnum
-    }
+    },
+    ...mapState({
+      user:state => state.user
+    })
   },
   components: {SendCard},
 
@@ -107,7 +111,7 @@ export default {
     },
     canBeChat(user){
      return ((user.chatSetting.allow===chatAllowEnum.ANYONE&&relationEnums.BLOCK!==user.relation)
-          ||user.id===this.$store.getters.getUser.id
+          ||user.id===this.user.id
           ||user.relation===relationEnums.FOLLOW)
       &&user.chatSetting.chatReady;
     },

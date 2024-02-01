@@ -2,7 +2,7 @@
   <el-row>
     <el-row>
       <el-col :span="2" style="text-align: left">
-        <el-avatar :src="$store.getters.getUser.smallAvatarUrl" size="medium"></el-avatar>
+        <el-avatar :src="user.smallAvatarUrl" size="medium"></el-avatar>
       </el-col>
       <el-col :span="20" style="text-align: left">
         <div class="input-area">
@@ -27,7 +27,7 @@
                         @keyup.enter.native="()=>{text=text+'\u200B'}">
                     </el-input>-->
         </div>
-        <el-row class="mt-5">
+        <el-row >
           <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
                     :show-range="true"
                     :text="text"
@@ -47,11 +47,13 @@
   </el-row>
 </template>
 
-<script>
+<script>var text;
+
 import EditBar from "@/views/edit/EditBar.vue";
 import {postChirper} from "@/api/chirper";
 import {commentRangeEnums} from "@/enums/enums";
 import moment from "moment";
+import {mapState} from "vuex";
 
 export default {
   name: "OriginCard",
@@ -66,14 +68,19 @@ export default {
       fetchUser: true
     }
   },
+  computed: {
+    ...mapState({
+      user: state => state.user
+    })
+  },
   methods: {
     doPost(replyRange) {
-      let activeTime=this.activeTime?new Date(this.activeTime).getTime():null;
-      postChirper(this.text, this.media, replyRange.code,activeTime).then((res) => {
+      let activeTime = this.activeTime ? new Date(this.activeTime).getTime() : null;
+      postChirper(this.text, this.media, replyRange.code, activeTime).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
-          this.activeTime="";
+          this.activeTime = "";
           this.$message({
             message: '发布推文成功',
             type: 'success'

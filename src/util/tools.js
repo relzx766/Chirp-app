@@ -57,7 +57,7 @@ export const bigNumberToString = (num) => {
 export const formatText = (text) => {
 // 查找@username
     const regex = /@(\w+)(?=\s|$)/g;
-    return text.replace(regex,"<a href='/profile?id=$1&type=username' class='text-primary' @click.stop style='text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
+    return text.replace(regex,"<a href='/profile?username=$1' class='text-primary' @click.stop style='text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
 
 }
 /**

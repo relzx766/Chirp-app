@@ -1,20 +1,20 @@
 <template>
   <el-container >
-    <el-main class="content" style="padding: 0">
+    <el-main class="content p-0">
       <el-row>
         <el-row>
-          <span style="float: left;font-weight: bold;font-size: 20px">主页</span>
+          <span
+              class="float-start fw-bold fs-5">主页</span>
         </el-row>
         <el-row>
           <el-tabs v-model="active" :stretch="true" @tab-click="doTapClick">
             <el-tab-pane name="recommend" >
-              <span slot="label" style="font-size: 16px;font-weight: bold;">为你推荐</span>
+              <span slot="label" class="fs-6 fw-bold">为你推荐</span>
               <edit-card v-if="isLogin"
-                         style="border-bottom: 2px solid #EBEEF5;"/>
-
+                         class="border-bottom p-2"/>
               <el-row v-for="item in recommend.chirper" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
-                            :value="item" style="margin-top: 8px;"/>
+                            :value="item" class="mt-2"/>
                 <chirper-card
                     v-else :chirper="item"
                     style="margin-top: 8px;"/>
@@ -26,7 +26,7 @@
               </infinite-loading>
             </el-tab-pane>
             <el-tab-pane :disabled="!isLogin" name="following" >
-              <span slot="label" style="font-size: 16px;font-weight: bold;">正在关注</span>
+              <span slot="label" class="fs-6 fw-bold">正在关注</span>
               <el-button v-if="updateAdvice.visible" class="btn-advice-update" icon="el-icon-top" round type="primary"
                          @click="toFollowingTop">
                 查看最新推文
@@ -36,7 +36,7 @@
               <el-row v-for="item in following.chirper" :key="item.id"
                       style="border-bottom: 1px solid #E4E7ED;">
                 <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
-                            :value="item" style="margin-top: 8px;"/>
+                            :value="item" class="mt-2"/>
                 <chirper-card
                     v-else :chirper="item"
                     style="margin-top: 8px;"/>
@@ -131,13 +131,15 @@ export default {
     },
     init(){
       getPage(1).then(res => {
-        let ids = res.data.record.map(feed => feed.contentId)
-        if (ids.length > 0) {
-          getByIds(ids).then(r => {
-            if (r.code===200) {
-              this.following.chirper.push(...r.data.record);
-            }
-          });
+        if (res.code===200&&res.data.record.length>0) {
+          let ids = res.data.record.map(feed => feed.contentId)
+          if (ids.length > 0) {
+            getByIds(ids).then(r => {
+              if (r.code === 200) {
+                this.following.chirper.push(...r.data.record);
+              }
+            });
+          }
         }
       })
     },

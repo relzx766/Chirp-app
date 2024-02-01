@@ -1,16 +1,16 @@
 <template>
 <div>
-  <div class="user-card" @click="$router.push('/profile?id='+user.id)">
+  <div class="user-card" @click="$router.push('/profile?username='+userInfo.username)">
     <div class="row d-flex align-items-center border border-top-0  p-3 ">
       <div class="col-2">
-        <el-avatar :src="user.smallAvatarUrl" fit="cover"/>
+        <el-avatar :src="userInfo.smallAvatarUrl" fit="cover"/>
       </div>
       <div class="col text-start " style="font-size: 14px;margin-left: -10px;">
         <div class="row">
-          <span class=" fw-bold" style="color: #303133">{{user.nickname}}</span>
+          <span class=" fw-bold" style="color: #303133">{{userInfo.nickname}}</span>
         </div>
         <div class="row">
-          <span style="color:#909399;">@{{user.username}}</span>
+          <span style="color:#909399;">@{{userInfo.username}}</span>
         </div>
       </div>
     </div>
@@ -39,6 +39,8 @@
 <script>
 import {getDetailProfile} from "@/api/user";
 import {leaveConv} from "@/api/advice";
+import {mapState} from "vuex";
+import {chatActions} from "@/config/vuex/action-types";
 
 export default {
   name: "ConversationInfo",
@@ -46,25 +48,29 @@ export default {
     userId:"",
     conversation:""
   },
+  computed:{
+    ...mapState({
+      user:state=>state.user
+    }),
+    userInfo(){
+      return this.user.userList[this.userId];
+    }
+  },
   data(){
     return{
-    user:{},
       leaveDialog:false
     }
   },
   methods:{
     doLeave() {
-      this.$store.commit('leaveConv',this.conversation);
-      leaveConv(this.conversation);
-      this.$router.push('/message')
+      this.$store.dispatch(`chat/${chatActions.LEAVE_CONVERSATION}`).then(()=>{
+        this.$router.push('/message');
+      }).catch(e=>{
+        this.$message.error(e);
+      })
     }
   },
   created(){
-    if(this.userId){
-      getDetailProfile(this.userId,null).then(res=>{
-        this.user=res.data.record
-      })
-    }
   }
 }
 </script>

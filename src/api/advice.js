@@ -11,7 +11,7 @@ export const getUnreadCount = () => {
         url: `${base}notice/count/unread`
     })
 }
-export const markAsRead = (data) => {
+export const markAsRead = () => {
     return Get({
         url: `${base}notice/read/mark`
     })
@@ -22,9 +22,9 @@ export const getChatIndexPage = () => {
         url: `${base}chat/index`
     })
 }
-export const getChatHistory = (senderId, page) => {
+export const getChatHistory = (conversation, page) => {
     return Get({
-        url: `${base}chat/history/page/${page}/${senderId}`
+        url: `${base}chat/history/page/${page}/${conversation}`
     })
 }
 export const getChatUnread = (conversations) => {

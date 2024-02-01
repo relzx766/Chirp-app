@@ -1,7 +1,7 @@
 <template>
   <el-row>
     <el-col :span="2" style="text-align: left">
-      <el-avatar :src="$store.getters.getUser.smallAvatarUrl" size="medium"></el-avatar>
+      <el-avatar :src="user.smallAvatarUrl" size="medium"></el-avatar>
     </el-col>
     <el-col :span="22" style="text-align: left">
       <div class="input-area">
@@ -51,6 +51,7 @@
 <script>
 import {quoteChirper} from "@/api/chirper";
 import EditBar from "@/views/edit/EditBar.vue";
+import {mapState} from "vuex";
 
 export default {
   name: "QuoteCard",
@@ -68,6 +69,11 @@ export default {
       fetchUser:true,
       activeTime: "",
     }
+  },
+  computed: {
+    ...mapState({
+      user: state => state.user
+    })
   },
   methods: {
     doPost(replyRange) {

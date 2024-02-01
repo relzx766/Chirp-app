@@ -66,6 +66,7 @@ import SignUpCard from "@/views/sign/SignUpCard.vue";
 import EmailVerifyCard from "@/views/sign/EmailVerifyCard.vue";
 import {signIn} from "@/api/sign";
 import {setToken} from "@/util/auth";
+import {userActions} from "@/config/vuex/action-types";
 
 export default {
   name: "LoginCard",
@@ -93,16 +94,12 @@ export default {
       this.$message('apple还未支持😥');
     },
     doLogin() {
-      signIn(this.user.account, this.user.password).then((res) => {
-        if (res.code === 200) {
-         setToken( res.data.record.token);
-          localStorage.setItem("id", res.data.record.user.id);
-          this.$router.go(0);
-        } else {
-          this.$message.error(res.data.message);
-        }
-      });
-
+      this.$store.dispatch(`user/${userActions.LOGIN}`, this.user)
+          .then(()=>{
+            window.location.href='/home'
+          }).catch(e=>{
+            this.$message.error(e.message);
+      })
     }
   },
 }

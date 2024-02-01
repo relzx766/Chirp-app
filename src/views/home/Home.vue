@@ -2,9 +2,8 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7 "
-             style="border-left:2px solid #EBEEF5;height: 100vh;
-             border-right:2px solid #EBEEF5;">
+        <div class="col-7 border-start border-end"
+             style="height: 100vh;">
           <chirper-card
               class="overflow-y-auto"
               style="max-height: 96vh;"

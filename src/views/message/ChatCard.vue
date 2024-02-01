@@ -1,12 +1,12 @@
 <template>
 
   <div class="container p-0">
-    <div style="height: 100%;display: flex;flex-direction: column;" v-if="getChat">
+    <div style="height: 100%;display: flex;flex-direction: column;" v-if="currentChat">
       <div class="row " style="height: 70px;">
         <div class="col d-flex align-items-center justify-content-start p-3 ps-4">
-          <el-avatar :size="36" :src="getChat.user.smallAvatarUrl"/>
+          <el-avatar :size="36" :src="participant.smallAvatarUrl"/>
           <span style="font-weight: bold;font-size: 16px;margin-left: 12px">
-            {{ getChat.user.nickname }}
+            {{ participant.nickname }}
           </span>
         </div>
         <div class="col-1 p-3 pe-5">
@@ -22,8 +22,8 @@
           </el-row>
           <conversation-info
               class="overflow-x-hidden"
-              :user-id="getChat.user.id"
-              :conversation="getChat.conversation"/>
+              :user-id="participant.id"
+              :conversation="currentChat.conversation"/>
         </el-drawer>
       </div>
       <div ref="content" class="overflow-y-scroll content"
@@ -44,10 +44,10 @@
                      round
                      @click="backBottom"
                      class="fs-6 shadow-lg  border-0 mb-4"></el-button>
-          <el-row v-for="(item,index) in getChat.messages" :key="item.id">
+          <el-row v-for="(item,index) in currentChat.messages" :key="item.id">
             <!--          如果消息间隔相差2分组同时不是第一条-->
             <el-row
-                v-if="index>0&&subtractDates(getChat.messages[index].createTime,getChat.messages[index-1].createTime)>2*60*1000"
+                v-if="index>0&&subtractDates(currentChat.messages[index].createTime,currentChat.messages[index-1].createTime)>2*60*1000"
                 class=" text-body-tertiary chat-date">
               {{ chatDate(item.createTime) }}
             </el-row>
@@ -55,11 +55,11 @@
               {{ chatDate(item.createTime) }}
             </el-row>
             <message-card :id="item.id"
-                          :class="index===getChat.messages.length-1?'mb-4':'mb-2'"
+                          :class="index===currentChat.messages.length-1?'mb-4':'mb-2'"
                           :message="item"
-                          :reverse="item.senderId===$store.getters.getUser.id"
-                          :user="item.senderId===$store.getters.getUser.id?$store.getters.getUser:getChat.user"
-                          :media-list="getChat.messages.filter(msg=>msg.type==='IMAGE').map(msg=>msg.content)"
+                          :reverse="item.senderId===user.id"
+                          :user="item.senderId===user.id?user:participant"
+                          :media-list="currentChat.messages.filter(msg=>msg.type==='IMAGE').map(msg=>msg.content)"
                           class="mt-2 mb-2"/>
 
           </el-row>
@@ -67,10 +67,10 @@
         </div>
 
       </div>
-      <div style="min-height: 50px;align-self: flex-end;width: 100%;overflow: hidden;
-         background-color: white;
-         border-top: 1px solid #DCDFE6;">
-        <send-card :receiver="[getChat.user]" :reply="true" style="border-radius: 12px;"/>
+      <div
+          class="align-self-end w-100 overflow-hidden bg-white border-top"
+          style="min-height: 50px;">
+        <send-card :receiver="[participant]" :reply="true" style="border-radius: 12px;"/>
       </div>
     </div>
 
@@ -85,6 +85,9 @@ import {subtractDates} from "@/util/tools";
 import {chatDate, msgDate} from "@/util/formatter";
 import ConversationInfo from "@/views/message/ConversationInfo.vue";
 import InfiniteLoading from "vue-infinite-loading";
+import {mapState} from "vuex";
+import {getOtherParticipantID} from "@/util/chatUtil";
+import {chatActions} from "@/config/vuex/action-types";
 
 export default {
   name: "ChatCard",
@@ -98,7 +101,6 @@ export default {
   },
   data() {
     return {
-      conversation: '',
       isBottom: false,
       isLoading: false,
       infoDrawer: false,
@@ -106,31 +108,34 @@ export default {
     }
   },
   computed: {
-    getChat() {
-      return this.$store.getters.getConv(this.conversation);
-    }
+    ...mapState({
+      chat:state => state.chat,
+      user:state => state.user
+    }),
+    currentChat(){
+      return this.chat.record[this.conversation];
+    },
+    participant() {
+      let participantID = getOtherParticipantID(this.conversation,this.user.id);
+      return this.user.userList[participantID];
+    },
+    conversation(){
+     return  this.$route.params.id;
+    },
   },
   methods: {
     chatDate, msgDate, subtractDates,
-    loadMore($state) {
-      if (Object.values(this.getChat.user).length > 0) {
-        let page = this.getChat.page;
-        getChatHistory(this.getChat.user.id, page).then(res => {
-          if (res.data.record.length <= 0) {
-            $state.complete();
-          } else {
-            this.$store.dispatch('pushMessage', {
-              payload: res.data.record,
-              top: false
-            });
-            this.$store.commit('setConvOption', {
-              conversation: this.getChat.conversation,
-              page: page + 1
-            });
-            $state.loaded();
-          }
-        });
-      }
+  loadMore($state) {
+      this.$store.dispatch(`chat/${chatActions.LOAD_CHAT_PAGE}`,{conversation:this.conversation}).then(()=>{
+        if (this.currentChat.bottom){
+          $state.complete();
+        }else {
+          $state.loaded();
+        }
+      }).catch(e=>{
+        $state.complete();
+        this.$message.error(e.message);
+      })
     },
     scrollE(e) {
       this.backToBottom =  e.target.scrollHeight-e.target.scrollTop-e.target.clientHeight > e.target.clientHeight;
@@ -140,17 +145,16 @@ export default {
     }
   },
   created() {
-    this.conversation = this.$route.params.id;
-    markConversationRead([this.conversation]);
-    this.$store.commit('setConvOption', {conversation: this.conversation, unread: 0, status: true});
+this.$store.dispatch(`chat/${chatActions.READ_CONVERSATION}`,{conversation:this.conversation,status:true});
   },
   mounted() {
     this.backBottom();
   },
   destroyed() {
-    markConversationRead([this.conversation])
-    this.$store.commit('setConvOption', {conversation: this.conversation, status: false, unread: 0});
-  }
+    if (this.conversation){
+      this.$store.dispatch(`chat/${chatActions.READ_CONVERSATION}`,{conversation:this.conversation,status:false});
+    }
+     }
 
 }
 </script>

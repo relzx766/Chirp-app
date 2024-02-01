@@ -4,12 +4,12 @@
       <el-row>
         <el-col :span="2" style="text-align: left;">
           <el-avatar :src="chirper.avatar" fit="cover" size="large" style="  cursor: pointer;"
-                     @click.native="$router.push('/profile?id='+chirper.authorId)"/>
+                     @click.native="$router.push('/profile?username='+chirper.username)"/>
         </el-col>
         <el-col :span="21" style="text-align: left;margin-left: 10px">
           <el-row v-if="straight">
             <el-col :span="16">
-              <el-link style="font-size: 16px;font-weight: bold" @click="$router.push('/profile?id='+chirper.authorId)">{{
+              <el-link style="font-size: 16px;font-weight: bold" @click="$router.push('/profile?username='+chirper.username)">{{
                   chirper.nickname
                 }}
               </el-link>
@@ -24,7 +24,7 @@
           </el-row>
           <el-row v-if="!straight">
             <el-row>
-              <el-link  @click="$router.push('/profile?id='+chirper.authorId)" style="font-size: 16px;font-weight: bold">{{
+              <el-link  @click="$router.push('/profile?username='+chirper.username)" style="font-size: 16px;font-weight: bold">{{
                   chirper.nickname
                 }}
               </el-link>

@@ -1,8 +1,7 @@
 <template>
   <div class="container">
       <div class="row">
-        <div class="col-8"
-                style="border-left:2px solid #EBEEF5;min-height: 100vh;border-right:2px solid #EBEEF5;padding: 8px">
+        <div class="col-8 border-start border-end p-2">
           <input-card style="margin-bottom: 8px"/>
           <el-tabs :stretch="true" value="all" class="d-flex flex-column" style="width: 100%" @tab-click="handleTabClick">
             <el-tab-pane name="all" >

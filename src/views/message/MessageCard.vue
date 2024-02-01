@@ -12,7 +12,7 @@
                <span v-if="message.type===chatTypeEnums.TEXT"
                      style="max-width: 80%"
                      class="shadow-sm p-2 text-wrap  rounded-bottom"
-                     :class="reverse?['bg-primary-blue','text-white',' rounded-start']
+                     :class="reverse?['bg-primary','text-white',' rounded-start']
                      :['bg-body-tertiary','rounded-end',]"
                      v-html="formatText(message.content)"></span>
               <div v-else-if="message.type===chatTypeEnums.IMAGE">
@@ -72,7 +72,7 @@
                            class="d-flex align-items-center"
                            :class="reverse?['justify-content-end','me-5']:['justify-content-start','ms-5']">
         <div v-if="message.reference.status===messageStatusEnums.DELETE
-             ||message.reference.status===$store.getters.getUser.id
+             ||message.reference.status===currentUser.id
              ||message.reference.conversationId!==message.conversationId
 "
              class="  bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary"
@@ -104,105 +104,6 @@
         </div>
       </div>
     </div>
-<!--    <div v-if="reverse" style="padding: 6px;text-align: right">
-      <div class="container text-center">
-        <div class="row row-cols-2 ">
-          <div class="col-11">
-            <div class="d-flex align-items-center justify-content-end">
-              <div class="me-sm-4">
-                <div  v-if="message.isSending" class="spinner-border spinner-border-sm text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-                <div v-else-if="message.status===messageStatusEnums.FAILED">
-                  <i class="bi bi-exclamation-circle-fill text-danger"/>
-                </div>
-                <el-popover v-else
-                            trigger="click"
-                            width="auto"
-                            :visible-arrow="false"
-                >
-                  <el-row>
-                    <el-button  class="border border-0 fw-bold text-black"
-                                @click="doReply">
-                      <i class="bi bi-reply"/>
-                      回复
-                    </el-button>
-                  </el-row>
-                  <el-row>
-                    <el-button  class="border border-0 fw-bold text-black"
-                               @click="copy(message.content)">
-                      <i class="bi bi-copy"/> 复制
-                    </el-button>
-                  </el-row>
-                  <el-row>
-                    <el-button  class="border border-0 fw-bold text-black"
-                               @click="doDelete">
-                      <i class="bi bi-trash3"/>
-                      删除
-                    </el-button>
-                  </el-row>
-                  <el-button slot="reference" icon="el-icon-more" circle style="border: none"></el-button>
-                </el-popover>
-
-              </div>
-              <div style="max-width: 80%;text-align: left;overflow-wrap: break-word" class="row row-cols-1">
-                      <span v-if="message.type===chatTypeEnums.TEXT" class="shadow-sm p-2 rounded-start rounded-bottom"
-                            style="background-color: #409EFF;color: white;text-align: left"
-                            v-html="formatText( message.content)"></span>
-                <div v-else-if="message.type===chatTypeEnums.IMAGE" style="display: flex;justify-content: flex-end">
-                  <el-image
-                            :preview-src-list="mediaList"
-                            :src="message.content"
-                            fit="container"
-                            style="max-height: 500px;border-radius: 12px;max-width: 60%"
-                  />
-                </div>
-                <div v-else-if="message.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
-                  <file-card :url="message.content"/>
-                </div>
-                <file-card v-else :url="message.content"/>
-
-              </div>
-            </div>
-            <div v-if="message.reference&&message.reference.id" class="d-flex align-items-center justify-content-end">
-             <div v-if="message.reference.status===messageStatusEnums.DELETE
-             ||message.reference.status===$store.getters.getUser.id
-             ||message.reference.conversationId!==message.conversationId
-"
-                  class=" bg-dark-subtle m-1 shadow-sm p-2 rounded text-secondary row"
-                  style="font-size: 12px;overflow-wrap: break-word">
-               消息已删除或不可用
-             </div>
-              <div v-else style="max-width: 80%;text-align: left;">
-              <div class="text_chat_msg  bg-dark-subtle m-1 shadow-sm p-2 rounded"
-                    style="font-size: 12px">
-                 <span>{{ message.reference.senderName }}:</span>
-               <v-clamp autoresize :max-lines="2" v-if="message.reference.type===chatTypeEnums.TEXT"
-                        style="cursor: pointer"   @click.native="showRefer(message.reference.content)" >
-                 {{message.reference.content}} </v-clamp>
-                <el-image v-else-if=" message.reference.type===chatTypeEnums.IMAGE"
-                          :preview-src-list="[message.reference.content]"
-                          :src=" message.reference.content"
-                          fit="container"
-                          style="max-height: 60px;border-radius: 8px"
-                />
-                <div v-else-if="message.reference.type===chatTypeEnums.VIDEO" style="width: 300px;height: 300px">
-                  <file-card :url="message.reference.content"/>
-                </div>
-                <file-card v-else :url="message.reference.content" />
-                 </div>
-              </div>
-
-
-            </div>
-          </div>
-          <div class="col-1" style="text-align: right">
-            <el-avatar :src="user.smallAvatarUrl" fit="cover" style="cursor: pointer"
-                       @click.native="$router.push('/profile?id='+user.id)"/>
-          </div>
-        </div>
-      </div>
-    </div>-->
 </template>
 
 <script>
@@ -214,6 +115,9 @@ import {copy} from "@/util/clipboard";
 import VideoPlayer from "@/views/media/VideoPlayer.vue";
 import {chatTypeEnums, messageStatusEnums} from "@/enums/enums";
 import FileCard from "@/views/media/FileCard.vue";
+import {mapState} from "vuex";
+import {chatMutations} from "@/config/vuex/mutation-types";
+import {chatActions} from "@/config/vuex/action-types";
 export default {
   name: "MessageCard",
   computed: {
@@ -222,7 +126,10 @@ export default {
     },
     messageStatusEnums() {
       return messageStatusEnums
-    }
+    },
+    ...mapState({
+      currentUser:state => state.user
+    })
   },
   components:{
     FileCard,
@@ -245,14 +152,10 @@ export default {
     copy,
     formatText, msgDate, getNewMsgCount, getMessageDate, getDate,
     doReply() {
-      this.$store.commit('setChatToReply', this.message);
+      this.$store.commit(`chat/${chatMutations.SET_CHAT_REPLY}`, {message:this.message});
     },
     doDelete() {
-      this.$store.commit('delMsg',{
-        conversation:this.message.conversationId,
-        messageId:this.message.id
-      });
-      markAsDel(this.message.id);
+      this.$store.dispatch(`chat/${chatActions.DELETE_CHAT_RECORD}`,{conversation:this.message.conversationId,id:this.message.id});
     },
     showRefer(content){
       this.$confirm(content,'',{

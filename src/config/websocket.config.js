@@ -1,5 +1,5 @@
 const heartBeat = 'heartBeat';
-
+export const baseUrl='ws://localhost:8080/advice-service/interaction';
 class websocketLink {
     constructor(url, options) {
         this.url = url;

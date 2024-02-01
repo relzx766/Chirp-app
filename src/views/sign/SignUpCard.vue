@@ -128,7 +128,7 @@ export default {
     doNext() {
       if (this.active === 0) {
         let birthday = moment(this.user.birthday).format("YYYY-MM-DD");
-        signUp(this.user.username, this.user.password, this.user.email, birthday).then((res) => {
+        signUp(this.user.username, this.user.password, this.user.email,birthday).then((res) => {
           if (res.code === 200) {
             this.active++;
           } else {

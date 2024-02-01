@@ -4,7 +4,7 @@ import {getToken} from "@/util/auth";
 
 const service = axios.create({
     timeout: 30000,  // 请求 30s 超时
-    baseURL: "http://192.168.169.129:443",
+    baseURL: "http://192.168.0.14:443",
     headers: {
         get: {
             'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
@@ -74,7 +74,7 @@ service.interceptors.request.use(
         // 如果存在，则统一在http请求的header都加上token，这样后台根据token判断你的登录情况，此处token一般是用户完成登录后储存到localstorage里的
         let token = getToken()
         if (token) {
-            config.headers.setAuthorization(token)
+            config.headers.setAuthorization(token);
         }
         return config
     },
@@ -90,8 +90,6 @@ service.interceptors.response.use(
         if (response.status === 200) {
             return Promise.resolve(response);
 
-        } else if (response.status === 401 || response.data.code === 401) {
-            window.location.href = "/home"
         } else {
             return Promise.reject(response)
         }

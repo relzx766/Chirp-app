@@ -3,7 +3,7 @@
     <div class="col-3 ">
       <el-container class="h-100">
         <el-main class="d-flex flex-column justify-content-center  h-100 ">
-          <img src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;"/>
+          <img src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;" alt="chirp"/>
           <el-menu
               :default-active="$route.matched[1].path"
               :router="true"
@@ -14,7 +14,8 @@
             <el-menu-item class="nav-item" index="/home">
               <span slot="title" class="user-select-none">
                 <i v-show="$route.matched[1].path!=='/home'" class="bi bi-house fw-bold fs-3 text-dark me-2"/>
-              <i v-show="$route.matched[1].path==='/home'" class="bi bi-house-fill fw-bold fs-3 text-dark me-2"/>主页</span>
+              <i v-show="$route.matched[1].path==='/home'" class="bi bi-house-fill fw-bold fs-3 text-dark me-2"/>
+                主页</span>
             </el-menu-item>
             <el-menu-item class="nav-item" index="/explore">
               <span slot="title" class="user-select-none">
@@ -25,7 +26,7 @@
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/notice">
-              <div v-show="$store.getters.getNoticeUnread>0&&$route.path!=='/notice'" class="read-point"/>
+              <div v-show="notice.persist.unread>0&&$route.path!=='/notice'" class="read-point"/>
               <span slot="title" class="user-select-none">
                 <i v-show="$route.matched[1].path!=='/notice'" class="bi bi-bell fw-bold fs-3 text-dark me-2"/>
                 <i v-show="$route.matched[1].path==='/notice'" class="bi bi-bell-fill fw-bold fs-3 text-dark me-2"/>
@@ -34,7 +35,7 @@
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/message">
-              <div v-show="$store.getters.getChatUnread>0" class="read-point"/>
+              <div v-show="chat.unread>0" class="read-point"/>
               <span slot="title" class="user-select-none">
                  <i v-show="$route.matched[1].path!=='/message'" class="bi bi-envelope fw-bold fs-3 text-dark me-2"/>
                  <i v-show="$route.matched[1].path==='/message'" class="bi bi-envelope-fill fw-bold fs-3 text-dark me-2"/>
@@ -49,7 +50,7 @@
                 社群</span>
             </el-menu-item>
             <el-menu-item :disabled="getToken()===null" class="nav-item"
-                          :index="`/profile?id=${$store.getters.getUser.id}`"
+                          :index="`/profile?username=${user.username}`"
             >
               <span slot="title" class="user-select-none">
                    <i v-show="$route.matched[1].path!=='/profile'" class="bi bi-person fw-bold fs-3 text-dark me-2"/>
@@ -77,12 +78,12 @@
                   <el-button    class="border-0 d-flex justify-content-start text-dark fw-bold"
                                 @click="signOut">
                     <i class="bi bi-box-arrow-right"/>
-                    登出 @{{$store.getters.getUser.username}}
+                    登出 @{{user.username}}
                   </el-button>
                 </div></div>
                 <el-row slot="reference" class="d-flex justify-content-center align-items-center ">
                   <el-col :span="5" style="text-align: left">
-                    <el-avatar :src="$store.getters.getUser.smallAvatarUrl" fit="cover" size="large"/>
+                    <el-avatar :src="user.smallAvatarUrl" fit="cover" size="large"/>
                   </el-col>
                   <el-col :span="14" style="text-align: left">
                     <el-row>
@@ -90,10 +91,10 @@
                         <span
                             class="d-inline-block text-truncate fw-bold text-dark fs-6 "
                             style="max-width: 96%">
-                          {{ $store.getters.getUser.nickname }}
+                          {{ user.nickname }}
                         </span>
                         <span class="d-inline-block text-truncate text-secondary " style="max-width: 96%">
-                        @{{ $store.getters.getUser.username }}
+                        @{{ user.username }}
                       </span>
                       </el-row>
 
@@ -110,7 +111,7 @@
           </div>
         </el-main>
       </el-container>
-      <el-dialog
+<!--      <el-dialog
           :visible.sync="secretKeyDialog"
           width="26%"
           :close-on-click-modal="false"
@@ -155,7 +156,7 @@
           <el-button round type="danger" style="width: 90%" @click="secretKeyDialog=false;">确定</el-button>
         </div>
 
-      </el-dialog>
+      </el-dialog>-->
     </div>
     <div class="col-9">
       <router-view/>
@@ -171,6 +172,15 @@ import OriginCard from "@/views/edit/OriginCard.vue";
 import {getChatIndexPage, getChatUnread, getKeyPair, getPage, savePublicKey} from "@/api/advice";
 import {generateKey, getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
 import {copy} from "@/util/clipboard";
+import {
+  chatActions,
+  e2eeActions,
+  noticeActions,
+  settingActions,
+  userActions,
+  wsActions
+} from "@/config/vuex/action-types";
+import {mapState} from "vuex";
 
 export default {
   name: "Index",
@@ -186,8 +196,14 @@ export default {
       keyVisible: false
     }
   },
+  computed:{
+    ...mapState({
+      user:state=>state.user,
+      notice:state=>state.notice,
+      chat:state=>state.chat
+    }),
+  },
   methods: {
-    getPrivateKey,
     copy,
     getToken,
     to(url) {
@@ -195,86 +211,25 @@ export default {
     },
     async init() {
       if (getToken() != null && getToken().length > 0) {
-        try {
-          await this.loadUser();
-          await this.initSecretKey();
-          await this.$store.dispatch('wsInit').then(() => {
-            this.loadNotice();
-            this.loadChat();
-          });
-          await this.$store.dispatch('initSetting');
-        }catch (e) {
-          this.$message.error(e);
-        }
-
+       // try {
+          await this.$store.dispatch(`user/${userActions.INIT_USER}`);
+          await this.$store.dispatch(`e2ee/${e2eeActions.INIT_E2EE}`);
+          await this.$store.dispatch(`ws/${wsActions.INIT_WS}`);
+          await this.$store.dispatch(`setting/${settingActions.INIT_SETTING}`);
+          await this.$store.dispatch(`chat/${chatActions.INIT_CHAT}`);
+          await this.$store.dispatch(`notice/${noticeActions.LOAD_NOTICE_PAGE}`);
+     //  }catch(e){
+        //  this.$message.error(e);
+      //  }
       }
     },
     signOut() {
-      removeToken();
-      window.location.href = "/home";
-    },
-    async loadUser() {
-      await load(getToken()).then(r => {
-        this.$store.commit("setUser", r.data.record);
+      this.$store.dispatch(`user/${userActions.LOGOUT}`).then(()=>{
+        window.location.href='/sign';
       })
-    },
-    async loadNotice() {
-      await getPage(this.$store.getters.getNoticePage).then(res => {
-        this.$store.commit('setNoticeOption', {
-          page: this.$store.getters.getNoticePage + 1
-        })
-        this.$store.commit('addNotice', {
-          payload: res.data.record,
-          top: false
-        });
-      })
-    },
-    async loadChat() {
-      let messages;
-      let unreadMap;
-      await getChatIndexPage().then(res => {
-        messages = res.data.record;
-        this.$store.dispatch('pushMessage', {
-          payload: messages,
-          top: false
-        });
-      }).then(() => {
-        getChatUnread(messages.map(msg => msg.conversationId)).then(res => {
-          unreadMap = res.data.record;
-          Object.keys(unreadMap).forEach(key => {
-            this.$store.commit('setConvOption', {
-              conversation: key,
-              unread: unreadMap[key]
-            })
-          })
-        });
-      })
-    },
-    async initSecretKey() {
-      if (!getPrivateKey(this.$store.getters.getUser.id)) {
-        this.secretKey = generateKey();
-        this.secretKeyDialog = true;
-      } else {
-        this.secretKey = getPrivateKey(this.$store.getters.getUser.id);
-      }
-      await getKeyPair().then(({data}) => {
-        let keyPair = data.record;
-        this.$store.commit('setEncrypt', {
-          p: keyPair[0],
-          g: keyPair[1]
-        })
-      });
-      await this.saveKeys();
-    },
-    async saveKeys() {
-      setPrivateKey(this.$store.getters.getUser.id, this.secretKey);
-      let keyPair = this.$store.getters.getEncrypt;
-      let publicKey = mathPublicKey(keyPair.generator, this.secretKey, keyPair.prime);
-      setPublicKey(this.$store.getters.getUser.id, publicKey);
-      await savePublicKey(publicKey);
     },
   },
-  watch: {
+  /*watch: {
     '$route': {
       handler(to, from) {
         if (to.matched[1].path === '/notice') {
@@ -318,9 +273,8 @@ export default {
         }
       }
     }
-  },
+  },*/
   created() {
-
     document.documentElement.scrollTop = 0;
     const loading = this.$loading({
       lock: true,
@@ -335,6 +289,8 @@ export default {
     this.init().then(() => {
       loading.close();
     })
+  },
+  mounted() {
   }
 }
 </script>
@@ -369,6 +325,8 @@ li {
   display: flex;
   align-items: center;
   margin-left: 30%;
+  border-radius: 50px;
+
 }
 
 ::v-deep .el-dialog__header {

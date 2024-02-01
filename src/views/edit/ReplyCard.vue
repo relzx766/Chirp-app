@@ -15,7 +15,7 @@
         </el-row>
       </el-row>
       <el-col :span="2" style="text-align: left;">
-        <el-avatar :src="$store.getters.getUser.smallAvatarUrl" size="medium"></el-avatar>
+        <el-avatar :src="user.smallAvatarUrl" size="medium"></el-avatar>
       </el-col>
       <el-col :span="20" style="text-align: left">
         <el-row v-if="!isDiaLog">
@@ -65,6 +65,7 @@
 <script>
 import EditBar from "@/views/edit/EditBar.vue";
 import {postReply} from "@/api/chirper";
+import {mapState} from "vuex";
 
 export default {
   name: "ReplyCard",
@@ -83,6 +84,11 @@ export default {
       fetchUser:true,
       activeTime: "",
     }
+  },
+  computed: {
+    ...mapState({
+      user: state => state.user
+    })
   },
   methods: {
     doPost() {

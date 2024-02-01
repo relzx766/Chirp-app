@@ -1,29 +1,32 @@
 <template>
-  <div >
+  <div>
     <el-tabs :stretch="true" value="all">
       <el-tab-pane name="all">
         <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
-          <el-row v-for="item in notifications" :key="item[0].id"
-                         style="border-bottom:1px solid #F2F6FC;margin-top: 12px;">
-
-          <notice-detail v-if="item[0].entity===null||item[0].entity==='null'" :date="item[0].createTime"
+        <el-row v-for="item in notifications" :key="item[0].id" class="border-bottom mt-2">
+          <notice-detail v-if="item[0].entity===null||item[0].entity==='null'"
+                         :date="item[0].createTime"
                          :name="item[0].senderName"
                          :sonEntity="item[0].sonEntity"
                          :type="item[0].event"
                          :urls="[item.map((i) => i.senderAvatar)][0]"/>
-          <notice-detail v-for="i in item" v-else-if="item[0].entity!==null||item[0].entity!=='null'"
-                         :date="i.createTime"
-                         :entity="i.entity"
-                         :name="i.senderName"
-                         :sonEntity="i.sonEntity"
-                         :type="i.event"
-                         :urls="[i.senderAvatar]"
-                         style="border-bottom:1px solid #F2F6FC;margin-top: 12px;"/>
+          <notice-detail
+              v-else-if="item[0].entity!==null||item[0].entity!=='null'"
+              v-for="i in item"
+              :key="i.id"
+              :date="i.createTime"
+              :entity="i.entity"
+              :name="i.senderName"
+              :sonEntity="i.sonEntity"
+              :type="i.event"
+              :urls="[i.senderAvatar]"
+              style="border-bottom:1px solid #F2F6FC;margin-top: 12px;"/>
         </el-row>
-          <el-row v-if="notifications.length<=0" style="margin-left: 16%;">
-            <el-row style="font-size: 28px;font-weight: bold;text-align: left;color: black;">这里暂时没有内容</el-row>
-            <el-row style="text-align: left;color: #6c7c84;">从点赞到转贴等等，所有的互动都在这里进行。</el-row>
-          </el-row>
+
+        <el-row v-if="notifications.length<=0" style="margin-left: 16%;">
+          <el-row style="font-size: 28px;font-weight: bold;text-align: left;color: black;">这里暂时没有内容</el-row>
+          <el-row style="text-align: left;color: #6c7c84;">从点赞到转贴等等，所有的互动都在这里进行。</el-row>
+        </el-row>
 
       </el-tab-pane>
       <el-tab-pane name="mentions">
@@ -52,12 +55,24 @@ import ChirperCard from "../chirper/ChirperCard.vue";
 import NoticeDetail from "./NoticeDetail.vue";
 import {getPage, getUnreadCount, markAsRead} from "@/api/advice";
 import {noticeEventEnums} from "@/enums/enums";
+import {mapState} from "vuex";
+import {noticeActions} from "@/config/vuex/action-types";
 
 export default {
   name: "NoticeCard",
   computed: {
+    ...mapState({
+      notice: state => state.notice
+    }),
+/*    notifications() {
+      return Object.values(this.notice.persist.record);
+    },*/
     noticeEventEnums() {
       return noticeEventEnums
+    },
+    mentionEmpty(){
+      const regex = /MENTIONED/;
+      return !Object.keys(this.notifications).some(key => regex.test(key));
     }
   },
   components: {
@@ -66,74 +81,41 @@ export default {
   },
   data() {
     return {
-      notifications: [],
-      mentionEmpty: true,
       isLoading: false,
-      isBottom: false,
-      loading: null
+      notifications:[]
     }
   },
   methods: {
     getNewMsgCount, getMessageDate, getUnreadCount,
-    loadMore(page) {
-      this.isLoading = true;
-      getPage(page).then(res => {
-        this.$store.commit('setNoticeOption',{
-          page:this.$store.getters.getNoticePage+1
-        })
-        this.isBottom = res.data.record.length <= 0;
-        this.$store.commit('addNotice', {
-          payload: res.data.record,
-          top: false
-        });
-        this.isLoading = false;
-        if (this.loading !== null) {
-          this.loading.close()
+        scrollPage() {
+          const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+          const clientHeight = document.documentElement.clientHeight
+          const scrollHeight = document.documentElement.scrollHeight
+          let bottom=this.notice.persist.bottom;
+          if (scrollTop + clientHeight + 10 >= scrollHeight && !bottom && !this.isLoading) {
+            this.isLoading=true;
+            this.$store.dispatch(`notice/${noticeActions.LOAD_NOTICE_PAGE}`).then(()=>{
+              this.isLoading=false;
+            })
+          }
         }
-      })
-    },
-    scrollPage() {
-      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-      const clientHeight = document.documentElement.clientHeight
-      const scrollHeight = document.documentElement.scrollHeight
-      if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
-        this.loadMore(this.$store.getters.getNoticePage);
-      }
-    }
   },
-  watch: {
-    '$store.state.notice.count': {
-      handler() {
-        let messages = structuredClone(this.$store.getters.getNotice);
-        if (messages && Object.entries(messages).length > 0) {
-          this.notifications = [];
-          Object.values(messages).forEach(classify => {
-            this.mentionEmpty = !this.mentionEmpty ? false : classify[0].event !== noticeEventEnums.MENTIONED;
-            this.notifications.push(classify);
-          });
-        }
+  watch:{
+    '$store.state.notice.persist.count':{
+      handler(){
+        this.notifications.splice(0,this.notifications.length,...Object.values(this.notice.persist.record));
       },
-      immediate: true
+      immediate:true
     }
   },
-  created() {
-    this.loadMore(this.$store.getters.getNoticePage)
-    this.getUnreadCount().then(res => {
-      this.$store.commit('setNoticeOption', {unread:res.data.record.count});
-    });
-    if (this.$store.getters.getNoticeUnread > 0) {
-      markAsRead();
+    created() {
+      this.$store.dispatch(`notice/${noticeActions.MARK_READ_ALL_NOTICE}`);
+      window.addEventListener("scroll", this.scrollPage, true);
+    },
+    destroyed() {
+      window.removeEventListener("scroll", this.scrollPage);
+      this.$store.dispatch(`notice/${noticeActions.MARK_READ_ALL_NOTICE}`);
     }
-    window.addEventListener("scroll", this.scrollPage, true);
-  },
-  destroyed() {
-    if (this.$store.getters.getNoticeUnread > 0) {
-    markAsRead();
-  }
-    this.$store.commit('setNoticeOption', {unread:0});
-
-    window.removeEventListener("scroll", this.scrollPage);
-  }
 }
 </script>
 
@@ -146,7 +128,8 @@ export default {
       transparent 0, transparent
   );
 }
-.overflow-y-auto ::-webkit-scrollbar{
+
+.overflow-y-auto ::-webkit-scrollbar {
   display: none;
 }
 </style>

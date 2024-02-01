@@ -33,7 +33,7 @@
           <el-form-item>
             <el-button round class="w-100 oauth-btn fw-bold fs-6"
                        type="primary"
-            @click="registerDialog=true">
+            @click="registerDialog=true;loginDialog=false">
               创建账号
             </el-button>
             <p style="font-size: 12px">注册即表示同意<a href="#" class="text-decoration-none text-primary">服务条款</a>及<a href="#" class="text-decoration-none text-primary">隐私政策</a>,其中包括<a href="#" class="text-decoration-none text-primary">Cookie使用条款。</a></p>
@@ -41,7 +41,7 @@
           <el-form-item>
             <h5 class="fw-bold text-dark mb-2">已有账号?</h5>
             <el-button round class="w-100 oauth-btn fw-bold fs-6 text-primary"
-            @click="loginDialog=true">
+            @click="loginDialog=true;registerDialog=false">
               登录
             </el-button>
           </el-form-item>

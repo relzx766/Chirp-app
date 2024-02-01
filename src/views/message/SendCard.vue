@@ -4,7 +4,7 @@
          style="font-size: 12px;margin-left: 0;font-weight: 600;border-left: 4px solid;background-color: #f0f0f0">
       <div class="col-11">
         <div class="row">
-          <div class="col-auto d-grid align-items-center" >
+          <div class="col-auto d-grid align-items-center">
             <div>
               <el-row>{{ currentToReply.senderName }}</el-row>
               <el-row v-if="currentToReply.type===chatTypeEnums.TEXT">
@@ -25,14 +25,14 @@
 
           <el-row v-if="currentToReply.type===chatTypeEnums.TEXT"
                   style="width: 100%">
-              <v-clamp autoresize :max-lines="2"
-             style="cursor: pointer"  @click.native="showRefer(currentToReply.content)">
-                {{ currentToReply.content }}
-              </v-clamp>
+            <v-clamp autoresize :max-lines="2"
+                     style="cursor: pointer" @click.native="showRefer(currentToReply.content)">
+              {{ currentToReply.content }}
+            </v-clamp>
           </el-row>
 
           <div class="col" v-else-if="currentToReply.type===chatTypeEnums.IMAGE">
-            <el-row  class="text-end">
+            <el-row class="text-end">
               <el-image :src="currentToReply.content" fit="cover"
                         :preview-src-list="[currentToReply.content]"
                         style="height: 60px;border-radius: 8px"
@@ -41,7 +41,7 @@
           </div>
           <div class="col d-flex justify-content-end" v-else-if="currentToReply.type===chatTypeEnums.VIDEO">
             <div class="" style="height: 60px;width: 60px">
-              <file-card :url="currentToReply.content" />
+              <file-card :url="currentToReply.content"/>
             </div>
           </div>
           <div class="col d-flex justify-content-end" v-else-if="currentToReply.type===chatTypeEnums.FILE">
@@ -126,10 +126,13 @@
 import ChunkUpload from "@/util/upload";
 import {VEmojiPicker} from "v-emoji-picker";
 import VClamp from "vue-clamp";
-import {doEncrypt, getPrivateKey, getShareKey} from "@/util/encrypt";
-import {fetchPublicKey, getPublicKeys} from "@/api/advice";
-import {messageStatusEnums, chatTypeEnums} from "@/enums/enums";
+import {doEncrypt, generateIv, generateKey, getShareKey} from "@/util/encrypt";
+import {chatTypeEnums, messageStatusEnums} from "@/enums/enums";
 import FileCard from "@/views/media/FileCard.vue";
+import {mapState} from "vuex";
+import {chatMutations} from "@/config/vuex/mutation-types";
+import {chatActions, e2eeActions, wsActions} from "@/config/vuex/action-types";
+import {getOtherParticipantID} from "@/util/chatUtil";
 
 export default {
   name: "SendCard",
@@ -160,6 +163,11 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      user: state => state.user,
+      chat: state => state.chat,
+      e2ee:state => state.e2ee
+    }),
     chatTypeEnums() {
       return chatTypeEnums
     },
@@ -167,7 +175,7 @@ export default {
       return messageStatusEnums
     },
     currentToReply() {
-      return this.$store.getters.getChatReply;
+      return this.chat.reply;
     }
   },
   methods: {
@@ -187,7 +195,7 @@ export default {
       }
     },
     doCancelReply() {
-      this.$store.commit('setChatToReply', null);
+      this.$store.commit(`chat/${chatMutations.SET_CHAT_REPLY}`,{message:null});
     },
     selectEmoji(emoji) {
       let input = document.getElementById("input-chat")
@@ -204,103 +212,118 @@ export default {
       this.fileUrl = URL.createObjectURL(this.file);
       let fileType = file.type.split('/').shift().toUpperCase();
       fileType = chatTypeEnums[fileType];
-      fileType=fileType?fileType:chatTypeEnums.FILE;
-      this.message.type=fileType;
+      fileType = fileType ? fileType : chatTypeEnums.FILE;
+      this.message.type = fileType;
     },
-   doUpload() {
+    doUpload() {
       let id = Date.now();
-      let messages = this.generateMessage(id);
-      this.$store.dispatch('pushMessage', {
-        payload: messages,
-        top: true
-      });
-    let that=this;
-      let upload = new ChunkUpload(this.file, {
-       async onSuccess(res){
-          that.fileUrl = res.data.record.url;
-          that.message.type = res.data.record.category.toUpperCase();
-          messages =await that.generateMessage(id);
-          messages.forEach(msg => {
-            that.$store.commit('wsSend', JSON.stringify(msg));
-          });
-          that.doCancelReply();
-          that.init();
-        },
-        onError: (res) => {
-          this.$message.error("文件上传失败\n" + res.message);
-        }
-      });
-      upload.start();
-    },
-    generateMessage(tempId) {
-      let user = this.$store.getters.getUser;
-      let content = this.message.type === chatTypeEnums.TEXT ? this.message.content : this.fileUrl;
-      let promises = []; // 创建一个空数组，用来存放每个receiver对应的Promise
-      this.receiver.forEach(receiver => {
-        let id = tempId ? tempId : Math.round(Date.now());
-        let conversation = Math.min(receiver.id, user.id) + "_" + Math.max(receiver.id, user.id);
-        let message = {
-          type: this.message.type,
-          conversationId: conversation,
-          senderId: user.id,
-          senderName: user.nickname,
-          senderAvatar: user.smallAvatarUrl,
-          receiverId: receiver.id,
-          receiverName: receiver.nickname,
-          receiverAvatar: receiver.smallAvatarUrl,
-          id: id,
-          tempId: `${id}`,
-          isSending: true,
-          reference: this.reply?this.currentToReply:null,
-          createTime: Date.now()
-        };
-        let key = this.$store.getters.getSecretKey(conversation);
-        if (!key){
-          let publicKey = this.$store.getters.getSecretKey(receiver.id);
-          if (!publicKey){
-            getPublicKeys([receiver.id]).then(res => {
-              if (res.code===200){
-                publicKey=res.data.record[receiver.id];
-              }else {
-                this.$message.error("无法获取公钥信息，请稍后重试");
-              }
-            });
+      this.generateMessage(id).then(messages=>{
+          return  this.$store.dispatch(`chat/${chatActions.ADD_NEW_CHAT_RECORD}`,{chats:messages,isNew:true});
+      }).then(()=>{
+        let that = this;
+        let upload = new ChunkUpload(this.file, {
+           onSuccess(res) {
+            if (res.code===200){
+              that.fileUrl = res.data.record.url;
+              that.message.type = res.data.record.category.toUpperCase();
+              that.generateMessage(id).then(messages=>{
+                let dispatchPromises = messages.map(msg => {
+                 return  that.$store.dispatch(`ws/${wsActions.COMMIT_MESSAGE}`,{message:JSON.stringify(msg)});
+                });
+                return Promise.all(dispatchPromises);
+              }).then(()=>{
+                that.doCancelReply();
+                that.init();
+              });
+            }else {
+             throw new Error(res.message);
+            }
+          },
+          onError: (res) => {
+            this.$message.error("文件上传失败\n" + res.message);
           }
-            key=getShareKey(publicKey,getPrivateKey(user.id),this.$store.getters.getEncrypt.prime).toString();
-            this.$store.commit('addKey',{id:conversation,key:key});
-        }
-        message.content=doEncrypt(key,content);
-        if (message.reference){
-          message.reference.content=doEncrypt(key,message.reference.content);
-        }
-        // 将message包装成一个已完成的Promise，并推入数组
-        promises.push(Promise.resolve(message));
+        });
+        upload.start();
+      }).catch(e=>{
+        this.$message.error(`发送消息失败==>${e}`);
       });
-      // 返回Promise.all的结果，它是一个包含所有message的数组
-      return Promise.all(promises);
-    }
+    },
+    generateMessage(tempId){
+      let content = this.message.type === chatTypeEnums.TEXT ? this.message.content : this.fileUrl;
+      let shareKeys=this.chat.shareKeys;
+      //已初始化过密钥的对话
+      let existsShareKeyConv = Object.keys(shareKeys);
+      //要生成的全部对话
+      let conversations=this.receiver.map(receiver=>Math.min(receiver.id, this.user.id) + "_" + Math.max(receiver.id, this.user.id));
+      //未初始化过密钥的对话
+      let unInitConv = conversations.filter(con=>!existsShareKeyConv.includes(con));
+      let receiverIds=this.receiver.map(receiver=>receiver.id);
+      //未拉取过公钥的用户
+      let unFetchKeyUsers = receiverIds.filter(id=>!this.e2ee.publicKeys[id]);
+      return this.$store.dispatch(`e2ee/${e2eeActions.FETCH_PUBLIC_KEY}`, {userIds: unFetchKeyUsers}).then(() => {
+        unInitConv.forEach(con => {
+          let receiverId = getOtherParticipantID(con, this.user.id);
+          let shareKey = getShareKey(this.e2ee.publicKeys[receiverId], this.e2ee.privateKey, this.e2ee.prime);
+          this.$store.commit(`chat/${chatMutations.SET_CHAT_SHARE_KEY}`, {conversation: con, shareKey: shareKey});
+        });
+      }).then(async () => {
+        return await Promise.all(this.receiver.map(async (receiver) => {
+          let id = tempId ? tempId : Math.round(Date.now());
+          let conversation = Math.min(receiver.id, this.user.id) + "_" + Math.max(receiver.id, this.user.id);
+          let key = this.chat.shareKeys[conversation];
+          let iv = generateIv();
+          content=await doEncrypt(key, content, iv);
+          let message = {
+            content:content,
+            iv: iv,
+            type: this.message.type,
+            conversationId: conversation,
+            senderId: this.user.id,
+            senderName: this.user.nickname,
+            senderAvatar: this.user.smallAvatarUrl,
+            receiverId: receiver.id,
+            receiverName: receiver.nickname,
+            receiverAvatar: receiver.smallAvatarUrl,
+            id: id,
+            //这里必须让tempId为字符串，因为后端以string接收
+            tempId: `${id}`,
+            isSending: true,
+            reference: this.reply ? this.currentToReply : null,
+            createTime: Date.now()
+          };
+          if (message.reference) {
+            message.reference.content =await doEncrypt(key, message.reference.content, message.reference.iv);
+          }
+          return message;
+        }));
+      });
 
-    ,
-    async send() {
+
+    },
+    send() {
       if (this.message.content.length > 0) {
-        let messages =await this.generateMessage();
-     await   this.$store.dispatch('pushMessage', {
-          payload: messages,
-          top: true
+        this.generateMessage(Date.now()).then(messages => {
+          let clone = structuredClone(messages);
+          return this.$store.dispatch(`chat/${chatActions.ADD_NEW_CHAT_RECORD}`, { chats:clone, isNew: true }).then(() => messages);
+        }).then(messages => {
+          const dispatchPromises = messages.map(msg => {
+            return this.$store.dispatch(`ws/${wsActions.COMMIT_MESSAGE}`, { message: JSON.stringify(msg) });
+          });
+          return Promise.all(dispatchPromises);
+        }).then(() => {
+          this.doCancelReply();
+          this.init();
+        }).catch(e => {
+          this.$message.error(`发送消息失败==>${e}`);
         });
-        messages.forEach(msg => {
-          this.$store.commit('wsSend', JSON.stringify(msg));
-        });
-        this.doCancelReply();
-        this.init();
       }
     },
-    showRefer(content){
-      this.$confirm(content,'',{
-        showCancelButton:false,
-        showConfirmButton:false,
-        showClose:false
-      }).catch(e=>{
+    showRefer(content) {
+      this.$confirm(content, '', {
+        showCancelButton: false,
+        showConfirmButton: false,
+        showClose: false
+      }).catch(e => {
         console.log(e)
       })
     }

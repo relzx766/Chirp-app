@@ -2,8 +2,7 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7"
-             style="border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;">
+        <div class="col-7 border-start border-end">
           <el-container>
             <el-main style="padding: 0">
               <el-row style="text-align: left;margin-bottom: 16px">
@@ -51,7 +50,7 @@ export default {
   created() {
   },
   mounted() {
-    this.$store.commit('readAllNotice');
+   /* this.$store.commit('readAllNotice');*/
 
   }
 }

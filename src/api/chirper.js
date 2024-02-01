@@ -24,8 +24,8 @@ export const getChirperPage = (page, options) => {
         if (options.type) {
             data.append("type", options.type);
         }
-        if (options.isMedia) {
-            data.append("isMedia", options.isMedia);
+        if (options.media) {
+            data.append("media", options.media);
         }
         if (options.chirperId) {
             data.append("chirperId", options.chirperId);
