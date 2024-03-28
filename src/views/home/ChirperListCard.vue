@@ -1,5 +1,5 @@
 <template>
-  <el-container >
+  <el-container>
     <el-main class="content p-0">
       <el-row>
         <el-row>
@@ -7,47 +7,53 @@
               class="float-start fw-bold fs-5">主页</span>
         </el-row>
         <el-row>
-          <el-tabs v-model="active" :stretch="true" @tab-click="doTapClick">
-            <el-tab-pane name="recommend" >
-              <span slot="label" class="fs-6 fw-bold">为你推荐</span>
-              <edit-card v-if="isLogin"
-                         class="border-bottom p-2"/>
-              <el-row v-for="item in recommend.chirper" :key="item.id" style="border-bottom: 1px solid #E4E7ED;">
-                <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
-                            :value="item" class="mt-2"/>
-                <chirper-card
-                    v-else :chirper="item"
-                    style="margin-top: 8px;"/>
-              </el-row>
-              <infinite-loading
-                  direction="bottom"
-                  ref="inf-recommend"
-                  @infinite="loadRecommend">
-              </infinite-loading>
-            </el-tab-pane>
-            <el-tab-pane :disabled="!isLogin" name="following" >
-              <span slot="label" class="fs-6 fw-bold">正在关注</span>
-              <el-button v-if="updateAdvice.visible" class="btn-advice-update" icon="el-icon-top" round type="primary"
+          <div
+              class=" d-flex flex-nowrap align-self-center justify-content-around option-item fw-bold text-dark border-bottom">
+            <div v-for="item in switchOptions"
+                 class="flex-grow-1 pt-3 pb-3 fs-7 text-center position-relative user-select-none finger"
+                 @click="switchTo(item)">
+              <div>{{ item }}</div>
+              <div v-if="switchType===item"
+                   class="w-30 position-absolute bottom-0 start-50 translate-middle-x switch-btn-bottom bg-primary rounded-pill">
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              <edit-card v-if="isLogin&&switchType===switchOptions.Recommend"
+                         class="border-bottom p-2 "/>
+            </div>
+            <div>
+              <el-button v-if="updateAdvice.visible" class="btn-advice-update p-1" round type="primary"
                          @click="toFollowingTop">
-                查看最新推文
+                <div class="d-inline-flex align-items-center">
+                  <div class="d-inline">
+                    <el-avatar v-for="(item,index) in updateAdvice.record"
+                               :key="item.id"
+                               :class="index<updateAdvice.record.length-1?['med-1']:['me-1']"
+                               :src="item.senderAvatar"
+                               size="small"/>
+                  </div>
+
+                  <div class="d-inline"><span>更新推文</span></div>
+                </div>
               </el-button>
-              <edit-card v-if="isLogin"
-                         style="border-bottom: 2px solid #EBEEF5;"/>
-              <el-row v-for="item in following.chirper" :key="item.id"
-                      style="border-bottom: 1px solid #E4E7ED;">
-                <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE" :barVisible="item.type!==chirperTypeEnums.FORWARD"
+              <div v-for="item in records[switchType].record" :key="item.id" class="border-bottom">
+                <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE"
+                            :barVisible="item.type!==chirperTypeEnums.FORWARD"
                             :value="item" class="mt-2"/>
                 <chirper-card
                     v-else :chirper="item"
                     style="margin-top: 8px;"/>
-              </el-row>
+              </div>
               <infinite-loading
+                  ref="inf-load"
                   direction="bottom"
-                  ref="inf-following"
-                  @infinite="loadFollowingChirper">
+                  @infinite="load">
               </infinite-loading>
-            </el-tab-pane>
-          </el-tabs>
+            </div>
+          </div>
+
         </el-row>
       </el-row>
       <el-backtop :right="480" target=".content"></el-backtop>
@@ -63,14 +69,23 @@ import OriginCard from "@/views/edit/OriginCard.vue";
 import ReferCard from "../chirper/ReferCard.vue";
 import {bigNumberToString} from "@/util/tools";
 import {getPage, getPageByScore, getRange} from "@/api/feed";
-import InfiniteLoading, {StateChanger} from "vue-infinite-loading";
+import InfiniteLoading from "vue-infinite-loading";
 import {getToken} from "@/util/auth";
 import {chirperTypeEnums} from "@/enums/enums";
+import {mapState} from 'vuex';
+import {noticeMutations} from '@/config/vuex/mutation-types';
+
 export default {
   name: "ChirperListCard",
   computed: {
     chirperTypeEnums() {
       return chirperTypeEnums
+    },
+    ...mapState({
+      notice: state => state.notice
+    }),
+    switchType(){
+      return this.$route.query.type?this.$route.query.type:this.switchOptions.Recommend;
     }
   },
   props: {
@@ -78,22 +93,20 @@ export default {
   },
   data() {
     return {
-      active: "recommend",
-      chirper: [],
-      recommend: {
-        chirper: [],
-        isLoading: false,
-        isBottom: false,
-        page: 1
+      switchOptions:{
+        Recommend:'Recommend',
+        Following:'Following'
       },
-      following: {
-        chirper: [],
-        isLoading: false,
-        isBottom: false,
-        page: 1,
-        updateAdvice: {
-          record: [],
-          visible: true
+      records:{
+        Recommend:{
+          record:[],
+          page:1,
+          finished:false
+        },
+        Following:{
+          record:[],
+          page:1,
+          finished:false
         }
       },
       page: 1,
@@ -108,35 +121,49 @@ export default {
   methods: {
     bigNumberToString,
     getToken,
-    doTapClick(){
-      if (this.active === "recommend"){
+
+    load($state){
+
+      if (this.switchType === this.switchOptions.Recommend) {
+        //主动触发infinite-loading的加载方法
+        this.loadRecommend($state);
+      } else if (this.switchType === this.switchOptions.Following) {
+        this.loadFollowingChirper($state);
+      }
+    },
+    doTapClick() {
+      if (this.switchType === this.switchOptions.Recommend) {
         //主动触发infinite-loading的加载方法
         this.loadRecommend(null);
-      }else if (this.active === "following"){
+      } else if (this.switchType === this.switchOptions.Following) {
         this.loadFollowingChirper(null);
       }
     },
-    loadRecommend($state){
-      getChirperPage(this.recommend.page).then(res => {
-        if (res.code===200) {
-          this.recommend.page++;
+    loadRecommend($state) {
+      const record=this.records.Recommend;
+      getChirperPage({page: record.page}).then(res => {
+        if (res.code === 200) {
+          record.page++;
           if (res.data.record.length > 0) {
-            this.recommend.chirper.push(...res.data.record);
+           record.record.push(...res.data.record);
             $state && $state.loaded();
           } else {
             $state && $state.complete();
           }
         }
+      }).catch(e => {
+        this.$message.error(e);
+        $state && $state.complete();
       })
     },
-    init(){
-      getPage(1).then(res => {
-        if (res.code===200&&res.data.record.length>0) {
+    init() {
+      return getPage(1).then(res => {
+        if (res.code === 200 && res.data.record.length > 0) {
           let ids = res.data.record.map(feed => feed.contentId)
           if (ids.length > 0) {
             getByIds(ids).then(r => {
               if (r.code === 200) {
-                this.following.chirper.push(...r.data.record);
+                this.records.Following.record.push(...r.data.record);
               }
             });
           }
@@ -144,16 +171,16 @@ export default {
       })
     },
     loadFollowingChirper($state) {
-      if (this.following.chirper.length>0) {
-        let start = this.following.chirper[this.following.chirper.length - 1].createTime;
+      const record=this.records.Following;
+      if (record.record.length > 0) {
+        let start = record.record[record.record.length - 1].createTime;
         start = Date.parse(start);
         getPageByScore(start).then(res => {
           let ids = res.data.record.map(feed => feed.contentId);
           if (ids.length > 0) {
             getByIds(ids).then(r => {
-              console.log(r)
-              if (r.code===200&&r.data.record.length>0) {
-                this.following.chirper.push(...r.data.record);
+              if (r.code === 200 && r.data.record.length > 0) {
+                record.record.push(...r.data.record);
               }
               $state && $state.loaded();
             });
@@ -161,7 +188,7 @@ export default {
             $state && $state.complete();
           }
         });
-      }else {
+      } else {
         this.init();
       }
     },
@@ -169,17 +196,21 @@ export default {
       this.updateAdvice.visible = false;
       this.updateAdvice.record = [];
       document.documentElement.scrollTop = 0;
-      let start =this.following.chirper.length>0?this.following.chirper[0].createTime:0;
-      start=Date.parse(start)+1;
-      let end=Date.now();
-      getRange(start,end).then(res=>{
+      const record=this.records.Following;
+      let start = record.record.length > 0 ? record.record[0].createTime : 0;
+      start = Date.parse(start) + 1;
+      let end = Date.now();
+      getRange(start, end).then(res => {
         let ids = res.data.record.map(feed => feed.contentId)
         getByIds(ids).then(r => {
-          if (r.code===200) {
-            this.following.chirper.unshift(...r.data.record);
+          if (r.code === 200) {
+            record.record.unshift(...r.data.record);
           }
         })
       });
+    },
+    switchTo(type){
+      this.$router.push(`/home?type=${type}`);
     }
   },
   components: {
@@ -189,17 +220,37 @@ export default {
     'refer-card': ReferCard
   },
   watch: {
-    '$store.state.followingUpdate.count': {
+    '$store.state.notice.online.counter': {
       handler() {
-        let record = this.$store.getters.popFollowingUpdate;
-        if (record.length > 0) {
-          if (this.updateAdvice.visible) {
-            this.updateAdvice.record.unshift(record);
-          } else {
-            this.updateAdvice.record = record;
-          }
-          this.updateAdvice.visible = true;
+        let record = structuredClone(this.notice.online.TWEETED);
+        //对同一发送者过滤
+        let filter = {};
+        for (const re in this.updateAdvice.record) {
+          filter[this.updateAdvice.record[re].senderId] = 1;
         }
+        for (const rec in record) {
+          let r = record[rec]
+          if (!filter[r.senderId]) {
+            filter[r.senderId] = 1;
+            if (this.updateAdvice.visible) {
+              this.updateAdvice.record.unshift(r);
+            } else {
+              this.updateAdvice.record = [r];
+            }
+            //只保留三条
+            if (this.updateAdvice.record.length > 3) {
+              this.updateAdvice.record.pop();
+            }
+            this.updateAdvice.visible = true;
+          }
+
+        }
+        this.$store.commit(`notice/${noticeMutations.CLEAR_TWEETED_NOTICE}`);
+      }
+    },
+    $route(){
+      if (this.records[this.switchType].page===1){
+        this.load(null);
       }
     }
   },
@@ -207,7 +258,7 @@ export default {
 //    window.addEventListener("scroll", this.loadPage, true);
   },
   destroyed() {
-  //  window.removeEventListener("scroll", this.loadPage);
+    //  window.removeEventListener("scroll", this.loadPage);
   }
 }
 </script>

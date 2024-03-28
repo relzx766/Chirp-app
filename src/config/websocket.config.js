@@ -1,5 +1,6 @@
-const heartBeat = 'heartBeat';
-export const baseUrl='ws://localhost:8080/advice-service/interaction';
+const heartBeat = "heartBeat";
+export const baseUrl = "ws://localhost:8080/advice-service/interaction";
+
 class websocketLink {
     constructor(url, options) {
         this.url = url;
@@ -8,7 +9,7 @@ class websocketLink {
         this.reconnectLock = false;
         this.reconnectLimit = options.reconnectLimit ? options.reconnectLimit : 5;
         this.socket = null;
-        this.status=false;
+        this.status = false;
     }
 
     start() {
@@ -17,29 +18,29 @@ class websocketLink {
             this.options.onopen && this.options.onopen();
             this.reconnectTimes = 0;
             this.doHeartBeat();
-            this.status=true;
-        }
-        this.socket.onmessage = e => {
+            this.status = true;
+        };
+        this.socket.onmessage = (e) => {
             if (heartBeat.toLowerCase() !== e.data.toLowerCase()) {
                 this.options.onmessage && this.options.onmessage(e);
             }
-        }
-        this.socket.onerror = err => {
-            this.status=false;
+        };
+        this.socket.onerror = (err) => {
+            this.status = false;
             this.doReconnect();
             this.options.onerror && this.options.onerror(err);
-        }
+        };
         this.socket.onclose = () => {
-            this.status=false;
+            this.status = false;
             this.doReconnect();
             this.options.onclose && this.options.onclose();
-        }
+        };
     }
 
     doHeartBeat() {
         setInterval(() => {
             this.send(heartBeat);
-        }, 10000)
+        }, 5000);
     }
 
     send(text) {
@@ -54,13 +55,13 @@ class websocketLink {
 
     doReconnect() {
         if (!this.reconnectLock && this.reconnectTimes <= this.reconnectLimit) {
-            this.options.onretry&&this.options.onretry();
+            this.options.onretry && this.options.onretry();
             setTimeout(() => {
                 this.reconnectLock = true;
                 this.start();
                 this.reconnectTimes++;
                 this.reconnectLock = false;
-            }, 2000)
+            }, 2000);
         }
     }
 }

@@ -1,25 +1,25 @@
 <template>
   <div class="container">
-    <el-form :model="user" >
+    <el-form :model="user">
       <el-form-item>
-        <img src="../../assets/logo.svg" width="20%" alt="logo">
+        <img alt="logo" src="../../assets/logo.svg" width="20%">
       </el-form-item>
       <el-form-item>
-        <el-button round class="w-100 oauth-btn"
+        <el-button class="w-100 oauth-btn" round
                    @click="loginWithGoogle">
           <el-row
-                  class="h-100  d-flex  align-items-center justify-content-center" >
-              <img class="h-100" src="../../assets/google.svg" alt="Google">
-              <span class="fw-bold text-dark ms-1"> Sign in with Google</span>
+              class="h-100  d-flex  align-items-center justify-content-center">
+            <img alt="Google" class="h-100" src="../../assets/google.svg">
+            <span class="fw-bold text-dark ms-1"> Sign in with Google</span>
           </el-row>
         </el-button>
       </el-form-item>
       <el-form-item>
-        <el-button round class="w-100 oauth-btn"
+        <el-button class="w-100 oauth-btn" round
                    @click="loginWithApple">
           <el-row class="h-100  d-flex  align-items-center justify-content-center">
-              <img class="h-100" src="../../assets/apple.svg" alt="Apple">
-              <span class="fw-bold text-dark ms-1"> Sign in with Apple</span>
+            <img alt="Apple" class="h-100" src="../../assets/apple.svg">
+            <span class="fw-bold text-dark ms-1"> Sign in with Apple</span>
           </el-row>
         </el-button>
       </el-form-item>
@@ -37,10 +37,11 @@
     font-weight: bold;height:40px;background-color: #000000" @click="loading=true;doLogin()">登录
         </el-button>
       </el-form-item>
-      <el-form-item>
-        <el-button size="small" style="width: 100%; border-radius: 23px;font-weight: bold;height:40px;">忘记密码
+<!--      <el-form-item>
+        <el-button size="small" style="width: 100%; border-radius: 23px;font-weight: bold;height:40px;"
+                   @click="$router.push('/sign/pwd/reset')">忘记密码
         </el-button>
-      </el-form-item>
+      </el-form-item>-->
       <el-form-item>
         还没有账号?
         <el-link style="color: #409EFF" @click.native="signUpDialog=true">注册</el-link>
@@ -48,7 +49,7 @@
       <el-dialog
           :show-close="false"
           :visible.sync="signUpDialog"
-         append-to-body
+          append-to-body
           custom-class="no-header-dialog"
           width="30%">
         <el-row class="p-1">
@@ -63,16 +64,12 @@
 
 <script>
 import SignUpCard from "@/views/sign/SignUpCard.vue";
-import EmailVerifyCard from "@/views/sign/EmailVerifyCard.vue";
-import {signIn} from "@/api/sign";
-import {setToken} from "@/util/auth";
 import {userActions} from "@/config/vuex/action-types";
 
 export default {
   name: "LoginCard",
   components: {
     'sign-up-card': SignUpCard,
-    'verify-card': EmailVerifyCard
   },
   data() {
     return {
@@ -95,10 +92,12 @@ export default {
     },
     doLogin() {
       this.$store.dispatch(`user/${userActions.LOGIN}`, this.user)
-          .then(()=>{
-            window.location.href='/home'
-          }).catch(e=>{
-            this.$message.error(e.message);
+          .then(() => {
+            window.location.href = '/home'
+          }).catch(e => {
+        this.$message.error(e.message);
+      }).finally(_=>{
+        this.loading=false
       })
     }
   },
@@ -106,7 +105,7 @@ export default {
 </script>
 
 <style scoped>
-.oauth-btn{
+.oauth-btn {
   height: 40px;
 }
 </style>

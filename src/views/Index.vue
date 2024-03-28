@@ -1,26 +1,25 @@
 <template>
-  <div class="row">
-    <div class="col-3 ">
+  <div class="row ">
+    <div class="col-3 vh-100">
       <el-container class="h-100">
-        <el-main class="d-flex flex-column justify-content-center  h-100 ">
-          <img src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;" alt="chirp"/>
+        <el-main class="d-flex flex-column justify-content-between">
+          <img alt="chirp" src="../assets/logo.svg" style="width: 50px;display: flex;margin-left: 34%;"/>
           <el-menu
-              :default-active="$route.matched[1].path"
+              :default-active="routePath"
               :router="true"
-              active-text-color="#409EFF"
               background-color="#ffffff"
               class="nav-menu flex-grow-1"
           >
             <el-menu-item class="nav-item" index="/home">
               <span slot="title" class="user-select-none">
-                <i v-show="$route.matched[1].path!=='/home'" class="bi bi-house fw-bold fs-3 text-dark me-2"/>
-              <i v-show="$route.matched[1].path==='/home'" class="bi bi-house-fill fw-bold fs-3 text-dark me-2"/>
+                <i v-show="routePath!=='/home'" class="bi bi-house fw-bold fs-3 text-dark me-2"/>
+              <i v-show="routePath==='/home'" class="bi bi-house-fill fw-bold fs-3 text-dark me-2"/>
                 主页</span>
             </el-menu-item>
             <el-menu-item class="nav-item" index="/explore">
               <span slot="title" class="user-select-none">
-                <i v-show="$route.matched[1].path!=='/explore'" class="bi bi-compass fw-bold fs-3 text-dark me-2"/>
-                <i v-show="$route.matched[1].path==='/explore'" class="bi bi-compass-fill fw-bold fs-3 text-dark me-2"/>
+                <i v-show="routePath!=='/explore'" class="bi bi-compass fw-bold fs-3 text-dark me-2"/>
+                <i v-show="routePath==='/explore'" class="bi bi-compass-fill fw-bold fs-3 text-dark me-2"/>
                 探索</span>
             </el-menu-item>
             <el-menu-item
@@ -28,8 +27,8 @@
                 class="nav-item" index="/notice">
               <div v-show="notice.persist.unread>0&&$route.path!=='/notice'" class="read-point"/>
               <span slot="title" class="user-select-none">
-                <i v-show="$route.matched[1].path!=='/notice'" class="bi bi-bell fw-bold fs-3 text-dark me-2"/>
-                <i v-show="$route.matched[1].path==='/notice'" class="bi bi-bell-fill fw-bold fs-3 text-dark me-2"/>
+                <i v-show="routePath!=='/notice'" class="bi bi-bell fw-bold fs-3 text-dark me-2"/>
+                <i v-show="routePath==='/notice'" class="bi bi-bell-fill fw-bold fs-3 text-dark me-2"/>
                 通知</span>
             </el-menu-item>
             <el-menu-item
@@ -37,140 +36,140 @@
                 class="nav-item" index="/message">
               <div v-show="chat.unread>0" class="read-point"/>
               <span slot="title" class="user-select-none">
-                 <i v-show="$route.matched[1].path!=='/message'" class="bi bi-envelope fw-bold fs-3 text-dark me-2"/>
-                 <i v-show="$route.matched[1].path==='/message'" class="bi bi-envelope-fill fw-bold fs-3 text-dark me-2"/>
+                 <i v-show="routePath!=='/message'" class="bi bi-envelope fw-bold fs-3 text-dark me-2"/>
+                 <i v-show="routePath==='/message'"
+                    class="bi bi-envelope-fill fw-bold fs-3 text-dark me-2"/>
                 私信</span>
             </el-menu-item>
             <el-menu-item
                 :disabled="getToken()===null"
                 class="nav-item" index="/community">
               <span slot="title" class="user-select-none">
-                   <i v-show="$route.matched[1].path!=='/community'" class="bi bi-people fw-bold fs-3 text-dark me-2"/>
-                   <i v-show="$route.matched[1].path==='/community'" class="bi bi-people-fill fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="routePath!=='/community'" class="bi bi-people fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="routePath==='/community'"
+                      class="bi bi-people-fill fw-bold fs-3 text-dark me-2"/>
                 社群</span>
             </el-menu-item>
-            <el-menu-item :disabled="getToken()===null" class="nav-item"
-                          :index="`/profile?username=${user.username}`"
+            <el-menu-item :disabled="getToken()===null" :index="`/profile?username=${user.username}`"
+                          class="nav-item"
             >
               <span slot="title" class="user-select-none">
-                   <i v-show="$route.matched[1].path!=='/profile'" class="bi bi-person fw-bold fs-3 text-dark me-2"/>
-                   <i v-show="$route.matched[1].path==='/profile'" class="bi bi-person-fill fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="routePath!=='/profile'" class="bi bi-person fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="routePath==='/profile'"
+                      class="bi bi-person-fill fw-bold fs-3 text-dark me-2"/>
                 个人资料</span>
             </el-menu-item>
+            <el-menu-item :disabled="getToken()===null" :index="`/setting`"
+                          class="nav-item"
+            >
+              <span slot="title" class="user-select-none">
+                   <i v-show="routePath!=='/setting'" class="bi bi-gear fw-bold fs-3 text-dark me-2"/>
+                   <i v-show="routePath==='/setting'"
+                      class="bi bi-gear-fill fw-bold fs-3 text-dark me-2"/>
+                设置</span>
+            </el-menu-item>
+
+
           </el-menu>
           <div v-if="getToken()"
-                  class="rounded-pill w-75  btn btn-outline-light mb-lg-5 align-self-center border-0">
+               class="rounded-pill w-75  btn btn-outline-light mb-lg-5 align-self-center border-0">
             <el-popover
-                placement="top-start"
-                width="auto"
                 :visible-arrow="false"
+                placement="top-start"
                 popper-class="shadow rounded"
-                trigger="click">
+                trigger="click"
+                width="auto">
               <div>
                 <div class="row">
-                  <el-button  class="border-0 d-flex justify-content-start text-dark fw-bold"
-                              @click="$router.push('/sign')">
+                  <el-button class="border-0 d-flex justify-content-start text-dark fw-bold"
+                             @click="$router.push('/sign')">
                     <i class="bi bi-toggles"/>
                     切换账号
                   </el-button>
                 </div>
                 <div class="row">
-                  <el-button    class="border-0 d-flex justify-content-start text-dark fw-bold"
-                                @click="signOut">
+                  <el-button class="border-0 d-flex justify-content-start text-dark fw-bold"
+                             @click="signOut">
                     <i class="bi bi-box-arrow-right"/>
-                    登出 @{{user.username}}
+                    登出 @{{ user.username }}
                   </el-button>
-                </div></div>
-                <el-row slot="reference" class="d-flex justify-content-center align-items-center ">
-                  <el-col :span="5" style="text-align: left">
-                    <el-avatar :src="user.smallAvatarUrl" fit="cover" size="large"/>
-                  </el-col>
-                  <el-col :span="14" style="text-align: left">
-                    <el-row>
-                      <el-row class="d-flex flex-column">
+                </div>
+              </div>
+              <el-row slot="reference" class="d-flex justify-content-center align-items-center ">
+                <el-col :span="5" style="text-align: left">
+                  <el-avatar :src="user.smallAvatarUrl" fit="cover" size="large"/>
+                </el-col>
+                <el-col :span="14" style="text-align: left">
+                  <el-row>
+                    <el-row class="d-flex flex-column">
                         <span
                             class="d-inline-block text-truncate fw-bold text-dark fs-6 "
                             style="max-width: 96%">
                           {{ user.nickname }}
                         </span>
-                        <span class="d-inline-block text-truncate text-secondary " style="max-width: 96%">
+                      <span class="d-inline-block text-truncate text-secondary " style="max-width: 96%">
                         @{{ user.username }}
                       </span>
-                      </el-row>
-
                     </el-row>
-                  </el-col>
-                  <el-col :span="5"  style="text-align: center">
 
-                    <i class="el-icon-more text-dark"/>
+                  </el-row>
+                </el-col>
+                <el-col :span="5" style="text-align: center">
 
-                  </el-col>   </el-row>
+                  <i class="el-icon-more text-dark"/>
+
+                </el-col>
+              </el-row>
 
             </el-popover>
 
           </div>
         </el-main>
       </el-container>
-<!--      <el-dialog
-          :visible.sync="secretKeyDialog"
-          width="26%"
-          :close-on-click-modal="false"
-          :close-on-press-escape="false"
-          :show-close="false"
-          @close="saveKeys"
-      >
-        <div class="p-4">
-          <p class="text-start">你的密钥为：</p>
-          <div class="row d-flex align-items-center">
-            <div class="col-7">
-              <el-input v-if="editable" v-model="secretKey" show-password
-                        @keyup.enter.native="saveKeys"
-                       />
-              <div v-else style="width:100%"
-                   class="row bg-body-secondary ms-1 p-1 text-center float-start rounded-pill d-flex align-items-center ">
-                <div class="col-7">
-                  <span v-show="!keyVisible">******</span>
-                  <span v-show="keyVisible">{{ secretKey }}</span>
-                </div>
-                <div class="col text-end">
-                  <el-button icon="el-icon-view" circle class="border-0 bg-body-secondary"
-                             @click="keyVisible=!keyVisible"/>
-                </div>
-              </div>
-            </div>
-            <div class="col">
-              <el-button circle class="border border-0 fs-6 p-2" icon="el-icon-document-copy"
-                         @click="copy(secretKey)"/>
-              <el-popconfirm
-                  title="若非已拥有密钥，否则请勿修改!"
-                  icon="el-icon-warning"
-                  icon-color="#F56C6C"
-                  @confirm="editable=true"
-              >
-                <el-button slot="reference" circle class="border border-0 fs-6 p-2" icon="el-icon-edit"/>
-              </el-popconfirm>
+    </div>
+    <el-dialog
+        :show-close="false"
+        :visible.sync="secretKeyDialog"
+        custom-class="no-header-dialog"
+        width="30%">
+      <div class="pt-2 ps-3 pe-3 pb-2">
+        <div><img alt="chirp" src="../assets/logo.svg" style="width: 50px;"/></div>
+        <div class="mb-2 row mt-3">
+          <div class="text-start text-dark fw-bold fs-6">我们已为你生成密钥</div>
+          <div class=" mt-2 mb-2 row">
+            <div class="col d-flex align-items-center">
+              <el-input v-model="e2ee.privateKey" readonly>
+
+                <template slot="append">
+                  <el-button circle class="border-0" @click="copy(e2ee.privateKey)"><i class="bi bi-copy  fw-bold "/>
+                  </el-button>
+                  <el-button circle class="border-0  fw-bold " icon="el-icon-edit"
+                             @click="secretKeyDialog=false;$router.push('/message/setting');"></el-button>
+                </template>
+              </el-input>
+
 
             </div>
           </div>
-          <p class="text-start mt-2">该密钥用于点对点加密，如若更改将导致无法解密聊天记录，请妥善保管，勿泄露给他人。</p>
-          <el-button round type="danger" style="width: 90%" @click="secretKeyDialog=false;">确定</el-button>
-        </div>
 
-      </el-dialog>-->
-    </div>
-    <div class="col-9">
-      <router-view/>
+          <div class="text-start">该密钥用于私聊点对点加密，如你原先已拥有密钥，请点击<span class="text-primary finger"
+                                                                                          @click="secretKeyDialog=false;$router.push('/message/setting');">这里</span>修改。
+          </div>
+        </div>
+      </div>
+
+    </el-dialog>
+    <div class="col vh-100 overflow-y-auto">
+      <router-view />
     </div>
   </div>
 </template>
 
 <script>
 
-import {getToken, removeToken} from "@/util/auth";
-import {load} from "@/api/user";
+import {getToken} from "@/util/auth";
 import OriginCard from "@/views/edit/OriginCard.vue";
-import {getChatIndexPage, getChatUnread, getKeyPair, getPage, savePublicKey} from "@/api/advice";
-import {generateKey, getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
+import {getPrivateKey} from "@/util/encrypt";
 import {copy} from "@/util/clipboard";
 import {
   chatActions,
@@ -181,6 +180,9 @@ import {
   wsActions
 } from "@/config/vuex/action-types";
 import {mapState} from "vuex";
+import {chatMutations} from "@/config/vuex/mutation-types";
+import {adviceStrategy, adviceStrategyEnums} from "@/util/adviceUtil";
+import {getMsgHit} from "@/util/chatUtil";
 
 export default {
   name: "Index",
@@ -190,18 +192,21 @@ export default {
   data() {
     return {
       newChatNotice: null,
-      secretKey: "",
       secretKeyDialog: false,
-      editable: false,
-      keyVisible: false
     }
   },
-  computed:{
+  computed: {
     ...mapState({
-      user:state=>state.user,
-      notice:state=>state.notice,
-      chat:state=>state.chat
+      user: state => state.user,
+      notice: state => state.notice,
+      chat: state => state.chat,
+      e2ee: state => state.e2ee
     }),
+    routePath() {
+      const path = this.$route.matched[1].path;
+      const split = path.split("/");
+      return '/' + split[1];
+    }
   },
   methods: {
     copy,
@@ -211,52 +216,72 @@ export default {
     },
     async init() {
       if (getToken() != null && getToken().length > 0) {
-       // try {
+        try {
+
           await this.$store.dispatch(`user/${userActions.INIT_USER}`);
           await this.$store.dispatch(`e2ee/${e2eeActions.INIT_E2EE}`);
           await this.$store.dispatch(`ws/${wsActions.INIT_WS}`);
           await this.$store.dispatch(`setting/${settingActions.INIT_SETTING}`);
           await this.$store.dispatch(`chat/${chatActions.INIT_CHAT}`);
           await this.$store.dispatch(`notice/${noticeActions.LOAD_NOTICE_PAGE}`);
-     //  }catch(e){
-        //  this.$message.error(e);
-      //  }
+          if (!getPrivateKey(this.user.id)) {
+            this.secretKeyDialog = true;
+          }
+        } catch (e) {
+          console.log(e);
+          this.$message.error(e);
+        }
       }
     },
     signOut() {
-      this.$store.dispatch(`user/${userActions.LOGOUT}`).then(()=>{
-        window.location.href='/sign';
+      this.$store.dispatch(`user/${userActions.LOGOUT}`).then(() => {
+        window.location.href = '/sign';
       })
     },
   },
-  /*watch: {
+  watch: {
     '$route': {
-      handler(to, from) {
-        if (to.matched[1].path === '/notice') {
-          this.$store.commit('setNoticeOption', {unread: 0});
-        } else if ((to.matched[1].path === '/message' || (from && from.matched[1].path === '/message')) && this.newChatNotice) {
-          this.newChatNotice.close()
+      handler(nVal, oVal) {
+        if ((nVal.matched[1].path === '/message' || (oVal && oVal.matched[1].path === '/message')) && this.newChatNotice) {
+          this.newChatNotice.close();
+        }
+        if (nVal.matched[1].path === '/notice' || (oVal && oVal.matched[1].path === '/notice')) {
+          this.$store.dispatch(`notice/${noticeActions.MARK_READ_ALL_NOTICE}`);
+        }
+        let regex = /^\/message\/chat\/([^\/]+?)(?:\/(?=$))?$/i;
+        if (regex.test(this.$route.path)) {
+          let conversation = this.$route.params.id;
+          this.$store.dispatch(`chat/${chatActions.READ_CONVERSATION}`, {conversation, status: true});
+        } else {
+          this.$store.dispatch(`chat/${chatActions.READ_CONVERSATION}`, {conversation: '', status: false});
+        }
+        if (oVal && regex.test(oVal.path)) {
+          let conversation = oVal.params.id;
+          this.$store.dispatch(`chat/${chatActions.READ_CONVERSATION}`, {conversation, status: false});
         }
       },
       immediate: true
     },
-    '$store.state.chat.unRead': {
+    '$store.state.chat.unread': {
       handler() {
-        let conversation = this.$store.getters.popNewChatQueue;
-        let record = this.$store.getters.getConv(conversation);
+        let advice = this.chat.advice;
+        let lastIndex = advice.length - 1;
         const h = this.$createElement;
         let regex = /^\/message.*$/;
         let path = this.$route.path;
-        if (!regex.test(path) && conversation && record.messages.length > 0) {
+        if (!regex.test(path) && advice.length > 0) {
           if (this.newChatNotice) {
             this.newChatNotice.close();
           }
-          let message = record.messages[record.messages.length - 1]
+          let message = advice[lastIndex];
+          let content = getMsgHit(message);
+          this.$store.commit(`chat/${chatMutations.CLEAR_CHAT_ADVICE}`);
+          adviceStrategy(adviceStrategyEnums.AUDIO);
           this.newChatNotice = this.$notify({
             position: 'bottom-right',
             onClick: () => {
               this.newChatNotice.close();
-              this.$router.push(`/message/chat/${conversation}`);
+              this.$router.push(`/message/chat/${message.conversationId}`);
             },
             duration: 0,
             dangerouslyUseHTMLString: true,
@@ -266,14 +291,17 @@ export default {
               }
             }, [
               h('el-avatar', {props: {src: message.senderAvatar}}, {}),
-              h('span', {style: {marginLeft: "12px",width:'150px'},class:['text-truncate','d-inline-block']}, message.content),
-              h('span', {style: {fontSize: '12px', color: '#909399'}}, `[${record.unreadCount}条未读]`)
+              h('span', {
+                style: {marginLeft: "12px", width: '150px'},
+                class: ['text-truncate', 'd-inline-block']
+              }, content),
+              h('span', {style: {fontSize: '12px', color: '#909399'}}, `[${this.chat.unread}条未读]`)
             ])
           })
         }
       }
     }
-  },*/
+  },
   created() {
     document.documentElement.scrollTop = 0;
     const loading = this.$loading({
@@ -283,9 +311,9 @@ export default {
       background: '#ffffff',
       fullscreen: true
     });
-    setTimeout(() =>{
+    setTimeout(() => {
       loading.close();
-    },3000)
+    }, 3000)
     this.init().then(() => {
       loading.close();
     })

@@ -22,39 +22,39 @@
           <span style="color:#409EFF;font-size: 14px;margin-left: 2%">回复@{{ chirper.username }}</span>
         </el-row>
         <div class="input-area">
-          <textarea
-              id="input-reply"
-              class="el-textarea__inner fw-bold fs-6"
-              v-model="text"
-              placeholder="发布你的回复!"
-              @input="fetchUser=true"
-              @keyup.enter="()=>{text=text+'\u200B'}"
-          ></textarea>
-          <!--
-          用这个会非常的卡，cpu会被占满，不停的重新绘制dom
-          <el-input
-
+          <!--          <textarea
+                        id="input-reply"
+                        class="el-textarea__inner fw-bold fs-6"
                         v-model="text"
-                        autosize
-                        placeholder="有什么新鲜事?!"
-                        style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-                        type="textarea"
+                        placeholder="发布你的回复!"
                         @input="fetchUser=true"
-                        @keyup.enter.native="()=>{text=text+'\u200B'}">
-                    </el-input>-->
+                        @keyup.enter="()=>{text=text+'\u200B'}"
+                    ></textarea>-->
+          <!--
+          用这个会非常的卡，cpu会被占满，不停的重新绘制dom-->
+          <el-input
+              id="input-reply"
+              v-model="text"
+              autosize
+              placeholder="有什么新鲜事?!"
+              style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
+              type="textarea"
+              @input="fetchUser=true"
+              @keyup.enter.native="()=>{text=text+'\u200B'}">
+          </el-input>
         </div>
         <el-row style="margin-top: 20px;">
-          <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
-                    :text="text"
+          <edit-bar :active-date-time="activeTime"
                     :fetch="fetchUser"
-                    :active-date-time="activeTime"
+                    :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
+                    :text="text"
                     @addMedia="addMedia"
+                    @doMention="doMention"
+                    @doScheduleClear="doScheduleClear"
+                    @doScheduleConfirm="doScheduleConfirm"
                     @emoji="setEmoji"
                     @post="doPost"
-                    @doMention="doMention"
-                    @removeMedia="removeMedia"
-                    @doScheduleConfirm="doScheduleConfirm"
-                    @doScheduleClear="doScheduleClear"/>
+                    @removeMedia="removeMedia"/>
         </el-row>
       </el-col>
     </el-row>
@@ -81,7 +81,7 @@ export default {
     return {
       text: '',
       media: [],
-      fetchUser:true,
+      fetchUser: true,
       activeTime: "",
     }
   },
@@ -92,8 +92,8 @@ export default {
   },
   methods: {
     doPost() {
-      let activeTime=this.activeTime?new Date(this.activeTime).getTime():null;
-      postReply(this.text, this.chirper.id, this.media,activeTime).then((res) => {
+      let activeTime = this.activeTime ? new Date(this.activeTime).getTime() : null;
+      postReply(this.text, this.chirper.id, this.media, activeTime).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -121,9 +121,9 @@ export default {
       input.selectionStart = startPos + emoji.data.length;
       input.selectionEnd = startPos + emoji.data.length;
     },
-    doMention(username){
-      this.fetchUser=false;
-      if (username.trim().length>0) {
+    doMention(username) {
+      this.fetchUser = false;
+      if (username.trim().length > 0) {
         const lastIndex = this.text.lastIndexOf('@');
         if (lastIndex !== -1) {
           this.text = this.text.substring(0, lastIndex) + '@' + username;

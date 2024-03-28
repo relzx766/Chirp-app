@@ -6,40 +6,40 @@
       </el-col>
       <el-col :span="20" style="text-align: left">
         <div class="input-area">
-          <textarea
-              id="input-origin"
-              class="el-textarea__inner fw-bold fs-6"
-              v-model="text"
-              placeholder="有什么新鲜事?!"
-              @input="fetchUser=true"
-              @keyup.enter="()=>{text=text+'\u200B'}"
-          ></textarea>
+          <!--          <textarea
+                        id="input-origin"
+                        class="el-textarea__inner d-flex fw-bold fs-6"
+                        v-model="text"
+                        placeholder="有什么新鲜事?!"
+                        @input="fetchUser=true"
+                        @keyup.enter="()=>{text=text+'\u200B'}"
+                    ></textarea>-->
           <!--
-          用这个会非常的卡，cpu会被占满，不停的重新绘制dom
+          用这个会非常的卡，cpu会被占满，不停的重新绘制dom-->
           <el-input
 
-                        v-model="text"
-                        autosize
-                        placeholder="有什么新鲜事?!"
-                        style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
-                        type="textarea"
-                        @input="fetchUser=true"
-                        @keyup.enter.native="()=>{text=text+'\u200B'}">
-                    </el-input>-->
+              v-model="text"
+              autosize
+              placeholder="有什么新鲜事?!"
+              style="font-weight: bold;font-size: 18px;  text-align: left;margin-left: -6px"
+              type="textarea"
+              @input="fetchUser=true"
+              @keyup.enter.native="()=>{text=text+'\u200B'}">
+          </el-input>
         </div>
-        <el-row >
-          <edit-bar :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
+        <el-row>
+          <edit-bar :active-date-time="activeTime"
+                    :fetch="fetchUser"
+                    :post-btn-disabled="this.text.trim().length <= 0&&media.length<=0"
                     :show-range="true"
                     :text="text"
-                    :fetch="fetchUser"
-                    :active-date-time="activeTime"
                     @addMedia="addMedia"
+                    @doMention="doMention"
+                    @doScheduleClear="doScheduleClear"
+                    @doScheduleConfirm="doScheduleConfirm"
                     @emoji="setEmoji"
                     @post="doPost"
-                    @doMention="doMention"
-                    @removeMedia="removeMedia"
-                    @doScheduleConfirm="doScheduleConfirm"
-                    @doScheduleClear="doScheduleClear"/>
+                    @removeMedia="removeMedia"/>
         </el-row>
       </el-col>
     </el-row>
@@ -47,18 +47,19 @@
   </el-row>
 </template>
 
-<script>var text;
+<script>
 
 import EditBar from "@/views/edit/EditBar.vue";
 import {postChirper} from "@/api/chirper";
-import {commentRangeEnums} from "@/enums/enums";
-import moment from "moment";
 import {mapState} from "vuex";
 
 export default {
   name: "OriginCard",
   components: {
     'edit-bar': EditBar
+  },
+  props: {
+    communityId: String
   },
   data() {
     return {
@@ -76,7 +77,7 @@ export default {
   methods: {
     doPost(replyRange) {
       let activeTime = this.activeTime ? new Date(this.activeTime).getTime() : null;
-      postChirper(this.text, this.media, replyRange.code, activeTime).then((res) => {
+      postChirper(this.text, this.media, replyRange.code, activeTime, this.communityId).then((res) => {
         if (res.code === 200) {
           this.text = '';
           this.media = [];
@@ -85,6 +86,7 @@ export default {
             message: '发布推文成功',
             type: 'success'
           });
+          this.$emit("sent", res.data.record);
         }
       })
     },

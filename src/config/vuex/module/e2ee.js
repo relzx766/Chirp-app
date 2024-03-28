@@ -6,12 +6,12 @@ import {generateKey, getPrivateKey, mathPublicKey, setPrivateKey} from "@/util/e
 export default {
     namespaced: true,
     state: {
-            prime: '',
-            generator: '',
-            publicKeys: {
-                /* userId:key */
-            },
-            privateKey: ''
+        prime: '',
+        generator: '',
+        publicKeys: {
+            /* userId:key */
+        },
+        privateKey: ''
     },
     mutations: {
         [e2eeMutations.SET_E2EE_PRIME](state, {prime}) {
@@ -28,10 +28,10 @@ export default {
         }
     },
     actions: {
-        [e2eeActions.INIT_E2EE]({commit, rootState,dispatch}) {
-            if (!getPrivateKey(rootState.user.id)){
-                let privateKey=generateKey();
-                setPrivateKey(rootState.user.id,privateKey);
+        [e2eeActions.INIT_E2EE]({commit, rootState, dispatch}) {
+            if (!getPrivateKey(rootState.user.id)) {
+                let privateKey = generateKey();
+                setPrivateKey(rootState.user.id, privateKey);
                 commit(e2eeMutations.SET_E2EE_PRIVATE_KEY, {privateKey});
             }
             return getKeyPair().then(r => {
@@ -40,14 +40,14 @@ export default {
                     let privateKey = getPrivateKey(rootState.user.id);
                     commit(e2eeMutations.SET_E2EE_PRIME, {prime: keypair.prime});
                     commit(e2eeMutations.SET_E2EE_GENERATOR, {generator: keypair.generator});
-                    return dispatch(e2eeActions.SET_PRIVATE_KEY,{privateKey});
+                    return dispatch(e2eeActions.SET_PRIVATE_KEY, {privateKey});
                 } else {
                     throw new Error(r.message);
                 }
             });
         },
         [e2eeActions.FETCH_PUBLIC_KEY]({commit}, {userIds}) {
-            if (userIds.length>0) {
+            if (userIds.length > 0) {
                 return getPublicKeys(userIds).then(res => {
                     if (res.code === 200) {
                         let record = res.data.record;
@@ -69,9 +69,9 @@ export default {
                 }
             });
         },
-        [e2eeActions.SET_PRIVATE_KEY]({commit, dispatch,rootState}, {privateKey}) {
+        [e2eeActions.SET_PRIVATE_KEY]({commit, dispatch, rootState}, {privateKey}) {
             commit(e2eeMutations.SET_E2EE_PRIVATE_KEY, {privateKey});
-            setPrivateKey(rootState.user.id,privateKey);
+            setPrivateKey(rootState.user.id, privateKey);
             return dispatch(e2eeActions.UPLOAD_PUBLIC_KEY);
         }
     }

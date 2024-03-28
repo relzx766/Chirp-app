@@ -30,24 +30,31 @@
       </el-col>
       <el-col :span="18" style="text-align: right;">
         <el-row v-if="getToken()!=null" style="margin-right: 16px;margin-top: 4px;">
-          <el-button v-if="isSelf" round size="medium"
-                     class="border-1 fw-bold text-dark" @click="editDialog=true">编辑个人资料
+          <el-button v-if="isSelf" class="border-1 fw-bold text-dark" round
+                     size="medium" @click="editDialog=true">编辑个人资料
           </el-button>
           <el-row v-if="!isSelf">
             <el-popover
-                placement="bottom"
-                width="auto"
                 :visible-arrow="false"
+                placement="bottom"
                 trigger="click"
+                width="auto"
             >
               <div>
-                <el-button class="d-flex text-dark fw-bold">
-                  <i class="bi bi-ban"/> 屏蔽@{{user.username}}</el-button>
+                <el-button v-if="user.relation!==relationEnums.BLOCK" class="d-flex text-dark fw-bold"
+                           @click="doRelationChange(relationEnums.BLOCK)">
+                  <i class="bi bi-ban"/> 屏蔽@{{ user.username }}
+                </el-button>
+                <el-button v-if="user.relation===relationEnums.BLOCK" class="d-flex text-dark fw-bold"
+                           @click="doRelationChange">
+                  <i class="bi bi-slash-circle"/> 取消屏蔽@{{ user.username }}
+                </el-button>
               </div>
-              <el-button slot="reference"   circle icon="el-icon-more" ></el-button>
+              <el-button slot="reference" circle class="ms-1 me-1" icon="el-icon-more"></el-button>
             </el-popover>
 
-            <el-button   circle icon="el-icon-message" @click="toChat" class="ms-2 me-1"></el-button>
+            <el-button v-if="getProfileViewable(user)" circle class="ms-1 me-1" icon="el-icon-message"
+                       @click="toChat"></el-button>
             <el-button :class="followBtnClass" round @click="doFollow">{{ followBtnText }}</el-button>
           </el-row>
           <el-dialog
@@ -56,13 +63,13 @@
               class="edit-dialog"
               width="40%">
             <el-row class="p-2" style="min-height: 70vh">
-              <edit-card @doEditComplete="doEditComplete"  @doClose="editDialog=false"/>
+              <edit-card @doClose="editDialog=false" @doEditComplete="doEditComplete"/>
             </el-row>
           </el-dialog>
         </el-row>
       </el-col>
     </el-row>
-    <el-row style="text-align: left;margin-left: 16px">
+    <el-row class="mt-2" style="text-align: left;margin-left: 16px">
       <el-row class="fs-5 fw-bolder text-dark">
         {{ user.nickname }}
       </el-row>
@@ -72,9 +79,16 @@
       <el-row class="fs-7 mt-1">
         {{ user.description }}
       </el-row>
-      <el-row class="text-secondary mt-3">
-        <i class="el-icon-date"/>
+      <el-row class="text-secondary mt-3 fs-7">
+        <span v-if="user.birthday" class="me-1">
+          <i class="bi bi-cake2"/>
+          <span>&nbsp;{{ new Date(user.birthday).toLocaleDateString() }}&nbsp;出生</span>
+        </span>
+        <span>
+          <i class="el-icon-date"/>
         <span>&nbsp;{{ new Date(user.createTime).toLocaleDateString() }}&nbsp;加入</span>
+        </span>
+
       </el-row>
       <el-row class="mt-3">
         <el-link style="color:#000;" type="info" @click.native="followingDialog=true">{{ getCount(user.followingNum) }}
@@ -86,8 +100,8 @@
           <div class="p-2">
             <h4>Ta的关注</h4>
             <follower-card :id="user.id" type="following"
-            @follow="follow"
-            @unfollow="unfollow"
+                           @follow="follow"
+                           @unfollow="unfollow"
                            @user-change="userChange"
             />
           </div>
@@ -102,9 +116,9 @@
           <div class="p-2">
             <h4>Ta的关注者</h4>
             <follower-card :id="user.id"
+                           type="follower"
                            @follow="follow"
-                           @unfollow="unfollow"
-                           @user-change="userChange" type="follower"/>
+                           @unfollow="unfollow" @user-change="userChange"/>
           </div>
         </el-dialog>
       </el-row>
@@ -114,11 +128,16 @@
 
 <script>
 import {getCount} from "@/util/tools";
-import {follow, unFollow} from "@/api/user";
+import {block, follow, unBlock, unFollow} from "@/api/user";
 import ProfileEditCard from "@/views/profile/ProfileEditCard.vue";
 import FollowerCard from "@/views/profile/FollowerCard.vue";
 import SendCard from "@/views/message/SendCard.vue";
 import {getToken} from "@/util/auth";
+import {mapState} from "vuex";
+import {chatMutations, userMutations} from "@/config/vuex/mutation-types";
+import {relationEnums} from "@/enums/enums";
+import {getFollowable, getProfileViewable} from "@/util/userUtil";
+import {getChatable} from "@/util/chatUtil";
 
 export default {
   name: "ProfileCard",
@@ -136,80 +155,147 @@ export default {
     return {
       user: {},
       followBtnText: '关注',
-      followBtnClass: 'unfollowed',
+      followBtnClass: ['unfollowed'],
       editDialog: false,
       followerDialog: false,
       followingDialog: false
     }
   },
+  computed: {
+    relationEnums() {
+      return relationEnums;
+    },
+    ...mapState({
+      currentUser: state => state.user,
+      chat: state => state.chat
+    })
+  },
   methods: {
+    getProfileViewable,
+    getChatable,
     getToken,
     getCount,
-    userChange(){
-      this.followerDialog=false;
-      this.followingDialog=false;
+    userChange() {
+      this.followerDialog = false;
+      this.followingDialog = false;
     },
     /**
      * 子组件follow事件
      */
-    follow(){
+    follow() {
       this.user.followingNum++;
     },
     /**
      * 子组件unfollow事件
      */
-    unfollow(){
+    unfollow() {
       this.user.followingNum--;
+    },
+    doRelationChange(type) {
+      switch (type) {
+        case relationEnums.FOLLOW: {
+          if (getFollowable(this.user)) {
+            this.user.followNum++;
+            this.user.relation = relationEnums.FOLLOW;
+            this.changeFollowBtnText(relationEnums.FOLLOW);
+            follow(this.user.id);
+          }
+        }
+          break;
+        case relationEnums.UNFOLLOW: {
+          if (this.user.relation !== relationEnums.UNFOLLOW) {
+            this.user.followNum--;
+            this.user.relation = relationEnums.UNFOLLOW;
+            this.changeFollowBtnText(relationEnums.UNFOLLOW);
+            unFollow(this.user.id);
+          }
+        }
+          break;
+        case relationEnums.BLOCK: {
+          this.$confirm(`他们将无法关注你或查看你的帖子，而你也将无法看到@${this.user.username}的帖子或通知`, `屏蔽@${this.user.username}`, {
+            confirmButtonText: '屏蔽',
+            cancelButtonText: '取消',
+            type: 'error',
+            iconClass: 'bi bi-exclamation-circle-fill text-danger',
+            showClose: false,
+            customClass: 'w-25 rounded text-left text-dark fw-bold',
+            confirmButtonClass: 'btn text-white bg-danger border-0 row w-100 m-2 rounded-pill',
+            cancelButtonClass: 'btn btn-outline-dark w-100 row m-2 rounded-pill'
+          }).then(() => {
+            if (this.user.relation !== relationEnums.BLOCK) {
+              this.user.relation = relationEnums.BLOCK;
+              this.changeFollowBtnText(relationEnums.BLOCK);
+              if (this.user.relation === relationEnums.FOLLOW) {
+                this.user.followNum--;
+              }
+              block(this.user.id);
+            }
+          }).catch(() => {
+
+          });
+
+        }
+          break;
+        default: {
+          if (this.user.relation === relationEnums.BLOCK) {
+            this.user.relation = relationEnums.UNFOLLOW;
+            this.changeFollowBtnText();
+            unBlock(this.user.id);
+          }
+        }
+      }
+      this.$store.commit(`user/${userMutations.SET_USER_TO_LIST}`, {user: this.user});
     },
     doFollow() {
       let type = this.user.relation;
-      if (type === 1) {
-        unFollow(this.user.id).then(() => {
-          this.user.followNum--;
-          this.user.relation = 2;
-          this.changeFollowBtnText(2);
-        })
-      } else if (type === 2) {
-        follow(this.user.id).then(() => {
-          this.user.followNum++;
-          this.user.relation = 1;
-          this.changeFollowBtnText(1);
-        })
+      if (type === relationEnums.FOLLOW) {
+        this.doRelationChange(relationEnums.UNFOLLOW);
+      } else if (type === relationEnums.UNFOLLOW) {
+        this.doRelationChange(relationEnums.FOLLOW);
+      } else if (type === relationEnums.BLOCK) {
+        this.doRelationChange();
       }
     },
-    doEditComplete(){
-      this.editDialog=false;
-      this.user=this.user.id===this.$store.getters.getUser.id?this.$store.getters.getUser:this.user;
-      console.log(this.user)
+
+    doEditComplete() {
+      this.editDialog = false;
+      this.user = this.user.id === this.currentUser.id ? this.currentUser : this.user;
     },
     changeFollowBtnText(type) {
-      if (type === 1) {
+      if (type === relationEnums.FOLLOW) {
         this.followBtnText = "正在关注";
-        this.followBtnClass = "followed";
-      }
-      if (type === 2) {
+        this.followBtnClass = ['bg-white', 'text-dark', 'fw-bold'];
+      } else if (type === relationEnums.UNFOLLOW) {
         this.followBtnText = "关注";
-        this.followBtnClass = "unfollowed";
+        this.followBtnClass = ['bg-dark', 'text-white', 'fw-bold'];
+      } else if (type === relationEnums.BLOCK) {
+        this.followBtnText = "已屏蔽";
+        this.followBtnClass = ['bg-danger', 'text-white', 'fw-bold'];
+      } else {
+        this.followBtnText = "关注";
+        this.followBtnClass = ['bg-dark', 'text-white', 'fw-bold'];
       }
     },
-    toChat(){
-      let user=this.$store.getters.getUser;
-      let conversation=`${Math.min(this.user.id,user.id)}_${Math.max(this.user.id,user.id)}`;
-      this.$store.commit('setConvOption',{
-        conversation:conversation,
-        user:this.user
-      });
-      this.$router.push('/message?conversation='+conversation);
-    }
+    toChat() {
+      let user = this.currentUser;
+      let conversation = `${Math.min(this.user.id, user.id)}_${Math.max(this.user.id, user.id)}`;
+      if (!this.chat.record[conversation]) {
+        this.$store.commit(`chat/${chatMutations.INIT_CONVERSATION}`, {conversation});
+      }
+      this.$router.push('/message/chat/' + conversation);
+    },
+
   },
   created() {
     this.user = this.value;
     this.changeFollowBtnText(this.user.relation);
   },
+  mounted() {
+  },
   watch: {
     value(val) {
-      this.user = val
-      this.changeFollowBtnText(this.user.relation)
+      this.user = val;
+      this.changeFollowBtnText(this.user.relation);
     }
   }
 }

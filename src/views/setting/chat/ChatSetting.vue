@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <div style="display: flex;flex-direction: column;" class="p-2">
+    <div class="p-2" style="display: flex;flex-direction: column;">
       <div class="fw-bold fs-5 text-start align-items-center" style="height: 70px;align-self: start">
-        <el-button icon="el-icon-back"
-                   circle
+        <el-button circle
                    class="p-1 fs-5"
+                   icon="el-icon-back"
                    style="border: none;font-weight: bold"
                    @click="$router.back()"></el-button>
         <span class="ms-2">私信</span>
@@ -13,23 +13,23 @@
         <div class="row">
           <div class="col text-start d-flex align-items-center ">你的密钥</div>
           <div class="col text-end">
-            <el-button circle icon="el-icon-edit" class="float-end  border-0"
+            <el-button circle class="float-end  border-0" icon="el-icon-edit"
                        @click="editable=!editable"/>
-            <el-button circle icon="el-icon-document-copy" class="float-end ms-3 border-0"
+            <el-button circle class="float-end ms-3 border-0" icon="el-icon-document-copy"
                        @click="copy(e2ee.privateKey)"/>
-            <div v-if="!editable" style="width: 50%;"
-                 class="row bg-body-secondary text-center float-end rounded-pill d-flex align-items-center ">
+            <div v-if="!editable" class="row bg-body-secondary text-center float-end rounded-pill d-flex align-items-center "
+                 style="width: 50%;">
               <div class="col-7">
-                <span class="m-2" v-if="keyVisible">{{ e2ee.privateKey }}</span>
-                <span class="m-2 fs-5" v-else>******</span>
+                <span v-if="keyVisible" class="m-2">{{ e2ee.privateKey }}</span>
+                <span v-else class="m-2 fs-5">******</span>
               </div>
               <div class="col-1">
-                <el-button icon="el-icon-view" class="border border-0 bg-body-secondary" circle
+                <el-button circle class="border border-0 bg-body-secondary" icon="el-icon-view"
                            @click="keyVisible=!keyVisible"/>
               </div>
 
             </div>
-            <div v-else style="width: 50%" class="float-end">
+            <div v-else class="float-end" style="width: 50%">
               <el-input v-model="key" show-password
                         @keyup.enter.native="saveKeys"/>
             </div>
@@ -49,9 +49,10 @@
             每个人
           </div>
           <div class="col text-end">
-            <el-button v-show="setting.chat.allow!==chatAllowEnum.ANYONE" class="border-2 border-dark-subtle " circle
+            <el-button v-show="setting.chat.allow!==chatAllowEnum.ANYONE" circle class="border-2 border-dark-subtle "
                        size="medium" @click="doChatPmChange"></el-button>
-            <el-button v-show="setting.chat.allow===chatAllowEnum.ANYONE" class="border-2  p-1" icon="el-icon-check" circle
+            <el-button v-show="setting.chat.allow===chatAllowEnum.ANYONE" circle class="border-2  p-1"
+                       icon="el-icon-check"
                        size="small"
                        style="border-color: #409EFF;color: white;background-color: #409EFF"></el-button>
           </div>
@@ -61,11 +62,11 @@
             没有人
           </div>
           <div class="col text-end">
-            <el-button v-show="setting.chat.allow!==chatAllowEnum.NOBODY" class="border-2 border-dark-subtle " circle
+            <el-button v-show="setting.chat.allow!==chatAllowEnum.NOBODY" circle class="border-2 border-dark-subtle "
                        size="medium"
                        @click="doChatPmChange"></el-button>
-            <el-button v-show="setting.chat.allow===chatAllowEnum.NOBODY" class="border-2  p-1" circle size="small"
-                       icon="el-icon-check"
+            <el-button v-show="setting.chat.allow===chatAllowEnum.NOBODY" circle class="border-2  p-1" icon="el-icon-check"
+                       size="small"
                        style="border-color: #409EFF;color: white;background-color: #409EFF"></el-button>
 
           </div>
@@ -75,9 +76,7 @@
   </div>
 </template>
 <script>
-import {getPrivateKey, mathPublicKey, setPrivateKey, setPublicKey} from "@/util/encrypt";
 import {copy} from "@/util/clipboard";
-import {savePublicKey, updateAllow} from "@/api/advice";
 import {chatAllowEnum} from "@/enums/enums";
 import {mapState} from "vuex";
 import {e2eeActions, settingActions} from "@/config/vuex/action-types";
@@ -102,7 +101,7 @@ export default {
     }
   },
   methods: {
-    copy, getPrivateKey,
+    copy,
 
     saveKeys() {
       this.$store.dispatch(`e2ee/${e2eeActions.SET_PRIVATE_KEY}`, {privateKey: this.key}).then(() => {
@@ -123,7 +122,7 @@ export default {
     }
   },
   mounted() {
-    this.key=this.e2ee.privateKey;
+    this.key = this.e2ee.privateKey;
   }
 }
 </script>

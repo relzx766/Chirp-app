@@ -7,24 +7,32 @@ export default {
     namespaced: true,
     state: {
         chat: {
-            pinned: "",
-            allow: chatAllowEnum.ANYONE
-        }
+            pinned: [],
+            allow: chatAllowEnum.ANYONE,
+        },
     },
     mutations: {
         [settingMutations.SET_CHAT_PINNED](state, {pinned}) {
-            state.chat.pinned = pinned;
+            if (pinned) {
+                state.chat.pinned = pinned;
+            }
         },
         [settingMutations.SET_CHAT_ALLOW](state, {allow}) {
             state.chat.allow = allow;
-        }
+        },
+        [settingMutations.ADD_CHAT_PINNED](state, {pinned}) {
+            state.chat.pinned.unshift(pinned);
+        },
+        [settingMutations.SLICE_CHAT_PINNED](state, {index}) {
+            state.chat.pinned.splice(index, 1);
+        },
     },
     actions: {
         [settingActions.INIT_SETTING]({dispatch}) {
             return dispatch(settingActions.INIT_CHAT_SETTING);
         },
         [settingActions.INIT_CHAT_SETTING]({commit}) {
-            return getMyChatSetting().then(res => {
+            return getMyChatSetting().then((res) => {
                 if (res.code === 200) {
                     let pinned = res.data.record.pinned;
                     let allow = res.data.record.allow;
@@ -35,9 +43,9 @@ export default {
                 }
             });
         },
-        [settingActions.UPDATE_CHAT_SETTING_ALLOW]({commit},{allow}){
+        [settingActions.UPDATE_CHAT_SETTING_ALLOW]({commit}, {allow}) {
             commit(settingMutations.SET_CHAT_ALLOW, {allow});
-            return  updateAllow(allow);
-        }
-    }
-}
+            return updateAllow(allow);
+        },
+    },
+};

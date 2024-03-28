@@ -1,102 +1,138 @@
 <template>
-
-  <div class="d-flex flex-column position-relative" >
-    <el-image v-if="type===supportMediaTypeEnums.IMAGE"
-              :preview-src-list="[fileUrl]"
-              :src="fileUrl"
-              fit="cover"
-              class="rounded-4"
-              style="flex: 1"/>
-    <div v-else-if="type===supportMediaTypeEnums.VIDEO" class="m-0 " style="flex: 1">
-      <video-player class="rounded-4" :url="fileUrl"/>
-    </div>
-    <el-button circle class="btn-remove position-absolute top-0 end-0 p-0"
-               icon="el-icon-close"  type="info"
-               @click="doRemove"></el-button>
-    <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"
-    style="height: 4px;">
-      <div :class="uploadStatus" class="progress-bar " :style="progress"></div>
+  <div>
+    <div class="d-flex flex-column position-relative overflow-hidden rounded-4">
+      <el-image
+          v-if="mediaType === supportMediaTypeEnums.IMAGE"
+          :preview-src-list="[fileUrl]"
+          :src="fileUrl"
+          class="rounded-4"
+          fit="cover"
+          style="flex: 1"
+      />
+      <div
+          v-else-if="mediaType === supportMediaTypeEnums.VIDEO"
+          class="m-0"
+          style="flex: 1"
+      >
+        <file-card
+            :type="type"
+            :url="fileUrl"
+            class="rounded-4 overflow-hidden"
+        />
+      </div>
+      <div
+          class="p-1 z-index-1 position-absolute top-0 end-0  ">
+        <div class="d-flex flex-column">
+          <div class="text-end">
+            <el-button
+                circle
+                class="p-1 bg-dark border-0 "
+                type="info"
+                @click="doRemove"
+            ><i class="btn-remove text-white fw-bold fs-4 bi bi-x "
+            /></el-button>
+          </div>
+          <div class="text-end mt-1">
+            <el-progress
+                :percentage="progress"
+                :show-text="false"
+                :status="progressBarStatus"
+                :width="32"
+                color="" stroke-width="4"
+                type="circle"
+            ></el-progress>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
+
 </template>
 
 <script>
-import ChunkUpload, {getMd5} from "@/util/upload";
-import {upload} from "@/api/media";
-import VideoUploadCard from "@/views/media/VideoUploadCard.vue";
-import {supportMediaTypeEnums} from "@/enums/enums";
+import {supportMediaTypeEnums, uploadStatusEnums} from "@/enums/enums";
+import FileCard from "@/views/media/FileCard";
+import ChunkFile from "@/util/uploadUtil";
+import ProgressCircle from "@/component/ProgressCircle";
 
 export default {
   name: "UploadingFile",
   computed: {
     supportMediaTypeEnums() {
-      return supportMediaTypeEnums
+      return supportMediaTypeEnums;
+    },
+    type() {
+      return this.file.type;
+    },
+    mediaType() {
+      return this.type.split("/").shift().toUpperCase();
+    },
+    fileUrl() {
+      return URL.createObjectURL(this.file);
+    },
+    name() {
+      return this.file.name;
+    },
+    progress() {
+      if (this.chunk !== null) {
+        if (this.chunk.complete) {
+          return 100;
+        }
+        const finish = this.chunk.chunkList.filter(chunk => chunk.status === uploadStatusEnums.SUCCESS).length;
+        return finish / this.chunk.chunkList.length * 100;
+      }
+      return 0;
+    },
+    progressBarStatus() {
+      switch (this.uploadStatus) {
+        case uploadStatusEnums.SUCCESS:
+          return 'success';
+        case uploadStatusEnums.ERROR:
+          return 'exception';
+        default:
+          return '';
+      }
     }
   },
   components: {
-    'video-player': VideoUploadCard
+    FileCard,
+    ProgressCircle,
   },
   props: {
-    file: {}
+    file: {},
   },
   data() {
     return {
       chunk: null,
       isChunk: false,
-      fileUrl: "",
-      type: "",
-      uploadComplete: false,
-      progress: {
-        width: "1%",
-      },
-      uploadStatus:['progress-bar-striped','progress-bar-animated']
-
-    }
+      uploadStatus: uploadStatusEnums.PENDING
+    };
   },
   methods: {
     doUpload() {
-        this.isChunk = true;
-        this.chunk = new ChunkUpload(this.file, {
-          onSuccess: (res) => {
-            if (!this.uploadComplete) {
-              this.uploadComplete = true;
-              this.media = res.data.record;
-              this.progress = {
-                width: "100%"};
-              this.uploadStatus=['bg-success'];
-              this.$emit("uploaded", res.data.record);
-              this.chunk.stop();
-            }
-          },
-          onError: (res) => {
-            this.$message.error("文件上传失败\n" + res.message);
-            this.progress = {
-              width: "100%"};
-            this.uploadStatus=['bg-danger'];
-          },
-          onProgress: ({total, finish}) => {
-            console.log(finish /total)
-            this.progress = {
-              width: finish / total * 100 + "%"};
-            this.uploadStatus=['progress-bar-striped','progress-bar-animated'];
-          }
-        });
-        this.chunk.start();
+      this.chunk = new ChunkFile(this.file, {
+        onsuccess: (res) => {
+          this.media = res.data.record;
+          this.uploadStatus = uploadStatusEnums.SUCCESS;
+          this.$emit("uploaded", res.data.record);
+        },
+        onerror: (e) => {
+          this.uploadStatus = uploadStatusEnums.ERROR;
+          this.$message.error("文件上传失败\n" + e);
+        },
+      });
+      this.chunk.start();
     },
     doRemove() {
-      if (this.isChunk) {
-        this.chunk.stop();
-      }
+      this.chunk.break();
       this.$emit("remove");
-    }
+    },
   },
   created() {
-    this.fileUrl = URL.createObjectURL(this.file);
-    this.type = this.file.type.split("/").shift().toUpperCase();
     this.doUpload();
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
@@ -109,6 +145,20 @@ export default {
   max-width: 40px;
 }
 
+.upload-card-item {
+  width: 30px;
+  height: 30px;
+}
 
-
+#progress-box::before {
+  content: "";
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
+  border-radius: 100%;
+  background: beige;
+  backdrop-filter: blur(50px);
+}
 </style>

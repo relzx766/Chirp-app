@@ -1,33 +1,60 @@
 <template>
   <div class="container">
-      <div class="row">
-        <div class="col-8 border-start border-end p-2">
-          <input-card style="margin-bottom: 8px"/>
-          <el-tabs :stretch="true" value="all" class="d-flex flex-column" style="width: 100%" @tab-click="handleTabClick">
-            <el-tab-pane name="all" >
-              <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
-              <div class="overflow-y-auto" style="flex: 1;height: 84vh">
-                <div>
-                  <el-row v-if="isLoading" style="text-align: center">
-                    <div class="loading-box">
-                      <div class="loading"/>
-                    </div>
-                  </el-row>
-                  <search-user-card :keyword="keyword"/>
-                  <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
-                    <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
-                                :value="item" style="margin-top: 8px;"/>
-                    <chirper-card
-                        v-else :chirper="item"
-                        style="margin-top: 8px;"/>
-                  </el-row>
-                </div>
-
+    <div class="row">
+      <div class="col border-start border-end p-2">
+        <input-card style="margin-bottom: 8px"/>
+        <div
+            class=" d-flex flex-nowrap align-self-center justify-content-around option-item fw-bold text-dark border-bottom">
+          <div v-for="item in switchOptions"
+               class="flex-grow-1 pt-3 pb-3 fs-7 text-center position-relative user-select-none finger"
+               @click="switchTo(item)">
+            <div>{{ item }}</div>
+            <div v-if="switchType===item"
+                 class="w-30 position-absolute bottom-0 start-50 translate-middle-x switch-btn-bottom bg-primary rounded-pill">
+            </div>
+          </div>
+        </div>
+        <div>
+          <div v-if="switchType===switchOptions.All">
+            <el-row v-if="isLoading" style="text-align: center">
+              <div class="loading-box">
+                <div class="loading"/>
               </div>
-            </el-tab-pane>
-            <el-tab-pane name="media">
-              <span slot="label" style="font-size: 16px;font-weight: bold">媒体</span>
-              <div class="overflow-y-auto" style="flex: 1;height: 84vh">
+            </el-row>
+            <search-user-card :keyword="keyword"/>
+            <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
+              <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                          :value="item" style="margin-top: 8px;"/>
+              <chirper-card
+                  v-else :chirper="item"
+                  style="margin-top: 8px;"/>
+            </el-row>
+          </div>
+          <div v-else-if="switchType===switchOptions.Media">
+            <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
+              <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                          :value="item" style="margin-top: 8px;"/>
+              <chirper-card
+                  v-else :chirper="item"
+                  style="margin-top: 8px;"/>
+            </el-row>
+          </div>
+          <div v-else-if="switchType===switchOptions.User">
+            <search-user-card :keyword="keyword" :page="page"/>
+
+          </div>
+        </div>
+<!--        <el-tabs :stretch="true" style="width: 100%" value="all" @tab-click="handleTabClick">
+          <el-tab-pane name="all">
+            <span slot="label" style="font-size: 16px;font-weight: bold">全部</span>
+            <div>
+              <div>
+                <el-row v-if="isLoading" style="text-align: center">
+                  <div class="loading-box">
+                    <div class="loading"/>
+                  </div>
+                </el-row>
+                <search-user-card :keyword="keyword"/>
                 <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
                   <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
                               :value="item" style="margin-top: 8px;"/>
@@ -36,23 +63,37 @@
                       style="margin-top: 8px;"/>
                 </el-row>
               </div>
-            </el-tab-pane>
-            <el-tab-pane name="user">
-              <span slot="label" style="font-size: 16px;font-weight: bold">用户</span>
-              <search-user-card class="overflow-y-auto" style="flex: 1;height: 84vh" :keyword="keyword" :page="page"/>
-            </el-tab-pane>
-          </el-tabs>
-        </div>
-        <div class="col text-center pt-2">
-          <trend-list-card style="background-color:#EBEEF5;border-radius: 10px"/>
-        </div>
+
+            </div>
+          </el-tab-pane>
+          <el-tab-pane name="media">
+            <span slot="label" style="font-size: 16px;font-weight: bold">媒体</span>
+            <div>
+              <el-row v-for="item in chirpers" style="border-bottom: 1px solid #E4E7ED;">
+                <refer-card v-if="item.type==='FORWARD'||item.type==='QUOTE'" :barVisible="item.type!=='FORWARD'"
+                            :value="item" style="margin-top: 8px;"/>
+                <chirper-card
+                    v-else :chirper="item"
+                    style="margin-top: 8px;"/>
+              </el-row>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane name="user">
+            <span slot="label" style="font-size: 16px;font-weight: bold">用户</span>
+            <search-user-card :keyword="keyword" :page="page"/>
+          </el-tab-pane>
+        </el-tabs>-->
       </div>
+      <div class="col text-center pt-2">
+        <trend-list-card class=" bg-info-2  rounded-4"/>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import InputCard from "@/views/search/InputCard.vue";
-import {search} from "@/api/chirper";
+import {getChirperPage} from "@/api/chirper";
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import ReferCard from "@/views/chirper/ReferCard.vue";
 import SearchUserCard from "@/views/search/SearchUserCard.vue";
@@ -67,14 +108,26 @@ export default {
     SearchUserCard,
     TrendListCard
   },
+  computed: {
+    switchType() {
+      return this.$route.query.type ? this.$route.query.type : this.switchOptions.All;
+    },
+    keyword() {
+      return this.$route.query.keyword;
+    }
+  },
   data() {
     return {
-      keyword: "",
       page: 1,
       isMedia: false,
       isLoading: true,
       isBottom: false,
-      chirpers: []
+      chirpers: [],
+      switchOptions: {
+        All: 'All',
+        Media: 'Media',
+        User: 'User'
+      }
     }
   },
   methods: {
@@ -83,23 +136,29 @@ export default {
       this.isMedia = false;
       this.isLoading = false;
       this.isBottom = false;
-      this.chirpers.splice(0,this.chirpers.length);
+      this.chirpers.splice(0, this.chirpers.length);
       this.users = [];
     },
-    handleTabClick(tab){
-      if (tab.name==='all'){
+    handleTabClick() {
+      const type = this.switchType;
+      if (type === this.switchOptions.All) {
         this.init();
         this.searchChirper();
-      }else if (tab.name==='media'){
+      } else if (type === this.switchOptions.Media) {
         this.init();
-        this.isMedia=true;
+        this.isMedia = true;
         this.searchChirper();
       }
     },
     searchChirper() {
       this.isLoading = true;
-      search(this.keyword, this.page, this.isMedia).then(res => {
-        if (res.code===200) {
+
+      getChirperPage({
+        keyword: this.keyword,
+        page: this.page,
+        media: this.switchType === this.switchOptions.Media
+      }).then(res => {
+        if (res.code === 200) {
           this.chirpers.push(...res.data.record);
           this.isBottom = res.data.record.length <= 0;
           this.isLoading = false;
@@ -114,13 +173,15 @@ export default {
         this.page++;
         this.searchChirper();
       }
+    },
+    switchTo(type) {
+      this.$router.push(`/search?keyword=${encodeURIComponent(this.keyword)}&type=${type}`);
     }
   },
   watch: {
-    $route(to) {
+    $route() {
       this.init();
-      this.keyword = to.query.keyword;
-      this.searchChirper()
+      this.searchChirper();
     }
   },
   created() {

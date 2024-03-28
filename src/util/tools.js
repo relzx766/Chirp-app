@@ -57,7 +57,7 @@ export const bigNumberToString = (num) => {
 export const formatText = (text) => {
 // 查找@username
     const regex = /@(\w+)(?=\s|$)/g;
-    return text.replace(regex,"<a href='/profile?username=$1' class='text-primary' @click.stop style='text-decoration: none;'>@$1</a>").replace("\u200B","</br>");
+    return text.replace(regex, "<a href='/profile?username=$1' class='text-primary' @click.stop style='text-decoration: none;'>@$1</a>").replace("\u200B", "</br>");
 
 }
 /**
@@ -71,21 +71,21 @@ export const subtractDates = (date1, date2) => {
     date2 = new Date(date2);
     return date1.getTime() - date2.getTime();
 }
-export const getCharCode=(str)=>{
-    let code='';
-    for (let i=0;i<str.length;i++){
-        code+=str.charCodeAt(i);
+export const getCharCode = (str) => {
+    let code = '';
+    for (let i = 0; i < str.length; i++) {
+        code += str.charCodeAt(i);
     }
-    return parseInt(code,10);
+    return parseInt(code, 10);
 }
-export const getCategory=(extension)=>{
-        const imageSuffixes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
-        const videoSuffixes = ['mp4', 'avi', 'flv', 'mov', 'wmv', 'rmvb', 'mkv'];
-        if (imageSuffixes.includes(extension)) {
-            return fileCategoryEnums.IMAGE;
-        }else if (videoSuffixes.includes(extension)){
-            return fileCategoryEnums.VIDEO;
-        }else {
-            return fileCategoryEnums.FILE;
-        }
+export const getCategory = (extension) => {
+    const imageSuffixes = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'];
+    const videoSuffixes = ['mp4', 'avi', 'flv', 'mov', 'wmv', 'rmvb', 'mkv'];
+    if (imageSuffixes.includes(extension)) {
+        return fileCategoryEnums.IMAGE;
+    } else if (videoSuffixes.includes(extension)) {
+        return fileCategoryEnums.VIDEO;
+    } else {
+        return fileCategoryEnums.FILE;
+    }
 }

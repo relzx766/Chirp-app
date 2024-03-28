@@ -9,7 +9,8 @@ export default {
     state: {
         //在线才会接收到的通知
         online: {
-            TWEETED: []
+            TWEETED: [],
+            counter: 0
         },
         //会被持久化的通知，即会在“通知”页显示
         persist: {
@@ -24,14 +25,15 @@ export default {
     mutations: {
         [noticeMutations.ADD_CHIRPER_NOTICE](state, {notice, isNew}) {
             let key = `${notice.sonEntity.id}:${notice.event}:${state.persist.page}`;
+            console.log(key)
             if (!state.persist.record[key]) {
                 state.persist.record[key] = [];
             }
             if (isNew) {
                 state.persist.record[key].unshift(notice);
-                let temp = state.persist.record[key];
+                let temp = {[key]:state.persist.record[key]};
                 delete state.persist.record[key];
-                state.persist.record = {temp, ...state.persist.record}
+                state.persist.record = Object.assign(temp,state.persist.record)
             } else {
                 state.persist.record[key].push(notice);
             }
@@ -48,7 +50,7 @@ export default {
             if (isNew) {
                 key = `${notice.event}:${notice.id}`;
                 let temp = {[key]: notice};
-                state.persist.record = {temp, ...state.persist.record}
+                state.persist.record[key] = {temp, ...state.persist.record}
             } else {
                 key = `${notice.event}:${notice.receiverId}:${state.persist.page}`;
                 if (!state.persist.record[key]) {
@@ -62,8 +64,6 @@ export default {
             state.persist.count += count;
         },
         [noticeMutations.INCREASE_NOTICE_UNREAD](state, {unread}) {
-            // unread=state.persist.unread + unread;
-            //Vue.set(state.persist, 'unread', unread);
             state.persist.unread += unread;
         },
         [noticeMutations.INCREASE_NOTICE_PAGE](state, {page}) {
@@ -73,10 +73,13 @@ export default {
             state.existsMap.set(key, 1);
         },
         [noticeMutations.CLEAR_TWEETED_NOTICE](state) {
-            state.online.TWEETED.slice(0, state.online.TWEETED.length);
+            state.online.TWEETED.splice(0, state.online.TWEETED.length);
         },
         [noticeMutations.SET_NOTICE_BOTTOM](state, {bottom}) {
             state.persist.bottom = bottom;
+        },
+        [noticeMutations.INCREASE_NOTICE_ONLINE_COUNT](state) {
+            state.online.counter++;
         }
     },
     actions: {
@@ -85,9 +88,11 @@ export default {
                 let page = state.persist.page;
                 return getPage(page).then(res => {
                     if (res.code === 200) {
-                        dispatch(noticeActions.ADD_NEW_NOTICE_RECORD, {notices: res.data.record});
-                        commit(noticeMutations.INCREASE_NOTICE_PAGE, {page: 1});
-                        commit(noticeMutations.SET_NOTICE_BOTTOM, {bottom: res.data.record.length <= 0});
+                        return dispatch(noticeActions.ADD_NEW_NOTICE_RECORD, {notices: res.data.record}).then(() => {
+                            commit(noticeMutations.INCREASE_NOTICE_PAGE, {page: 1});
+                            commit(noticeMutations.SET_NOTICE_BOTTOM, {bottom: res.data.record.length <= 0});
+                        })
+
                     } else {
                         throw new Error(res.message);
                     }
@@ -109,6 +114,7 @@ export default {
                     commit(noticeMutations.ADD_CHIRPER_NOTICE, {notice, isNew});
                 } else if (notice.event === noticeEventEnums.TWEETED) {
                     commit(noticeMutations.ADD_TWEETED, {notice, isNew});
+                    commit(noticeMutations.INCREASE_NOTICE_ONLINE_COUNT);
                 } else if (notice.event === noticeEventEnums.FOLLOW) {
                     commit(noticeMutations.ADD_FOLLOW, {notice, isNew});
                 }
@@ -125,7 +131,9 @@ export default {
         [noticeActions.MARK_READ_ALL_NOTICE]({commit, state}) {
             let unread = -state.persist.unread;
             commit(noticeMutations.INCREASE_NOTICE_UNREAD, {unread});
-            return markAsRead();
+            if (unread < 0) {
+                return markAsRead();
+            }
         }
     }
 }

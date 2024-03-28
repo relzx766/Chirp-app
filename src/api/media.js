@@ -1,31 +1,48 @@
 import {FormPost, JsonPost} from "@/config/http";
 
 const server = "/chirp/media-service";
-export const upload = (data) => {
+export const upload = (file) => {
     return FormPost({
         url: server + "/media/upload",
-        data: data
-    })
-}
-export const uploadSlice = (data) => {
+        data: {file},
+    });
+};
+
+export const fastUpload = (hash) => {
+    let data = new FormData();
+    data.append("hash", hash);
     return FormPost({
-        url: server + "/media/upload/slice",
-        data: data
-    })
-}
-export const merge = (extension, md5) => {
+        url: `${server}/media/fast`,
+        data: data,
+    });
+};
+export const chunkUploadInit = (size) => {
+    return FormPost({
+        url: `${server}/media/upload/chunk/init`,
+        data: {size},
+    });
+};
+export const chunkUpload = (file, uploadId, index) => {
+    return FormPost({
+        url: `${server}/media/upload/chunk`,
+        data: {file, uploadId, index},
+    });
+};
+export const chunkMerge = (
+    uploadId,
+    objectName,
+    chunkSize,
+    type,
+    extension
+) => {
     return JsonPost({
-        url: server + "/media/merge",
-        data: {
-            extension, md5
-        }
-    })
-}
-export const fastUpload=(hash)=>{
-    let data=new FormData();
-    data.append("hash",hash);
+        url: `${server}/media/upload/chunk/merge`,
+        data: {uploadId, objectName, chunkSize, type, extension},
+    });
+};
+export const getByIds = (id) => {
     return FormPost({
-        url:`${server}/media/fast`,
-        data:data
-    })
-}
+        url: `${server}/media/url/get`,
+        data: {id},
+    });
+};

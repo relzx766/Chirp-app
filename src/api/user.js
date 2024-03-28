@@ -2,18 +2,11 @@ import {FormPost, Get, JsonPost} from "@/config/http";
 
 const sever = "/chirp/user-service"
 export const load = () => {
-  return Get({
-      url: sever + '/user/load'
-  })
-}
-export const getShortProfile = (ids) => {
-    let data = new FormData();
-    data.append("ids", ids);
-    return FormPost({
-        url: sever + '/user/basic_info',
-        data: data
+    return Get({
+        url: sever + '/user/load'
     })
 }
+
 export const getDetailProfile = (username) => {
     return Get({
         url: `${sever}/user/profile/${username}`
@@ -42,10 +35,31 @@ export const unFollow = (id) => {
         }
     })
 }
+export const block = (id) => {
+    return FormPost({
+        url: sever + "/rela/block",
+        data: {
+            toId: id
+        }
+    })
+}
+export const unBlock = (id) => {
+    return FormPost({
+        url: sever + "/rela/unblock",
+        data: {
+            toId: id
+        }
+    })
+}
+/**
+ * 获取我与用户名的关系，以用户们为起点，即用户们=fromId，我=toId
+ * @param ids
+ * @returns {Promise | Promise<unknown>}
+ */
 export const getRelations = (ids) => {
     return JsonPost({
-        url:`${sever}/rela/people/me`,
-        data:ids
+        url: `${sever}/rela/people/me`,
+        data: ids
     })
 }
 export const search = (keyword, page) => {
@@ -66,19 +80,24 @@ export const getFollowing = (id, page) => {
 
 }
 
-export const checkUsername=(username)=>{
+export const checkUsername = (username) => {
     return Get({
-        url:`${sever}/user/username/check/${username}`
+        url: `${sever}/user/username/check/${username}`
     })
 }
-export const checkEmail=(email)=>{
+export const checkEmail = (email) => {
     return Get({
-        url:`${sever}/user/email/check/${email}`
+        url: `${sever}/user/email/check/${email}`
     })
 }
-export const getProfile=(userIds)=>{
+export const getProfile = (userIds) => {
     return JsonPost({
-        url:`${sever}/user/profile`,
-        data:userIds
+        url: `${sever}/user/profile`,
+        data: userIds
+    })
+}
+export const getFollowCount = (id) => {
+    return Get({
+        url: `${sever}/rela/count/${id}`
     })
 }

@@ -1,48 +1,52 @@
 <template>
   <div>
-    <video-player v-if="category===supportMediaTypeEnums.VIDEO" :url="media[0].url" style="width:96%;"/>
-
-
-    <waterfall v-else-if="category===supportMediaTypeEnums.IMAGE" :col="media.length>2?2:media.length" :data="media" :isTransition="false"
-               style="width: 96%;overflow: hidden">
-      <el-image v-for="(item,index) in media" :key="item.name"
+    <waterfall
+        :col="media.length > 2 ? 2 : media.length"
+        :data="media"
+        :isTransition="false"
+        class="overflow-hidden"
+    >
+      <file-card
+          v-for="(item, index) in media"
+          :key="item.url"
+          :prewiew-list="getUrls"
+          :style="{height:media.length>1?'200px':'auto'}"
+          :url="item.url"
+          style="width: 98%"
+          class="rounded-4 overflow-hidden bg-danger m-1"
+      />
+      <!--    <el-image v-for="(item,index) in media" :key="item.name"
                 :preview-src-list="getUrls"
                 :src="item.url"
-                :style="{width:'99%',
-             marginTop:index>1?'4px':'0px',
-             height:media.length>1?'200px':'auto'}"
+                :style="{width:'99%',marginTop:index>1?'4px':'0px',height:media.length>1?'200px':'auto'}"
                 fit="cover"
-                style="border-radius: 14px;">
-      </el-image>
+                class="rounded-4">
+      </el-image> -->
     </waterfall>
-
-
   </div>
-
 </template>
 
 <script>
-import VideoPlayer from "@/views/media/VideoPlayer.vue";
+import FileCard from "@/views/media/FileCard";
 import {supportMediaTypeEnums} from "@/enums/enums";
 
 export default {
   name: "MediaCard",
   props: {
-    media: Array
+    media: Array,
   },
-
   components: {
-    VideoPlayer
+    FileCard,
   },
   data() {
     return {
       category: "",
-      dynamicHeight: ""
-    }
+      dynamicHeight: "",
+    };
   },
   computed: {
     supportMediaTypeEnums() {
-      return supportMediaTypeEnums
+      return supportMediaTypeEnums;
     },
     getUrls() {
       let urls = [];
@@ -69,27 +73,26 @@ export default {
           break;
       }
       return `${width}%`;
-    }
+    },
   },
   methods: {
     init() {
-      this.category = this.media[0].category.toUpperCase();
     },
     getMargin(index) {
       index++;
-      if ((index % this.media.length) !== 1) {
+      if (index % this.media.length !== 1) {
         let col = this.media.length > 3 ? 3 : this.media.length;
         col = Math.min(col, this.media.length);
         col--;
         return `${1 / col}%`;
       }
-      return '0%';
-    }
+      return "0%";
+    },
   },
   created() {
     this.init();
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

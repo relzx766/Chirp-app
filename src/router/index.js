@@ -10,9 +10,16 @@ import Notice from "@/views/notice/Notice.vue";
 import Search from "@/views/search/Search.vue";
 import Explore from "@/views/explore/Explore.vue";
 
-import ChatSetting from "@/views/message/ChatSetting.vue";
+import ChatSetting from "@/views/setting/chat/ChatSetting.vue";
 import ChatCard from "@/views/message/ChatCard.vue";
 import Sign from "@/views/sign/Sign.vue";
+import Community from "@/views/community/Community.vue";
+import Setting from "@/views/setting/Setting.vue";
+import Account from "@/views/setting/account/Account.vue";
+import Password from "@/views/setting/account/Password.vue";
+import CommunityDetailCard from "@/views/community/CommunityDetailCard.vue";
+import MemberCard from "@/views/community/MemberCard.vue";
+import ApplyCard from "@/views/community/ApplyCard.vue";
 
 Vue.use(VueRouter)
 
@@ -53,8 +60,9 @@ const routes = [
                         path: 'setting',
                         component: ChatSetting
                     },
+
                     {
-                        path:'chat/:id',
+                        path: 'chat/:id',
                         component: ChatCard
                     }
                 ]
@@ -70,6 +78,43 @@ const routes = [
             {
                 path: '/explore',
                 component: Explore
+            }, {
+                path: '/community',
+                component: Community
+            },
+            {
+                path: '/community/:id',
+                component: CommunityDetailCard
+            },
+            {
+                path: '/community/apply/:id',
+                component: ApplyCard
+            },
+            {
+                path: '/community/member/:communityId',
+                component: MemberCard
+            },
+            {
+                path: '/setting',
+                component: Setting,
+                redirect: '/setting/account',
+                children: [
+                    {
+                        path: 'chat',
+                        component: ChatSetting
+                    },
+                    {
+                        path: 'account',
+                        component: Account,
+                        children: [
+                            {
+                                path: 'password',
+                                component: Password
+                            }
+                        ]
+                    },
+
+                ]
             }
         ]
     },

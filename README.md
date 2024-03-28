@@ -61,8 +61,11 @@
 
 ![](./docs/chat.png)
 
-#### 设置
-![](./docs/chat-setting.png)
+### 社群
+![](./docs/community.png)
+
+### 设置
+![](./docs/setting.png)
 
 
 ### 搜索

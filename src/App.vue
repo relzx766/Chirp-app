@@ -53,12 +53,13 @@ window.ResizeObserver = class ResizeObserver extends _ResizeObserver {
   min-width: 10px !important;
   padding: 0 !important;
 }
+
 .el-textarea__inner {
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -77,13 +78,6 @@ nav a {
 nav a.router-link-exact-active {
   color: #42b983;
 }
-.el-dialog__wrapper {
-  .el-dialog {
-    border-radius: 10px;
-  }
-}
-.el-dialog .el-dialog__body {
-  padding: 0;
-}
+
 
 </style>

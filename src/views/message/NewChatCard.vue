@@ -19,7 +19,7 @@
           </div>
         </div>
         <el-row style="margin-top: 14px;border-bottom: 1px #DCDFE6 solid">
-          <el-input v-model="keyword" class="rounded-pill" placeholder="搜索用户"
+          <el-input ref="input-search-ref" v-model="keyword" class="rounded-pill" placeholder="搜索用户"
                     @keyup.enter.native="init();doSearch()">
             <el-button slot="prepend" icon="el-icon-search" style="color: #409EFF;font-size: 18px;padding-left: 0"
                        @click="init();doSearch()"></el-button>
@@ -49,18 +49,18 @@
 
     <div v-if="!step2||Object.keys(receivers).length<=0" style="height: 60vh;border: none;overflow-x: hidden">
       <div v-for="item in users" :key="item.id"
+           :class="!getChatable(item)?['pe-none','bg-light']:[]"
            class="row user-item"
            @click="addReceiver(item)"
-           :class="!canBeChat(item)?['pe-none','bg-light']:[]"
-           >
-<!--        //style="pointer-events: none;"-->
+      >
+        <!--        //style="pointer-events: none;"-->
         <div class="col-1" style="text-align: left;">
           <el-avatar :src="item.smallAvatarUrl"/>
         </div>
         <div class="col-11" style="text-align: left;">
           <div style="margin-left: 12px">
             <el-row style="font-weight: bold;color: #303133">{{ item.nickname }}</el-row>
-            <el-row v-if="!canBeChat(item)">不可以向 @{{ item.username }} 发私信</el-row>
+            <el-row v-if="!getChatable(item)">不可以向 @{{ item.username }} 发私信</el-row>
             <el-row v-else>@{{ item.username }}</el-row>
           </div>
 
@@ -73,11 +73,12 @@
   </div>
 </template>
 <script>
-import {getRelations, search} from "@/api/user";
+import {search} from "@/api/user";
 import SendCard from "@/views/message/SendCard.vue";
 import {getChatSettings} from "@/api/advice";
-import {chatAllowEnum, relationEnums} from "@/enums/enums";
+import {chatAllowEnum} from "@/enums/enums";
 import {mapState} from "vuex";
+import {getChatable} from "@/util/chatUtil";
 
 export default {
   name: "NewChatCard",
@@ -86,7 +87,7 @@ export default {
       return chatAllowEnum
     },
     ...mapState({
-      user:state => state.user
+      user: state => state.user
     })
   },
   components: {SendCard},
@@ -103,46 +104,33 @@ export default {
     }
   },
   methods: {
+    getChatable,
     init() {
       this.users = [];
       this.page = 1;
       this.isBottom = false;
       this.loading = false;
     },
-    canBeChat(user){
-     return ((user.chatSetting.allow===chatAllowEnum.ANYONE&&relationEnums.BLOCK!==user.relation)
-          ||user.id===this.user.id
-          ||user.relation===relationEnums.FOLLOW)
-      &&user.chatSetting.chatReady;
-    },
     doSearch() {
       this.loading = true;
-      let users=[];
+      let users = [];
       search(this.keyword, this.page).then(res => {
-        if (res.code===200) {
+        if (res.code === 200) {
           users = res.data.record;
           this.isBottom = users.length <= 0;
         }
-        return users.map(r=>r.id);
-      }).then(userIds=>{
-        return Promise.all([
-            getChatSettings(userIds),
-            getRelations(userIds)
-        ])
-      }).then(([chatRes,relaRes])=>{
-        if (chatRes.code===200&&relaRes.code===200){
+        return users.map(r => r.id);
+      }).then(userIds => {
+        return getChatSettings(userIds);
+      }).then(chatRes => {
+        if (chatRes.code === 200) {
           let settings = chatRes.data.record;
-          settings=settings.reduce((setting,item)=>{
-            setting[item.userId]=item;
+          settings = settings.reduce((setting, item) => {
+            setting[item.userId] = item;
             return setting;
-          },{});
-          let relations=relaRes.data.record.reduce((relation,item)=>{
-            relation[item.fromId]=item;
-            return relation;
-          },{});
-          users.forEach(user=>{
-            user.chatSetting=settings[user.id];
-            user.relation=relations[user.id]?relations[user.id].status:relationEnums.UNFOLLOW;
+          }, {});
+          users.forEach(user => {
+            user.chatSetting = settings[user.id];
             this.users.push(user);
           });
           this.loading = false;
@@ -165,6 +153,9 @@ export default {
   },
   created() {
     window.addEventListener("scroll", this.loadMore, true);
+  },
+  mounted() {
+    this.$refs['input-search-ref'].focus();
   },
   destroyed() {
     window.removeEventListener("scroll", this.loadMore);

@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7"
+        <div class="col"
              style="border-left:2px solid #EBEEF5;border-right:2px solid #EBEEF5;">
           <el-container>
             <el-main class="overflow-y-auto" style="display: flex;flex-direction: column;height: 100vh;padding: 0">
@@ -16,43 +16,45 @@
 
                   <chirper-card v-if="refer.visible" id="refer" ref="refer" :chirper="refer.record"/>
 
-                  <chirper-card v-if="currentChirper.type!==chirperTypeEnums.QUOTE" id="current" ref="current" :chirper="currentChirper"
+                  <chirper-card v-if="currentChirper.type!==chirperTypeEnums.QUOTE" id="current" ref="current"
+                                :chirper="currentChirper"
                                 :clickEvent="false"
                                 :mediaVisible="true"
                                 :straight="false" shadow="never"/>
-                  <refer-card v-if="currentChirper.type===chirperTypeEnums.QUOTE" id="current" ref="current" :value="currentChirper"
-                            />
+                  <refer-card v-if="currentChirper.type===chirperTypeEnums.QUOTE" id="current" ref="current"
+                              :value="currentChirper"
+                  />
 
 
                 </el-row>
                 <edit-card :chirper="currentChirper"
-                                    class="border-bottom  mt-2"
-                                    @sent="doPost"/>
-                <el-row class="text-start mt-2 mb-2" >
-                  <div class="btn-group bg-light rounded-pill"
-                       role="group"
-                       aria-label="Basic radio toggle button group">
-                    <input type="radio"
-                           class="btn-check "
-                           name="btn-radio" id="btn-radio1" autocomplete="off"
+                           class="border-bottom  mt-2"
+                           @sent="doPost"/>
+                <el-row class="text-start mt-2 mb-2">
+                  <div aria-label="Basic radio toggle button group"
+                       class="btn-group bg-light rounded-pill"
+                       role="group">
+                    <input id="btn-radio1"
+                           autocomplete="off"
+                           class="btn-check " name="btn-radio" type="radio"
                            @click="doOrderTypeChange(replyOrderEnums.HOT)">
                     <label class="btn btn-light rounded-pill"
-                           style="font-size: 14px"
-                           for="btn-radio1">热门</label>
+                           for="btn-radio1"
+                           style="font-size: 14px">热门</label>
 
-                    <input type="radio" class="btn-check" name="btn-radio" id="btn-radio2" autocomplete="off"
-                           @click="doOrderTypeChange(replyOrderEnums.ASC)"
-                    checked>
+                    <input id="btn-radio2" autocomplete="off" checked class="btn-check" name="btn-radio"
+                           type="radio"
+                           @click="doOrderTypeChange(replyOrderEnums.ASC)">
                     <label class="btn btn-light rounded-pill"
-                           style="font-size: 14px"
-                           for="btn-radio2">正序</label>
+                           for="btn-radio2"
+                           style="font-size: 14px">正序</label>
 
-                    <input type="radio" class="btn-check" name="btn-radio" id="btn-radio3" autocomplete="off"
+                    <input id="btn-radio3" autocomplete="off" class="btn-check" name="btn-radio" type="radio"
                            @click="doOrderTypeChange(replyOrderEnums.DESC)">
                     <label class="btn btn-light rounded-pill"
-                           style="font-size: 14px"
                            for="btn-radio3"
-                           >逆序</label>
+                           style="font-size: 14px"
+                    >逆序</label>
                   </div>
                 </el-row>
                 <el-row v-for="item in reply">
@@ -65,23 +67,20 @@
             </el-main>
           </el-container>
         </div>
-        <div class="col-5">
-          <el-container>
-            <el-main>
-              <el-row>
-                <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
-                  <input-card/>
-                  <trend-card style="margin-top: 8%;background-color:#EBEEF5;border-radius: 10px"/>
-                </el-col>
-                <el-col v-if="getToken()==null||!getToken().length>0" :span="20">
-                  <login-card/>
-                </el-col>
+        <div class="col">
 
-              </el-row>
-
-            </el-main>
-          </el-container>
+          <div v-if="getToken()!=null&&getToken().length>0">
+            <input-card class="mt-2"/>
+            <trend-list class="bg-light rounded-4 bg-info-2 mt-4"/>
+          </div>
+          <div v-if="getToken()==null||!getToken().length>0"
+               class=" d-flex justify-content-center h-100 w-100">
+            <div class="align-self-center  w-75">
+              <login-card/>
+            </div>
+          </div>
         </div>
+
       </div>
     </el-main>
   </el-container>
@@ -90,14 +89,15 @@
 
 <script>
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
-import TrendListCard from "@/views/explore/TrendListCard.vue";
+import TrendList from "@/views/explore/TrendListCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
 import {getToken} from "@/util/auth";
-import {getDetail, getReply} from "@/api/chirper";
+import {getChirperPage, getDetail} from "@/api/chirper";
 import ReplyCard from "@/views/edit/ReplyCard.vue";
 import ReferCard from "./ReferCard.vue";
-import {chirperTypeEnums, replyOrderEnums} from "@/enums/enums";
+import {chirperTypeEnums, orderEnums} from "@/enums/enums";
+import {mapState} from "vuex";
 
 export default {
   name: "Chirper",
@@ -106,12 +106,15 @@ export default {
       return chirperTypeEnums
     },
     replyOrderEnums() {
-      return replyOrderEnums
-    }
+      return orderEnums
+    },
+    ...mapState({
+      user: state => state.user
+    })
   },
   components: {
+    TrendList,
     'chirper-card': ChirperCard,
-    'trend-card': TrendListCard,
     'login-card': LoginCard,
     'input-card': InputCard,
     'edit-card': ReplyCard,
@@ -128,27 +131,27 @@ export default {
         record: {},
         visible: false
       },
-      orderType:replyOrderEnums.ASC
+      orderType: orderEnums.ASC
     }
   },
 
   methods: {
     getToken,
-    refreshReplyOptions(){
-      this.reply.splice(0,this.reply.length);
-      this.page=1;
-      this.isLoading=true;
-      this.isBottom=false;
+    refreshReplyOptions() {
+      this.reply.splice(0, this.reply.length);
+      this.page = 1;
+      this.isLoading = true;
+      this.isBottom = false;
 
     },
-    doOrderTypeChange(orderBy){
-      this.orderType=orderBy;
+    doOrderTypeChange(orderBy) {
+      this.orderType = orderBy;
       this.refreshReplyOptions();
       this.getReply();
     },
     getReply() {
-      getReply(this.currentChirper.id, this.page,this.orderType).then((res) => {
-        if (res.code===200) {
+      getChirperPage({chirperId: this.currentChirper.id, page: this.page, order: this.orderType}).then((res) => {
+        if (res.code === 200) {
           this.reply.push(...res.data.record)
         }
       })
@@ -160,8 +163,8 @@ export default {
       if (scrollTop + clientHeight + 10 >= scrollHeight && !this.isBottom && !this.isLoading) {
         this.page++;
         this.isLoading = true;
-        getReply(this.currentChirper.id, this.page,this.orderType).then((res) => {
-          if (res.code===200&&res.data.record.length > 0) {
+        getChirperPage({chirperId: this.currentChirper.id, page: this.page, order: this.orderType}).then((res) => {
+          if (res.code === 200 && res.data.record.length > 0) {
             this.reply.push(...res.data.record);
           } else {
             this.isBottom = true;
@@ -200,7 +203,7 @@ export default {
       this.currentChirper.replyCount++;
       getDetail(chirper.id).then((res) => {
         let chirper = res.data.record;
-        let user = this.$store.getters.getUser;
+        let user = this.user;
         chirper.username = user.username;
         chirper.nickname = user.nickname;
         chirper.avatar = user.smallAvatarUrl;
@@ -244,7 +247,8 @@ li {
   width: calc(43% - 5px);
   top: 0;
 }
-.overflow-y-auto ::-webkit-scrollbar{
+
+.overflow-y-auto ::-webkit-scrollbar {
   display: none;
 }
 </style>

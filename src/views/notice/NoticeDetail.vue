@@ -21,10 +21,10 @@
         <span style="font-weight: bold;">{{ name }}</span>
         <span v-if="urls.length>1">等{{ urls.length }}人</span>
         <span>{{ getEvent }}了</span>
-        <span v-if="sonEntity!=='null'">{{ chirperTypeConvert }}</span>
+        <span v-if="sonEntity!==null&&sonEntity!=='null'">{{ chirperTypeConvert }}</span>
         <span v-if="type===noticeEventEnums.FOLLOW">你</span>
       </el-row>
-      <el-row v-if="sonEntity!=='null'"
+      <el-row v-if="sonEntity!==null&&sonEntity!=='null'"
               style="zoom: 0.92;border-radius: 12px;border: 1px solid #EBEEF5;margin-bottom: 8px;">
         <chirper-card :bar-visible="false" :chirper="sonEntity" :data-visible="false"/>
       </el-row>

@@ -14,7 +14,6 @@
     "bootstrap-icons": "^1.11.3",
     "core-js": "^3.8.3",
     "crypto-js": "^4.2.0",
-    "dplayer": "^1.27.1",
     "element-ui": "^2.15.14",
     "json-bigint": "^1.0.0",
     "moment": "^2.29.4",

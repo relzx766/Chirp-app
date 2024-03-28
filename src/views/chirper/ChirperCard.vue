@@ -1,55 +1,57 @@
 <template>
   <div>
-    <el-card :shadow="shadow" style="border: none;padding: 4px;border-radius: 12px;">
-      <el-row>
-        <el-col :span="2" style="text-align: left;">
+    <el-card v-if="chirper" :shadow="shadow" class="border-0 p-1" style="border-radius: 12px;">
+      <div class="row">
+        <div :class="clickEvent?['finger']:[]" class="col-1"
+             style="text-align: left;"
+             @click="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+chirper.id)}}">
           <el-avatar :src="chirper.avatar" fit="cover" size="large" style="  cursor: pointer;"
                      @click.native="$router.push('/profile?username='+chirper.username)"/>
-        </el-col>
-        <el-col :span="21" style="text-align: left;margin-left: 10px">
-          <el-row v-if="straight">
-            <el-col :span="16">
-              <el-link style="font-size: 16px;font-weight: bold" @click="$router.push('/profile?username='+chirper.username)">{{
+        </div>
+        <div class="col-sm" style="text-align: left;">
+          <div v-if="straight" class="row">
+            <div class="col-8">
+              <el-link class="fs-6 fw-bold" @click="$router.push('/profile?username='+chirper.username)">{{
                   chirper.nickname
                 }}
               </el-link>
-              <span
-                  style="color:#909399;margin-left: 10px">@{{ chirper.username }}</span>
-              <span v-if="dataVisible" style="color: #909399;margin-left: 10px;font-size: 14px;">{{
+              <span class="text-secondary ms-2 fs-6">@{{ chirper.username }}</span>
+              <span v-if="dataVisible" class="fs-5 text-secondary"> · </span>
+              <span v-if="dataVisible" class="text-secondary fs-6">{{
                   yMdHm(new Date(chirper.createTime))
                 }}</span>
-            </el-col>
-            <el-col :span="8" style="text-align: right">
-            </el-col>
-          </el-row>
-          <el-row v-if="!straight">
-            <el-row>
-              <el-link  @click="$router.push('/profile?username='+chirper.username)" style="font-size: 16px;font-weight: bold">{{
+            </div>
+            <div class="col" style="text-align: right">
+            </div>
+          </div>
+          <div v-if="!straight" class="row">
+            <div>
+              <el-link class="fs-6 fw-bold" @click="$router.push('/profile?username='+chirper.username)">{{
                   chirper.nickname
                 }}
               </el-link>
-            </el-row>
-            <el-row style="color:#909399;font-size: 12px">@{{ chirper.username }}</el-row>
-          </el-row>
-          <el-row style="cursor: pointer;"
-                  @click.native="()=>{if (clickEvent) {$router.push('/chirper/detail?id='+chirper.id)}}">
-            <el-row style="font-size: 14px;cursor: pointer;margin-top: 12px"
-                    v-html="chirper.text?formatText(chirper.text):chirper.text"></el-row>
+            </div>
+            <div class="text-secondary fs-8">@{{ chirper.username }}</div>
+          </div>
+          <div class="row">
+            <div
+                class="fs-7  mt-3"
+                v-html="chirper.text?formatChirper(chirper.text):chirper.text"></div>
 
-            <div v-if="mediaVisible&&chirper.mediaKeys&&chirper.mediaKeys.length>0" id="media" ref="media">
+            <div v-if="mediaVisible&&chirper.mediaKeys&&chirper.mediaKeys.length>0" id="media" ref="media" class="w-94">
               <MediaCard :media="chirper.mediaKeys"/>
             </div>
-          </el-row>
-          <el-row v-if="!straight" style="text-align: left;font-size: 14px;color: #909399;margin-top: 12px;">{{
+          </div>
+          <div v-if="!straight" class="text-start fs-7 mt-3 text-secondary">{{
               yMdHm(new Date(chirper.createTime))
             }}
-          </el-row>
+          </div>
           <el-row>
             <click-bar v-if="barVisible"
                        :value="chirper"/>
           </el-row>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
 
     </el-card>
 
@@ -57,12 +59,12 @@
 </template>
 
 <script>
-import {bigNumberToString, formatText, getDate} from "@/util/tools";
+import {bigNumberToString, getDate} from "@/util/tools";
 import ChirperClickBar from "@/views/chirper/ChirperClickBar.vue";
 
 import moment from "moment";
 import MediaCard from "@/views/media/MediaCard.vue";
-import {yMdHm} from "@/util/formatter";
+import {formatChirper, yMdHm} from "@/util/formatter";
 
 export default {
   name: "ChirperCard",
@@ -101,7 +103,7 @@ export default {
   methods: {
     yMdHm,
     bigNumberToString,
-    getDate, formatText,
+    getDate, formatChirper,
     formatDate(timestamp) {
       let date = moment(new Date(timestamp));
       let format;
@@ -119,6 +121,8 @@ export default {
   },
   components: {
     'click-bar': ChirperClickBar, MediaCard
+  },
+  created() {
   }
 }
 </script>
@@ -139,7 +143,7 @@ li {
   border: none;
 }
 
-/deep/ .el-card__body {
+::v-deep .el-card__body {
   padding: 0 !important;
 }
 

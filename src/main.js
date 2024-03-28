@@ -14,6 +14,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import '@/assets/css/text-style.css';
 import '@/assets/css/el-custom.css';
+import '@/assets/css/icon.css';
+
 Vue.prototype.xss = xss;
 Vue.prototype.$video = Video
 

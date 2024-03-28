@@ -6,10 +6,11 @@ import notice from "@/config/vuex/module/notice";
 import setting from "@/config/vuex/module/setting";
 import user from "@/config/vuex/module/user";
 import ws from "@/config/vuex/module/ws";
+import menu from "@/config/vuex/module/menu";
 
 Vue.use(Vuex);
 export default new Vuex.Store({
-    modules:{
-        chat,e2ee,notice,setting,user,ws
+    modules: {
+        chat, e2ee, notice, setting, user, ws, menu
     }
 })

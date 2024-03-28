@@ -1,29 +1,36 @@
 <template>
-  <div style="display:flex;overflow-y: auto;flex-direction: column;">
+  <div style="display: flex; overflow-y: auto; flex-direction: column">
     <el-card
-        v-for="(item) in messages" :key="item.messages.length>0?item.messages[item.messages.length-1].id:item.date"
-              shadow="hover"
-             style="border: none;border-radius: 0;cursor: pointer"
-             :class="chatStyle(item.conversation)"
-             @click.native="$router.push('/message/chat/'+item.conversation)">
-      <conversation-card :conversation="item"
-                         :pinned="pinned===item.conversation"
-      />
+        v-for="item in messages"
+        :key="
+        item.messages.length > 0
+          ? item.messages[item.messages.length - 1].id
+          : item.date
+      "
+        :class="chatStyle(item.conversation)"
+        shadow="hover"
+        style="border: none; border-radius: 0; cursor: pointer"
+        @click.native="$router.push('/message/chat/' + item.conversation)"
+    >
+      <conversation-card :conversation="item"/>
     </el-card>
-    <div v-if="messages.length<=0"  class="p-5">
+    <div v-if="messages.length <= 0" class="p-5">
       <div class="fw-bold fs-3 text-dark text-start">欢迎来到你的收件箱！</div>
       <div class="text-start text-secondary fs-7">
-        在Chirp上和别人进行私密对话，大家互发私信，分享帖子等。
+        在Chirp上和别人进行私密对话,大家互发私信,分享帖子等。
       </div>
       <div class="text-start">
-        <el-button round type="primary" @click="newChatDialog=true"
-                   class="fs-6 fw-bolder mt-4">写一封私信</el-button>
+        <el-button
+            class="fs-6 fw-bolder mt-4"
+            round
+            type="primary"
+            @click="newChatDialog = true"
+        >写一封私信
+        </el-button
+        >
       </div>
-      <el-dialog
-          :show-close="false"
-          :visible.sync="newChatDialog"
-          width="36%">
-        <new-chat-card />
+      <el-dialog :show-close="false" :visible.sync="newChatDialog" width="36%">
+        <new-chat-card/>
       </el-dialog>
     </div>
   </div>
@@ -39,67 +46,79 @@ export default {
   name: "MessageGroupCard",
   components: {
     NewChatCard,
-    'message-card': MessageCard,
-    ConversationCard
+    "message-card": MessageCard,
+    ConversationCard,
   },
   data() {
     return {
-      messages: {},
-      newChatDialog:false
-    }
+      messages: [],
+      newChatDialog: false,
+    };
   },
-  computed:{
+  computed: {
     ...mapState({
-      setting:state => state.setting,
-      chat:state => state.chat,
+      setting: (state) => state.setting,
+      chat: (state) => state.chat,
     }),
-    pinned(){
+    pinned() {
       return this.setting.chat.pinned;
     },
   },
   methods: {
     init() {
     },
-    doChatSort(){
+    doChatSort() {
       let messages = this.chat.record;
-      let temp=messages[this.pinned];
-      let arr = Object.values(messages)
-          .filter(msg=>msg.conversation!==this.pinned)
-          .sort((a, b) => {
-            return new Date(b.date) - new Date(a.date)
-          });
-      if (temp) {
-        arr.unshift(temp);
+      let temp = [];
+      let pinnes = this.pinned;
+      let arr = [];
+      Object.values(messages).forEach((msg) => {
+        if (pinnes.includes(msg.conversation)) {
+          temp.push(msg);
+        } else {
+          arr.push(msg);
+        }
+      });
+      arr = arr.sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+      });
+      if (temp.length > 0) {
+        temp = temp.sort((a, b) => {
+          return (
+              pinnes.indexOf(a.conversation) - pinnes.indexOf(b.conversation)
+          );
+        });
+        arr.unshift(...temp);
       }
-      this.$set(this, 'messages', arr);
+      this.$set(this, "messages", arr);
     },
-    chatStyle(conversation){
-      let classes=[];
-      if (conversation===this.$route.params.id){
-        classes.push('border-2','border-end','border-primary','bg-focus-1');
+    chatStyle(conversation) {
+      let classes = [];
+      if (conversation === this.$route.params.id) {
+        classes.push("border-2", "border-end", "border-primary", "bg-focus-1");
       }
-      if (conversation===this.pinned){
-        classes.push('bg-light');
+      if (this.pinned.includes(conversation)) {
+        classes.push("bg-light");
       }
       return classes;
-    }
-  },
-  watch:{
-    '$store.state.chat.count':{
-      handler(){
-        this.doChatSort();
-      },
-      immediate:true
     },
-    pinned:{
-      handler(){
+  },
+  watch: {
+    "$store.state.chat.count": {
+      handler() {
         this.doChatSort();
       },
-      immediate:true,
-      deep:true
-    }
+      immediate: true,
+    },
+    pinned: {
+      handler() {
+        this.doChatSort();
+      },
+      immediate: true,
+      deep: true,
+    },
   },
-/*  watch: {
+  /*  watch: {
     '$store.state.chat.count': {
       handler() {
         this.doChatSort();
@@ -115,18 +134,18 @@ export default {
     }
   },*/
   created() {
-      this.init();
+    this.init();
   },
   mounted() {
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
 ::v-deep .el-timeline-item__node--normal {
   width: 0;
 }
-.conversation-more-button{
 
+.conversation-more-button {
 }
 </style>

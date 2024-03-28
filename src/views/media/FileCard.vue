@@ -1,28 +1,71 @@
 <template>
-<div class="w-100 h-100">
-  <div v-if="category===fileCategoryEnums.IMAGE">
-    <img :src="url" alt="图片"/>
-  </div>
-  <div v-if="category===fileCategoryEnums.VIDEO" class="w-100 h-100">
-    <div id="player" class="w-100 h-100">
-      <video ref="videoPlayer"  class="video-js w-100 h-100 rounded-2 overflow-hidden"></video>
+  <div class="d-flex justify-content-center align-items-center" @click="handlerClick">
+    <div v-if="category === fileCategoryEnums.IMAGE" class="d-flex">
+      <el-image :src="url" class="d-flex" fit="container"></el-image>
     </div>
-  </div>
-  <div v-else class="w-100 h-100">
-    <el-card shadow="hover" @click.native="download" style="cursor: pointer">
-      <div class="row">
-        <div class="col-8">
-          <v-clamp autoresize :max-lines="2">
-            {{url}}
-          </v-clamp>
-          </div>
-        <div class="col text-end">
-          <i :class="[icon.icon]" class="fs-2"/>
-        </div>
+    <div v-else-if="category === fileCategoryEnums.VIDEO" class="w-100 h-100">
+      <div id="player" class="w-100 h-100">
+        <video
+            ref="videoPlayer"
+            class="video-js w-100 h-100 overflow-hidden"
+        ></video>
       </div>
-    </el-card>
+    </div>
+    <div v-else class="w-100 h-100">
+      <el-card shadow="hover" style="cursor: pointer" @click.native="download">
+        <div class="row">
+          <div class="col-8 d-flex flex-column">
+            <span>
+              {{ url }}
+            </span>
+            <span v-if="size" class="text-secondary">{{ sizeAsMb }}MB</span>
+          </div>
+          <div class="col text-end">
+            <i :class="[icon.icon]" class="fs-2"/>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
+    <el-dialog
+        v-if="previewList"
+        :append-to-body="true"
+        :destroy-on-close="true"
+        :fullscreen="true"
+        :visible.sync="previewDialog"
+        custom-class="no-header-dialog d-flex justify-content-center align-items-center"
+    >
+      <div
+          class="w-100 h-100 d-flex justify-content-between align-items-center"
+      >
+        <el-button
+            :disabled="previewIndex <= 0"
+            circle
+            type="info"
+            @click="handlerPreviewLast"
+        >
+          <i class="bi bi-arrow-left"/>
+        </el-button>
+        <div class="w-75 h-75 d-flex justify-content-center align-items-center">
+          <file-card
+              :key="previewList[previewIndex].url"
+              :size="size"
+              :type="previewList[previewIndex].type"
+              :url="previewList[previewIndex].url"
+              class="w-100"
+          />
+        </div>
+        <el-button
+            :disabled="previewIndex >= previewList.length - 1"
+            circle
+            type="info"
+            @click="handlerPreviewNext"
+        >
+          <i class="bi bi-arrow-right"/>
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
-</div>
 </template>
 <script>
 import {getCategory} from "@/util/tools";
@@ -32,28 +75,47 @@ import VClamp from "vue-clamp";
 export default {
   name: "FileCard",
   components: {VClamp},
-  props:{
-    url:String
+  props: {
+    url: String,
+    type: String,
+    previewList: Array,
+    size: Number,
+    index: {
+      type: Number,
+      default: 0,
+    },
   },
-  computed:{
+  computed: {
     fileCategoryEnums() {
-      return fileCategoryEnums
+      return fileCategoryEnums;
     },
-    extension(){
-      return this.url.substring(this.url.lastIndexOf(".")+1);
+    extension() {
+      if (!this.type) {
+        return this.url.substring(this.url.lastIndexOf(".") + 1);
+      }
+      return this.type.split("/").pop();
     },
-    icon(){
-      return this.fileIcon[this.extension]?this.fileIcon[this.extension]:this.fileIcon.default;
+    icon() {
+      return this.fileIcon[this.extension]
+          ? this.fileIcon[this.extension]
+          : this.fileIcon.default;
     },
-    category(){
-      return  getCategory(this.extension);
+    category() {
+      return getCategory(this.extension);
     },
-    videoOption(){
-      return {
+    sizeAsMb() {
+      if (this.size) {
+        return (this.size / 1024 / 1024).toFixed(1);
+      }
+      return 0;
+    },
+    videoOption() {
+      let option = {
         controls: true, // 是否显示底部控制栏
         preload: "auto", // 加载<video>标签后是否加载视频
         autoplay: "muted", // 静音播放
-        playbackRates: [0.5, 1, 1.5, 2],// 倍速播放
+        fluid: true, //自适应
+        playbackRates: [0.5, 1, 1.5, 2], // 倍速播放
         controlBar: {
           // 自定义按钮的位置
           children: [
@@ -64,7 +126,7 @@ export default {
             {name: "durationDisplay"},
             {
               name: "volumePanel", // 音量调整方式横线条变为竖线条
-              inline: false
+              inline: false,
             },
             {name: "pictureInPictureToggle"}, //画中画播放模式
             {name: "fullscreenToggle"},
@@ -72,66 +134,106 @@ export default {
         },
         sources: [
           // 指定视频的类型和链接
-          {
-            src: this.url,
-          },
         ],
       };
-    }
+      if (this.type) {
+        option.sources = [{type: this.type, src: this.url}];
+      } else {
+        option.sources = [{src: this.url}];
+      }
+      return option;
+    },
+    previewable() {
+      const category = getCategory(this.extension);
+      return (
+          (category === fileCategoryEnums.IMAGE ||
+              category === fileCategoryEnums.VIDEO) &&
+          this.previewList &&
+          this.previewList.length > 0
+      );
+    },
+    currentPreview() {
+      return this.previewList[this.previewIndex];
+    },
   },
-  data(){
-    return{
-      fileIcon:{
-        default:{
-          icon:'bi-file-earmark'
+  data() {
+    return {
+      fileIcon: {
+        default: {
+          icon: "bi-file-earmark",
         },
-        apk:{
-          icon:'bi-android'
+        apk: {
+          icon: "bi-android",
         },
-        exe:{
-          icon:'bi-filetype-exe'
+        exe: {
+          icon: "bi-filetype-exe",
         },
-        text:{
-          icon:'bi-file-text'
+        text: {
+          icon: "bi-file-text",
         },
-        zip:{
-          icon:'bi-file-zip-fill'
+        zip: {
+          icon: "bi-file-zip-fill",
         },
-        word:{
-          icon:'bi-file-earmark-word-fill'
+        word: {
+          icon: "bi-file-earmark-word-fill",
         },
-        excel:{
-          icon:'bi-file-earmark-excel-fill'
+        excel: {
+          icon: "bi-file-earmark-excel-fill",
         },
-        ppt:{
-          icon:'file-earmark-ppt-fill'
+        ppt: {
+          icon: "file-earmark-ppt-fill",
         },
-        pdf:{
-          icon:'file-earmark-pdf-fill'
-        }
+        pdf: {
+          icon: "file-earmark-pdf-fill",
+        },
       },
-      player:null
-    }
+      player: null,
+      previewDialog: false,
+      previewIndex: 0,
+    };
   },
-  methods:{
-    download(){
-      window.location.href=this.url;
-    }
+  methods: {
+    download() {
+      window.location.href = this.url;
+    },
+    handlerClick() {
+      if (this.previewable) {
+        this.previewDialog = true;
+      }
+    },
+    handlerPreviewLast() {
+      if (this.previewIndex > 0) {
+        this.previewIndex--;
+      }
+    },
+    handlerPreviewNext() {
+      if (this.previewIndex < this.previewList.length - 1) {
+        this.previewIndex++;
+      }
+    },
   },
   created() {
+    this.previewIndex = this.index;
   },
   mounted() {
-    if (this.category===fileCategoryEnums.VIDEO){
-      this.player = this.$video(this.$refs.videoPlayer, this.videoOption, function onPlayerReady() {
-      });
+    if (this.category === fileCategoryEnums.VIDEO) {
+      this.player = this.$video(
+          this.$refs.videoPlayer,
+          this.videoOption,
+          function onPlayerReady() {
+          }
+      );
     }
+  },
+  updated() {
+
   },
   destroyed() {
     if (this.player) {
       this.player.dispose();
     }
-  }
-}
+  },
+};
 </script>
 <style scoped>
 video {

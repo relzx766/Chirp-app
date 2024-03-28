@@ -5,38 +5,36 @@
         <div class="loading"/>
       </div>
     </el-row>
-    <el-card v-for="(item,index) in users" :key="item.id" shadow="hover" style="border: none;border-radius: 12px;margin-bottom: 4px"
-             @click.native="$router.push('/profile?id='+item.id)">
-      <el-row style="text-align: left">
-        <el-col :span="2">
-          <el-avatar :src="item.smallAvatarUrl"/>
-        </el-col>
-        <el-col :span="16">
-          <el-row style="color:#303133;">{{ item.nickname }}</el-row>
-          <el-row style="font-size: 14px;color:#909399;">@{{ item.username }}</el-row>
-          <el-row>{{ item.description }}</el-row>
-        </el-col>
-        <el-col :span="6" style="text-align: right">
-          <el-button v-if="item.relation===1" class="followed" round @click.stop="doFollow(index)">正在关注</el-button>
-          <el-button v-if="item.relation===2" class="unfollowed" round @click.stop="doFollow(index)">关注</el-button>
-        </el-col>
-      </el-row>
+    <el-card v-for="(item,index) in users" :key="`${userList[item].id}&${userList[item].relation}`" shadow="hover"
+             style="border: none;border-radius: 12px;margin-bottom: 4px">
+      <user-info-card
+          :user="userList[item]"
+      />
     </el-card>
 
   </div>
 </template>
 
 <script>
-import {follow, search, unFollow} from "@/api/user";
+import UserInfoCard from "@/component/UserInfoCard.vue";
+import {userMutations} from "@/config/vuex/mutation-types";
+import {mapState} from "vuex";
+import {search} from "@/api/user";
 
 export default {
   name: "SearchUserCard",
+  components: {UserInfoCard},
   props: {
     keyword: "",
     page: {
       type: Number,
       default: 1
     }
+  },
+  computed: {
+    ...mapState({
+      userList: state => state.user.userList
+    })
   },
   data() {
     return {
@@ -57,35 +55,19 @@ export default {
       if (!this.isBottom) {
         this.isLoading = true;
         search(this.keyword, this.page).then(res => {
-          this.users.push(...res.data.record);
-          this.isBottom = res.data.record.length > 0;
+          if (res.code === 200) {
+            const users = res.data.record;
+            this.isBottom = users.length > 0;
+            users.forEach(user => {
+              this.users.push(user.id);
+              this.$store.commit(`user/${userMutations.SET_USER_TO_LIST}`, {user});
+            })
+          }
+        }).finally(_ => {
           this.isLoading = false;
         })
       }
     },
-    changeFollowBtnText(type) {
-      if (type === 1) {
-        this.followBtnText = "正在关注";
-        this.followBtnClass = "followed";
-      }
-      if (type === 2) {
-        this.followBtnText = "关注";
-        this.followBtnClass = "unfollowed";
-      }
-    },
-    doFollow(index) {
-      let user = this.users[index];
-      if (user.relation === 1) {
-        unFollow(user.id).then(() => {
-          user.relation = 2;
-        })
-      } else if (user.relation === 2) {
-        follow(user.id).then(() => {
-          user.relation = 1;
-        })
-      }
-
-    }
   },
   watch: {
     keyword(val) {

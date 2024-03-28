@@ -15,25 +15,12 @@ export const getByIds = (ids) => {
         data: data
     })
 }
-export const getChirperPage = (page, options) => {
-    let data = new FormData();
-    if (options) {
-        if (options.userId) {
-            data.append("userId", options.userId);
+export const getChirperPage = ({page, pageSize, order, media, chirperId, userIds, keyword, communityId,type}) => {
+    return JsonPost({
+        url: sever + `/chirper/page`,
+        data: {
+            page, pageSize, order, media, chirperId, userIds, keyword, communityId,type
         }
-        if (options.type) {
-            data.append("type", options.type);
-        }
-        if (options.media) {
-            data.append("media", options.media);
-        }
-        if (options.chirperId) {
-            data.append("chirperId", options.chirperId);
-        }
-    }
-    return FormPost({
-        url: sever + `/chirper/page/${page}`,
-        data: data
     })
 }
 export const doLike = (id) => {
@@ -52,14 +39,15 @@ export const cancelLike = (id) => {
         }
     })
 }
-export const postChirper = (text, mediaKeys,replyRange,activeTime) => {
+export const postChirper = (text, mediaKeys, replyRange, activeTime, communityId) => {
     return JsonPost({
         url: sever + '/chirper/add',
         data: {
             text,
             mediaKeys,
             replyRange,
-            activeTime
+            activeTime,
+            communityId
         }
     })
 }
@@ -79,7 +67,7 @@ export const cancelForward = (id) => {
         data: data
     })
 }
-export const quoteChirper = (text, referencedChirperId, mediaKeys,replyRange,activeTime) => {
+export const quoteChirper = (text, referencedChirperId, mediaKeys, replyRange, activeTime) => {
     return JsonPost({
         url: sever + "/chirper/quote",
         data: {
@@ -91,7 +79,7 @@ export const quoteChirper = (text, referencedChirperId, mediaKeys,replyRange,act
         }
     })
 }
-export const postReply = (text, inReplyToChirperId, mediaKeys,activeTime) => {
+export const postReply = (text, inReplyToChirperId, mediaKeys, activeTime) => {
     return JsonPost({
         url: sever + "/chirper/reply",
         data: {
@@ -102,10 +90,10 @@ export const postReply = (text, inReplyToChirperId, mediaKeys,activeTime) => {
         }
     })
 }
-export const getReply = (id, page,order) => {
+export const getReply = (id, page, order) => {
     return Get({
         url: `${sever}/chirper/child/${id}/${page}`,
-        data:{order}
+        data: {order}
     })
 }
 export const getByAuthor = (id, page) => {

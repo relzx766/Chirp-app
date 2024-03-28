@@ -8,40 +8,45 @@ import {userActions} from "@/config/vuex/action-types";
 export default {
     namespaced: true,
     state: {
-            id: '',
-            username: '',
-            password: '',
-            nickname: '',
-            email: '',
-            birthday: '',
-            gender: '',
-            createTime: '',
-            description: '',
-            profileBackUrl: '',
-            smallAvatarUrl: '',
-            mediumAvatarUrl: '',
-            largeAvatarUrl: '',
-            followNum: '',
-            followingNum: '',
-            status: 1,
-            relation: '',
-        userList:{}
+        id: '',
+        username: '',
+        password: '',
+        nickname: '',
+        email: '',
+        birthday: '',
+        gender: '',
+        createTime: '',
+        description: '',
+        profileBackUrl: '',
+        smallAvatarUrl: '',
+        mediumAvatarUrl: '',
+        largeAvatarUrl: '',
+        followNum: '',
+        followingNum: '',
+        status: 1,
+        relation: '',
+        relationReverse: '',
+        userList: {},
+        counter: 0
     },
     mutations: {
         [userMutations.SET_USER](state, {user}) {
-            Object.assign(state,user);
+            Object.assign(state, user);
         },
         [userMutations.CLEAR_USER](state) {
             state = {};
         },
-        [userMutations.SET_USER_LIST](state,{userList}){
-            state.userList=userList;
+        [userMutations.SET_USER_LIST](state, {userList}) {
+            state.userList = userList;
+            state.counter++;
         },
-        [userMutations.SET_USER_TO_LIST](state,{user}){
-            state.userList[user.id]=user;
+        [userMutations.SET_USER_TO_LIST](state, {user}) {
+            state.userList[user.id] = user;
+            state.counter++;
         },
-        [userMutations.CLEAR_USER_LIST](state){
-            state.userList=[];
+        [userMutations.CLEAR_USER_LIST](state) {
+            state.userList = [];
+            state.counter++;
         }
     },
     actions: {
@@ -57,7 +62,7 @@ export default {
             }).then(token => {
                 load(token).then(r => {
                     if (r.code === 200) {
-                        commit(userMutations.SET_USER, {user:r.data.record});
+                        commit(userMutations.SET_USER, {user: r.data.record});
                     } else {
                         throw new Error(r.message);
                     }
@@ -68,34 +73,39 @@ export default {
             removeToken();
             commit(userMutations.CLEAR_USER);
         },
-        [userActions.INIT_USER]({commit,state}) {
+        [userActions.INIT_USER]({commit, state}) {
             let token = getToken();
             if (token) {
                 load(token).then(r => {
                     if (r.code === 200) {
-                        commit(userMutations.SET_USER, {user:r.data.record});
-                    }else {
+                        commit(userMutations.SET_USER, {user: r.data.record});
+                    } else {
                         throw new Error(r.message);
                     }
                 })
-            }else {
+            } else {
                 throw new Error("未登录")
             }
         },
-        [userActions.FETCH_USER]({commit}, {userIds}){
-            userIds=Array.from(userIds);
-            if (userIds.length>0){
-                return getProfile(JSON.stringify(userIds)).then(res=>{
-                    if(res.code===200){
+        [userActions.FETCH_USER]({commit}, {userIds}) {
+            userIds = Array.from(userIds);
+            if (userIds.length > 0) {
+                return getProfile(JSON.stringify(userIds)).then(res => {
+                    if (res.code === 200) {
                         for (let i = 0; i < res.data.record.length; i++) {
-                            let user=res.data.record[i];
-                            commit(userMutations.SET_USER_TO_LIST,{user});
+                            let user = res.data.record[i];
+                            commit(userMutations.SET_USER_TO_LIST, {user});
                         }
-                    }else {
+                    } else {
                         throw new Error(res.message);
                     }
                 });
             }
+        },
+        [userActions.FETCH_USER_NOT_EXISTS]({commit, state, dispatch}, {userIds}) {
+            userIds = Array.from(userIds);
+            let filterIds = userIds.filter(id => !state.userList[id]);
+            return dispatch(userActions.FETCH_USER, {userIds: filterIds});
         }
     },
 }

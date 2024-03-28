@@ -2,7 +2,7 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7 border-start border-end">
+        <div class="col border-start border-end">
           <el-container>
             <el-main class="overflow-y-auto" style="display: flex;flex-direction: column;height: 100vh;padding: 0">
               <el-row class="fw-bold fs-4" style="height: 80px;align-self: flex-start">
@@ -16,60 +16,94 @@
                   <el-row>
                     <profile-card :is-self="currentUser.id===user.id" :value="user"/>
                   </el-row>
+                  <div v-if="getProfileViewable(user)">
+                    <div
+                        class="user-select-none finger d-flex flex-nowrap align-self-center justify-content-around option-item fw-bold text-dark border-bottom">
+                      <div v-for="item in switchOptions"
+                           class="flex-grow-1 pt-3 pb-3 fs-7 text-center position-relative"
+                           @click="switchTo(item)">
+                        <div>{{ item }}</div>
+                        <div v-if="switchType===item"
+                             class="w-30 position-absolute bottom-0 start-50 translate-middle-x switch-btn-bottom bg-primary rounded-pill">
+                        </div>
+                      </div>
 
-                  <el-row class="d-flex justify-content-between border-bottom">
-                    <el-button round
-                               class="border-0  bg-white pb-0"
-                               :class="!$route.query.type?['text-dark']:[]"
-                               @click="$router.push(`profile?username=${user.username}`)">
-                      <span class="ms-2 me-2 fw-bold fs-6">帖子</span>
-                      <div class="progress mt-2 bg-white " style="height: 4px">
-                        <div v-show="!$route.query.type" class="progress-bar bg-primary" role="progressbar"
-                             style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div>
-                    </el-button>
-                    <el-button round class="border-0 bg-white pb-0"
-                               :class="$route.query.type===chirperSearchEnums.REPLY?['text-dark']:[]"
-                               @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.REPLY}`)">
-                      <span class="ms-2 me-2 fw-bold fs-6  mb-2">回复</span>
-                      <div class="progress mt-2 bg-white" style="height: 4px">
-                        <div v-show="$route.query.type===chirperSearchEnums.REPLY" class="progress-bar bg-primary"
-                             role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0"
-                             aria-valuemax="100"></div>
-                      </div>
-                    </el-button>
-                    <el-button round class="border-0 bg-white pb-0"
-                               :class="$route.query.type===chirperSearchEnums.MEDIA?['text-dark']:[]"
-                               @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.MEDIA}`)">
-                      <span class="ms-2 me-2 fw-bold fs-6  mb-2">媒体</span>
-                      <div class="progress mt-2 bg-white" style="height: 4px">
-                        <div v-show="$route.query.type===chirperSearchEnums.MEDIA" class="progress-bar bg-primary"
-                             role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0"
-                             aria-valuemax="100"></div>
-                      </div>
-                    </el-button>
-                    <el-button round class="border-0 bg-white pb-0"
-                               :class="$route.query.type===chirperSearchEnums.LIKE?['text-dark']:[]"
-                               @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.LIKE}`)">
-                      <span class="ms-2 me-2 fw-bold fs-6  mb-2">喜欢</span>
-                      <div class="progress mt-2 bg-white" style="height: 4px">
-                        <div v-show="$route.query.type===chirperSearchEnums.LIKE" class="progress-bar bg-primary"
-                             role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0"
-                             aria-valuemax="100"></div>
-                      </div>
-                    </el-button>
-                  </el-row>
-                  <div v-for="key in Object.keys(chirpers)">
-                    <el-row v-show="show(key)">
-                      <el-row v-for="item in chirper" class="border-bottom">
+                    </div>
+                    <div>
+                      <div v-for="item in records[switchType].record">
                         <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE"
                                     :barVisible="item.type!==chirperTypeEnums.FORWARD"
                                     :value="item" style="margin-top: 8px;"/>
                         <chirper-card
                             v-else :chirper="item"
                             style="margin-top: 8px;"/>
-                      </el-row>
-                    </el-row>
+                      </div>
+                    </div>
+                    <!--                    <el-row class="d-flex justify-content-between border-bottom">
+                                          <el-button :class="!$route.query.type?['text-dark']:[]"
+                                                     class="border-0  bg-white pb-0"
+                                                     round
+                                                     @click="$router.push(`profile?username=${user.username}`)">
+                                            <span class="ms-2 me-2 fw-bold fs-6">帖子</span>
+                                            <div class="progress mt-2 bg-white " style="height: 4px">
+                                              <div v-show="!$route.query.type" aria-valuemax="100" aria-valuemin="0"
+                                                   aria-valuenow="100" class="progress-bar bg-primary" role="progressbar"
+                                                   style="width: 100%"></div>
+                                            </div>
+                                          </el-button>
+                                          <el-button :class="$route.query.type===chirperSearchEnums.REPLY?['text-dark']:[]"
+                                                     class="border-0 bg-white pb-0"
+                                                     round
+                                                     @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.REPLY}`)">
+                                            <span class="ms-2 me-2 fw-bold fs-6  mb-2">回复</span>
+                                            <div class="progress mt-2 bg-white" style="height: 4px">
+                                              <div v-show="$route.query.type===chirperSearchEnums.REPLY" aria-valuemax="100"
+                                                   aria-valuemin="0" aria-valuenow="100" class="progress-bar bg-primary" role="progressbar"
+                                                   style="width: 100%"></div>
+                                            </div>
+                                          </el-button>
+                                          <el-button :class="$route.query.type===chirperSearchEnums.MEDIA?['text-dark']:[]"
+                                                     class="border-0 bg-white pb-0"
+                                                     round
+                                                     @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.MEDIA}`)">
+                                            <span class="ms-2 me-2 fw-bold fs-6  mb-2">媒体</span>
+                                            <div class="progress mt-2 bg-white" style="height: 4px">
+                                              <div v-show="$route.query.type===chirperSearchEnums.MEDIA" aria-valuemax="100"
+                                                   aria-valuemin="0" aria-valuenow="100" class="progress-bar bg-primary" role="progressbar"
+                                                   style="width: 100%"></div>
+                                            </div>
+                                          </el-button>
+                                          <el-button :class="$route.query.type===chirperSearchEnums.LIKE?['text-dark']:[]"
+                                                     class="border-0 bg-white pb-0"
+                                                     round
+                                                     @click="$router.push(`profile?username=${user.username}&type=${chirperSearchEnums.LIKE}`)">
+                                            <span class="ms-2 me-2 fw-bold fs-6  mb-2">喜欢</span>
+                                            <div class="progress mt-2 bg-white" style="height: 4px">
+                                              <div v-show="$route.query.type===chirperSearchEnums.LIKE" aria-valuemax="100"
+                                                   aria-valuemin="0" aria-valuenow="100" class="progress-bar bg-primary" role="progressbar"
+                                                   style="width: 100%"></div>
+                                            </div>
+                                          </el-button>
+                                        </el-row>
+                                        <div v-for="key in Object.keys(chirpers)">
+                                          <el-row v-show="show(key)">
+                                            <el-row v-for="item in chirper" class="border-bottom">
+                                              <refer-card v-if="item.type===chirperTypeEnums.FORWARD||item.type===chirperTypeEnums.QUOTE"
+                                                          :barVisible="item.type!==chirperTypeEnums.FORWARD"
+                                                          :value="item" style="margin-top: 8px;"/>
+                                              <chirper-card
+                                                  v-else :chirper="item"
+                                                  style="margin-top: 8px;"/>
+                                            </el-row>
+                                          </el-row>
+                                        </div>-->
+                  </div>
+                  <div v-else-if="user.relation===relationEnums.BLOCK">
+                    <div class="text-start fw-bold fs-3 text-dark mt-5 ms-5">@{{ user.username }}已被屏蔽</div>
+                    <div class="text-start  text-secondary ms-5">如果你想查看他的帖子，需要先解除屏蔽</div>
+                  </div>
+                  <div v-else-if="user.relationReverse===relationEnums.BLOCK">
+                    <div class="text-start fw-bold fs-3 text-dark mt-5 ms-5">@{{ user.username }}已屏蔽了你</div>
                   </div>
                 </div>
 
@@ -78,20 +112,18 @@
           </el-container>
 
         </div>
-        <div class="col-5">
-          <el-row class="h-100 w-100">
-            <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
-              <input-card/>
-              <trend-card style="margin-top: 8%;background-color:#EBEEF5;border-radius: 10px"/>
-            </el-col>
-            <el-col v-if="getToken()==null||!getToken().length>0" :span="20"
-                    class=" d-flex justify-content-center h-100 w-100">
-              <div class="align-self-center  w-75">
-                <login-card/>
-              </div>
-            </el-col>
+        <div class="col">
+          <div v-if="getToken()!=null&&getToken().length>0">
+            <input-card class="mt-2"/>
+            <trend-list class="bg-light rounded-4 bg-info-2 mt-4"/>
+          </div>
+          <div v-if="getToken()==null||!getToken().length>0"
+               class=" d-flex justify-content-center h-100 w-100">
+            <div class="align-self-center  w-75">
+              <login-card/>
+            </div>
+          </div>
 
-          </el-row>
 
         </div>
       </div>
@@ -101,20 +133,25 @@
 
 <script>
 import ProfileCard from "@/views/profile/ProfileCard.vue";
-import {getDetailProfile} from "@/api/user";
+import {getDetailProfile, getFollowCount} from "@/api/user";
 import {getToken} from "@/util/auth";
 import {getChirperPage, getLikeByUser} from "@/api/chirper";
 import ChirperCard from "@/views/chirper/ChirperCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
-import TrendListCard from "@/views/explore/TrendListCard.vue";
+import TrendList from "@/views/explore/TrendListCard.vue";
 import ReferCard from "@/views/chirper/ReferCard.vue";
 import {mapState} from "vuex";
-import {chirperSearchEnums, chirperTypeEnums} from "@/enums/enums";
+import {chirperSearchEnums, chirperTypeEnums, relationEnums} from "@/enums/enums";
+import {userMutations} from "@/config/vuex/mutation-types";
+import {getProfileViewable} from "@/util/userUtil";
 
 export default {
   name: "Profile",
   computed: {
+    relationEnums() {
+      return relationEnums
+    },
     chirperTypeEnums() {
       return chirperTypeEnums
     },
@@ -130,169 +167,140 @@ export default {
       }
     },
     ...mapState({
-      currentUser:state => state.user
-    })
+      currentUser: state => state.user,
+      userList: state => state.user.userList
+    }),
+    switchType() {
+      return this.$route.query.type ?
+          this.$route.query.type : this.switchOptions.All;
+    },
+    username() {
+      return this.$route.query.username;
+    }
   },
   components: {
+    TrendList,
     'refer-card': ReferCard,
     'profile-card': ProfileCard,
     'chirper-card': ChirperCard,
     'input-card': InputCard,
     'login-card': LoginCard,
-    'trend-card': TrendListCard
   },
   data() {
     return {
       user: {},
       isLoading: false,
-      chirpers: {
-        all: {
-          chirper: [],
+      switchOptions: {
+        All: 'All',
+        Reply: 'Reply',
+        Media: 'Media',
+        Like: 'Like'
+      },
+      records: {
+        All: {
+          record: [],
           page: 1,
-          isBottom: false
+          finished: false
         },
-        reply: {
-          chirper: [],
+        Reply: {
+          record: [],
           page: 1,
-          isBottom: false
+          finished: false
         },
-        media: {
-          chirper: [],
+        Media: {
+          record: [],
           page: 1,
-          isBottom: false
+          finished: false
         },
-        like: {
-          chirper: [],
+        Like: {
+          record: [],
           page: 1,
-          isBottom: false
+          finished: false
         }
-      }
+      },
+
     }
   },
   methods: {
+    getProfileViewable,
     getToken,
     init() {
-      /*      this.user={};
-            this.activeName='all';
-            this.isLoading=false;
-            this.chirper=[];
-            this.page=1;
-            this.isBottom=false;*/
-      let username = this.$route.query.username;
+      this.user = {};
+      this.isLoading = false;
+      this.records = {
+        All: {
+          record: [],
+          page: 1,
+          finished: false
+        },
+        Reply: {
+          record: [],
+          page: 1,
+          finished: false
+        },
+        Media: {
+          record: [],
+          page: 1,
+          finished: false
+        },
+        Like: {
+          record: [],
+          page: 1,
+          finished: false
+        }
+      };
+      let username = this.username;
       getDetailProfile(username).then((res) => {
-        this.user = res.data.record;
-        this.getPage();
+        if (res.code === 200) {
+          let user = res.data.record;
+          this.user = user;
+          this.$store.commit(`user/${userMutations.SET_USER_TO_LIST}`, {user: user});
+          this.getPage();
+          return user;
+        } else {
+          throw new Error(res.message);
+        }
+      }).then(user => {
+        getFollowCount(user.id).then(r => {
+          if (r.code === 200) {
+            user.followNum = r.data.record.follower;
+            user.followingNum = r.data.record.following;
+            this.$set(this, 'user', user);
+            this.$store.commit(`user/${userMutations.SET_USER_TO_LIST}`, {user});
+          }
+        })
       }).catch(e => {
         console.log(e);
       })
     },
-    getPage() {
-      let type = this.$route.query.type;
-      let options;
-      if (type === chirperSearchEnums.MEDIA) {
-        options = {
-          'userId': this.user.id
-        };
-        options[type] = true;
-      } else {
-        options = {
-          'userId': this.user.id,
-          type
-        };
+    async getPage() {
+      let user = this.user;
+      if (getProfileViewable(user)) {
+        const type = this.switchType;
+        const record = this.records[type];
+        if (!record.finished) {
+          this.isLoading = true;
+          let res;
+          if (type !== this.switchOptions.Like) {
+            res = await getChirperPage({
+              page: record.page,
+              userIds: [this.user.id], type: type, media: type === this.switchOptions.Media
+            });
+          } else {
+            res = await getLikeByUser(record.page, this.user.id);
+          }
+          if (res.code === 200) {
+            record.finished = res.data.record == null || res.data.record.length <= 0
+            if (!record.finished) {
+              record.record.push(...res.data.record);
+              record.page++;
+            }
+          } else {
+            record.finished = true;
+          }
+          this.isLoading = false;
+        }
       }
-      if (!type && !this.chirpers.all.isBottom) {
-        this.isLoading = true;
-        getChirperPage(this.chirpers.all.page, options).then(res => {
-          this.isLoading = false;
-          if (res.code === 200) {
-            this.chirpers.all.isBottom = res.data.record.length <= 0;
-            if (!this.chirpers.all.isBottom) {
-              this.chirpers.all.chirper.push(...res.data.record);
-              this.chirpers.all.page++;
-            }
-          }
-        })
-      } else if (type === chirperSearchEnums.REPLY && !this.chirpers.reply.isBottom) {
-        this.isLoading = true;
-        getChirperPage(this.chirpers.reply.page, options).then(res => {
-          this.isLoading = false;
-          if (res.code === 200) {
-            this.chirpers.reply.isBottom = res.data.record.length <= 0;
-            if (!this.chirpers.reply.isBottom) {
-              this.chirpers.reply.chirper.push(...res.data.record);
-              this.chirpers.reply.page++;
-            }
-          }
-        })
-      } else if (type === chirperSearchEnums.MEDIA && !this.chirpers.media.isBottom) {
-        this.isLoading = true;
-        getChirperPage(this.chirpers.media.page, options).then(res => {
-          this.isLoading = false;
-          if (res.code === 200) {
-            this.chirpers.media.isBottom = res.data.record.length <= 0;
-            if (!this.chirpers.media.isBottom) {
-              this.chirpers.media.chirper.push(...res.data.record);
-              this.chirpers.media.page++;
-            }
-          }
-        })
-      } else if (type === chirperSearchEnums.LIKE && !this.chirpers.like.isBottom) {
-        this.isLoading = true;
-        getLikeByUser(this.chirpers.like.page, this.user.id).then(res => {
-          this.isLoading = false;
-          if (res.code === 200) {
-            this.chirpers.like.isBottom = res.data.record.length <= 0;
-            if (!this.chirpers.like.isBottom) {
-              this.chirpers.like.page++;
-              this.chirpers.like.chirper.push(...res.data.record);
-            }
-          }
-        })
-      }
-
-      /*    if (this.activeName === 'all' && !this.chirpers.all.isBottom) {
-            let options = {}
-            options['userId'] = [this.user.id];
-            this.isLoading = true;
-            getChirperPage(this.chirpers.all.page, options).then(res => {
-              this.chirpers.all.isBottom = res.data.record.length <= 0;
-              this.isLoading = false;
-              this.chirpers.all.chirper.push(...res.data.record);
-              this.chirpers.all.page++;
-            })
-          } else if (this.activeName === 'reply' && !this.chirpers.reply.isBottom) {
-            let options = {
-              'userId': [this.user.id],
-              'type': 'reply'
-            };
-            this.isLoading = true;
-            getChirperPage(this.chirpers.reply.page, options).then(res => {
-              this.chirpers.reply.isBottom = res.data.record.length <= 0;
-              this.isLoading = false;
-              this.chirpers.reply.chirper.push(...res.data.record);
-              this.chirpers.reply.page++;
-
-            })
-          } else if (this.activeName === 'media' && !this.chirpers.media.isBottom) {
-            let options = {
-              'userId': [this.user.id],
-              'isMedia': true
-            }
-            this.isLoading = true;
-            getChirperPage(this.chirpers.media.page, options).then(res => {
-              this.chirpers.media.chirper.push(...res.data.record);
-              this.isLoading = false;
-              this.chirpers.media.isBottom = res.data.record.length <= 0;
-              this.chirpers.media.page++;
-            })
-          } else if (this.activeName === 'like' && !this.chirpers.like.isBottom) {
-            this.isLoading = true;
-            getLikeByUser(this.chirpers.like.page, this.user.id).then(res => {
-              this.chirpers.like.isBottom = res.data.record.length <= 0;
-              this.chirpers.like.page++;
-              this.chirpers.like.chirper.push(...res.data.record);
-              this.isLoading = false;
-            })*/
     },
     loadMoreChirper() {
       const scrollTop = document.documentElement.scrollTop || document.body.scrollTop
@@ -308,18 +316,52 @@ export default {
         return true;
       }
       return path === type;
+    },
+    switchTo(type) {
+      this.$router.push(`/profile?username=${this.username}&type=${type}`)
     }
   },
   watch: {
-    $route() {
-      this.init();
+    $route(nval, oval) {
+      if (nval.query.username !== oval.query.username) {
+        this.init();
+      }
+      this.getPage();
     },
+    '$store.state.user.counter': {
+      handler() {
+        this.user = this.userList[this.user.id];
+        if (!getProfileViewable(this.user)) {
+          this.records = {
+            All: {
+              record: [],
+              page: 1,
+              finished: false
+            },
+            Reply: {
+              record: [],
+              page: 1,
+              finished: false
+            },
+            Media: {
+              record: [],
+              page: 1,
+              finished: false
+            },
+            Like: {
+              record: [],
+              page: 1,
+              finished: false
+            }
+          };
+        }
+      },
+      deep: true
+    }
   },
   created() {
     this.init();
     window.addEventListener("scroll", this.loadMoreChirper, true)
-
-
   },
   destroyed() {
     window.removeEventListener("scroll", this.loadMoreChirper)

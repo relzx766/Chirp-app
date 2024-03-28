@@ -7,11 +7,11 @@
       <el-col :span="22">
         <el-row>
           <el-col :span="16" class="text-start">
-            <el-link @click="doToProfile(item.id)"  style="color: #212121">{{ item.nickname }}</el-link>
+            <el-link style="color: #212121" @click="doToProfile(item.username)">{{ item.nickname }}</el-link>
             <el-row style="color: #606266">@{{ item.username }}</el-row>
           </el-col>
           <el-col :offset="4" :span="2">
-            <el-button v-if="item.id===$store.getters.getUser.id" disabled round>自己</el-button>
+            <el-button v-if="item.id===currentUser.id" disabled round>自己</el-button>
             <el-button v-else-if="item.relation===2" round
                        style="background-color: #212121;color: white;font-weight:bold"
                        @click="follow(index);">关注
@@ -21,13 +21,14 @@
             </el-button>
           </el-col>
         </el-row>
-        <el-row >{{ item.description }}</el-row>
+        <el-row>{{ item.description }}</el-row>
       </el-col>
     </el-card>
   </div>
 </template>
 <script>
 import {follow, getFollower, getFollowing, unFollow} from "@/api/user";
+import {mapState} from "vuex";
 
 export default {
   name: "FollowerCard",
@@ -46,25 +47,30 @@ export default {
       isLoading: false
     }
   },
+  computed: {
+    ...mapState({
+      currentUser: state => state.user
+    })
+  },
   methods: {
-    doToProfile(id){
+    doToProfile(username) {
       this.$emit('user-change')
-      this.$router.push(`/profile?id=${id}`);
+      this.$router.push(`/profile?username=${username}`);
     },
-    unfollow(index){
-      this.record[index].relation=2;
+    unfollow(index) {
+      this.record[index].relation = 2;
       this.$emit('unfollow');
       unFollow(this.record[index].id);
     },
-    follow(index){
-      this.record[index].relation=1;
+    follow(index) {
+      this.record[index].relation = 1;
       this.$emit('follow');
       follow(this.record[index].id);
     },
     getFollower(page) {
       this.isLoading = true;
       getFollower(this.id, page).then(res => {
-        if (res.code===200) {
+        if (res.code === 200) {
           this.record.push(...res.data.record);
           this.isLoading = false;
           this.isBottom = res.data.record.length <= 0;
@@ -74,7 +80,7 @@ export default {
     getFollowing(page) {
       this.isLoading = true;
       getFollowing(this.id, page).then(res => {
-        if (res.code===200) {
+        if (res.code === 200) {
           this.record.push(...res.data.record);
           this.isLoading = false;
           this.isBottom = res.data.record.length <= 0;
@@ -82,6 +88,10 @@ export default {
       })
     },
     init() {
+      this.record = [];
+      this.page = 1;
+      this.isBottom = false;
+      this.isLoading = false;
       if ('follower' === this.type) {
         this.getFollower(this.page);
         this.page++;
@@ -105,7 +115,11 @@ export default {
           this.page++;
         }
       }
-
+    }
+  },
+  watch: {
+    id() {
+      this.init();
     }
   },
   created() {

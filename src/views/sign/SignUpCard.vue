@@ -9,41 +9,44 @@
             </el-button>
           </div>
           <div class="col d-flex justify-content-center">
-            <img src="../../assets/logo.svg" width="40px" alt="logo">
+            <img alt="logo" src="../../assets/logo.svg" width="40px">
           </div>
           <div class="col d-flex justify-content-end">
-            <el-button v-show="active<1" round size="small" type="primary" @click="doNext()"
-            :disabled="isUnExists||isEmailExists||user.password.trim().length<6||user.password.trim().length>30
-||!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(user.email)||!/^[a-zA-Z0-9]{4,30}$/.test(user.username)">next
+            <el-button v-show="active<1" :disabled="isUnExists||isEmailExists||user.password.trim().length<6||user.password.trim().length>30
+||!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(user.email)||!/^[a-zA-Z0-9]{4,30}$/.test(user.username)" round size="small" type="primary"
+                       @click="doNext()">
+              next
             </el-button>
           </div>
         </div>
       </el-header>
-      <el-form class="p-2" :model="user" :rules="rules">
+      <el-form :model="user" :rules="rules" class="p-2">
         <el-row v-if="active===0">
           <el-form-item prop="username">
             <el-input v-model="user.username"
                       class="sign-form-input border-danger-subtle" placeholder="用户名" size="medium">
-              <i class="el-icon-loading el-input__icon"
-                 slot="suffix" v-show="unChecking"/>
-              <i class="el-icon-close el-input__icon text-danger"
-                 slot="suffix" v-show="isUnExists&&!unChecking||user.username.trim().length<=0"/>
-              <i class="el-icon-check el-input__icon text-success"
-                 slot="suffix" v-show="!isUnExists&&!unChecking&&user.username.trim().length>0&&/^[a-zA-Z0-9]{4,30}$/.test(user.username)"/>
+              <i v-show="unChecking"
+                 slot="suffix" class="el-icon-loading el-input__icon"/>
+              <i v-show="isUnExists&&!unChecking||user.username.trim().length<=0"
+                 slot="suffix" class="el-icon-close el-input__icon text-danger"/>
+              <i v-show="!isUnExists&&!unChecking&&user.username.trim().length>0&&/^[a-zA-Z0-9]{4,30}$/.test(user.username)"
+                 slot="suffix"
+                 class="el-icon-check el-input__icon text-success"/>
             </el-input>
           </el-form-item>
           <el-form-item class="mt-2" prop="password">
-            <el-input v-model="user.password" show-password class="sign-form-input" placeholder="密码" size="medium"/>
+            <el-input v-model="user.password" class="sign-form-input" placeholder="密码" show-password size="medium"/>
           </el-form-item>
           <el-form-item class="mt-2" prop="email">
             <el-input v-model="user.email"
                       class="sign-form-input" placeholder="邮箱" size="medium">
-              <i class="el-icon-loading el-input__icon"
-                 slot="suffix" v-show="emailChecking"/>
-              <i class="el-icon-close el-input__icon text-danger"
-                 slot="suffix" v-show="isEmailExists&&!emailChecking||user.email.trim().length<=0"/>
-              <i class="el-icon-check el-input__icon text-success"
-                 slot="suffix" v-show="!isEmailExists&&!emailChecking&&user.email.trim().length>0&&/^[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(user.email)"/>
+              <i v-show="emailChecking"
+                 slot="suffix" class="el-icon-loading el-input__icon"/>
+              <i v-show="isEmailExists&&!emailChecking||user.email.trim().length<=0"
+                 slot="suffix" class="el-icon-close el-input__icon text-danger"/>
+              <i v-show="!isEmailExists&&!emailChecking&&user.email.trim().length>0&&/^[a-zA-Z0-9_-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$/.test(user.email)"
+                 slot="suffix"
+                 class="el-icon-check el-input__icon text-success"/>
             </el-input>
           </el-form-item>
           <el-row style="margin-top: 40px;margin-bottom: 14px;font-weight: bold;text-align: left">
@@ -65,10 +68,10 @@
 
         <el-row v-if="active===1">
           <el-image
-            :src="require('../../assets/star-eye.svg')"
-          fit="container"/>
-          <el-row>你已完成全部工作，现在开始使用吧!</el-row>
-          <el-row>
+              :src="require('../../assets/star-eye.svg')"
+              fit="container"/>
+          <el-row class="text-center">你已完成全部工作，现在开始使用吧!</el-row>
+          <el-row class="text-center">
             <el-button round style="width: 60%" type="primary" @click="()=>{$router.go(0)}">开始</el-button>
           </el-row>
         </el-row>
@@ -94,20 +97,20 @@ export default {
         email: "",
         birthday: ""
       },
-      rules:{
-        username:[
-          {required:true,message:'请输入用户名',trigger:'blur'},
-          {min:4,max:30,message:'用户名长度在4-30位',trigger:'blur'},
-          {validator:this.unCheck,trigger: 'blur'}
+      rules: {
+        username: [
+          {required: true, message: '请输入用户名', trigger: 'blur'},
+          {min: 4, max: 30, message: '用户名长度在4-30位', trigger: 'blur'},
+          {validator: this.unCheck, trigger: 'blur'}
         ],
-        password:[
-          {required:true,message:'请输入密码',trigger:'blur'},
-          {min:6,max:30,message:'密码长度在6-30位',trigger:'blur'}
+        password: [
+          {required: true, message: '请输入密码', trigger: 'blur'},
+          {min: 6, max: 30, message: '密码长度在6-30位', trigger: 'blur'}
         ],
-        email:[
-          {required:true,message:'请输入邮箱',trigger:'blur'},
-          {type:'email',message:'邮箱格式不正确',trigger:'blur'},
-          {validator:this.emailCheck,trigger: 'blur'}
+        email: [
+          {required: true, message: '请输入邮箱', trigger: 'blur'},
+          {type: 'email', message: '邮箱格式不正确', trigger: 'blur'},
+          {validator: this.emailCheck, trigger: 'blur'}
         ]
       },
       isUnExists: true,
@@ -128,7 +131,7 @@ export default {
     doNext() {
       if (this.active === 0) {
         let birthday = moment(this.user.birthday).format("YYYY-MM-DD");
-        signUp(this.user.username, this.user.password, this.user.email,birthday).then((res) => {
+        signUp(this.user.username, this.user.password, this.user.email, birthday).then((res) => {
           if (res.code === 200) {
             this.active++;
           } else {
@@ -152,35 +155,35 @@ export default {
       }
       return option;
     },
-    unCheck(rule,value,callback) {
+    unCheck(rule, value, callback) {
       if (this.user.username.trim().length > 0) {
         this.unChecking = true;
         checkUsername(this.user.username).then(res => {
           this.unChecking = false;
           this.isUnExists = res.data.record;
-          if (res.data.record){
+          if (res.data.record) {
             callback(new Error("用户名已存在"));
-          }else {
+          } else {
             callback();
           }
         });
-      }else {
+      } else {
         callback(new Error("请输入用户名"));
       }
     },
-    emailCheck(rule,value,callback) {
+    emailCheck(rule, value, callback) {
       if (this.user.email.trim().length > 0) {
         this.emailChecking = true;
         checkEmail(this.user.email).then(res => {
           this.emailChecking = false;
           this.isEmailExists = res.data.record;
-          if (res.data.record){
+          if (res.data.record) {
             callback(new Error("邮箱已被使用"));
-          }else {
+          } else {
             callback();
           }
         });
-      }else {
+      } else {
         callback(new Error("请输入邮箱"));
       }
     },

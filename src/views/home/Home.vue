@@ -2,29 +2,27 @@
   <el-container>
     <el-main>
       <div class="row">
-        <div class="col-7 border-start border-end"
+        <div class="col border-start border-end"
              style="height: 100vh;">
           <chirper-card
+              :is-login="getToken()!=null&&getToken().length>0"
               class="overflow-y-auto"
-              style="max-height: 96vh;"
-              :is-login="getToken()!=null&&getToken().length>0">
+              style="max-height: 96vh;">
           </chirper-card>
         </div>
-       <div class="col-5">
-             <el-row class="h-100 w-100">
-               <el-col v-if="getToken()!=null&&getToken().length>0" :span="20">
-                 <input-card/>
-                 <trend-card style="margin-top: 8%;background-color:#EBEEF5;border-radius: 10px"/>
-               </el-col>
-               <el-col v-if="getToken()==null||!getToken().length>0" :span="20" class=" d-flex justify-content-center h-100 w-100">
-                 <div class="align-self-center  w-75">
-                   <login-card />
-                 </div>
-               </el-col>
+        <div class="col">
+          <div v-if="getToken()!=null&&getToken().length>0">
+            <input-card class="mt-2"/>
+            <trend-list class="bg-light rounded-4 bg-info-2 mt-4"/>
+          </div>
+          <div v-if="getToken()==null||!getToken().length>0"
+               class=" d-flex justify-content-center h-100 w-100">
+            <div class="align-self-center  w-75">
+              <login-card/>
+            </div>
+          </div>
 
-             </el-row>
-
-       </div>
+        </div>
       </div>
     </el-main>
   </el-container>
@@ -32,6 +30,7 @@
 
 <script>
 import TrendListCard from "@/views/explore/TrendListCard.vue";
+import TrendList from "@/views/explore/TrendListCard.vue";
 import ChirperListCard from "@/views/home/ChirperListCard.vue";
 import InputCard from "@/views/search/InputCard.vue";
 import LoginCard from "@/views/sign/LoginCard.vue";
@@ -50,6 +49,7 @@ export default {
     return {}
   },
   components: {
+    TrendList,
     'chirper-card': ChirperListCard,
     'trend-card': TrendListCard,
     'input-card': InputCard,
@@ -63,7 +63,8 @@ li {
   list-style-type: none;
   float: left;
 }
-.overflow-y-auto ::-webkit-scrollbar{
+
+.overflow-y-auto ::-webkit-scrollbar {
   display: none;
 }
 </style>
